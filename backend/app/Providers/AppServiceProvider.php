@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Future MySkills configurations will go here
+        // Example: Model observers, custom validation rules, etc.
     }
 }
