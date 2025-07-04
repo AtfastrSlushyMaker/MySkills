@@ -1,0 +1,521 @@
+/* MySkills Official Color Palette */
+/* Based on logo colors and cahier des charges specifications */
+
+:root {
+    /* Logo Colors - Primary Palette */
+    --color-primary: #1E40AF;
+    /* Deep Blue (from logo background) */
+    --color-secondary: #6B7280;
+    /* Modern Gray */
+    --color-accent-green: #10B981;
+    /* Success Green (from logo) */
+    --color-accent-blue: #3B82F6;
+    /* Light Blue (from logo) */
+    --color-accent-orange: #F97316;
+    /* Orange (from logo) */
+    --color-accent-purple: #8B5CF6;
+    /* Purple (from logo) */
+
+    /* Extended Palette */
+    --color-white: #FFFFFF;
+    --color-light-gray: #F8FAFC;
+    /* Lighter background */
+    --color-medium-gray: #F1F5F9;
+    /* Card backgrounds */
+    --color-dark-gray: #374151;
+    /* Text */
+    --color-border: #E2E8F0;
+    /* Subtle borders */
+
+    /* Semantic Colors */
+    --color-background: var(--color-light-gray);
+    --color-background-light: var(--color-white);
+    --color-text: var(--color-dark-gray);
+    --color-text-light: var(--color-secondary);
+
+    /* Interactive States */
+    --color-primary-hover: #1D4ED8;
+    --color-primary-light: #DBEAFE;
+    --color-success: var(--color-accent-green);
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+
+    /* Logo Accent Colors for UI Elements */
+    --color-feature-1: var(--color-accent-green);
+    --color-feature-2: var(--color-accent-blue);
+    --color-feature-3: var(--color-accent-orange);
+    --color-feature-4: var(--color-accent-purple);
+}
+
+/* Full Screen Layout & Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+#root {
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Improved Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.25rem;
+}
+
+/* Utility Classes */
+.text-primary {
+    color: var(--color-primary);
+}
+
+.text-secondary {
+    color: var(--color-secondary);
+}
+
+.text-accent-green {
+    color: var(--color-accent-green);
+}
+
+.text-accent-blue {
+    color: var(--color-accent-blue);
+}
+
+.text-accent-orange {
+    color: var(--color-accent-orange);
+}
+
+.text-accent-purple {
+    color: var(--color-accent-purple);
+}
+
+.text-white {
+    color: var(--color-white);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+.bg-secondary {
+    background-color: var(--color-secondary);
+}
+
+.bg-accent-green {
+    background-color: var(--color-accent-green);
+}
+
+.bg-accent-blue {
+    background-color: var(--color-accent-blue);
+}
+
+.bg-accent-orange {
+    background-color: var(--color-accent-orange);
+}
+
+.bg-accent-purple {
+    background-color: var(--color-accent-purple);
+}
+
+.bg-light {
+    background-color: var(--color-background-light);
+}
+
+.bg-white {
+    background-color: var(--color-white);
+}
+
+.bg-medium {
+    background-color: var(--color-medium-gray);
+}
+
+.border-primary {
+    border-color: var(--color-primary);
+}
+
+.border-light {
+    border-color: var(--color-border);
+}
+
+/* Enhanced Button Styles */
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-primary-light);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.btn-success:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Enhanced Card Styles */
+.card {
+    background: var(--color-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.card-feature {
+    background: var(--color-medium-gray);
+    transition: all 0.3s ease;
+}
+
+.card-feature:hover {
+    background: var(--color-white);
+}
+
+/* Full Width Container */
+.container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 24px;
+}
+
+.container-max {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Layout Utilities */
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: 1fr;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.gap-3 {
+    gap: 12px;
+}
+
+.gap-4 {
+    gap: 16px;
+}
+
+.gap-5 {
+    gap: 20px;
+}
+
+.gap-6 {
+    gap: 24px;
+}
+
+/* Spacing */
+.mb-2 {
+    margin-bottom: 8px;
+}
+
+.mb-3 {
+    margin-bottom: 12px;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.mb-5 {
+    margin-bottom: 20px;
+}
+
+.mb-6 {
+    margin-bottom: 24px;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.mt-3 {
+    margin-top: 12px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+.mt-5 {
+    margin-top: 20px;
+}
+
+.mt-6 {
+    margin-top: 24px;
+}
+
+.p-3 {
+    padding: 12px;
+}
+
+.p-4 {
+    padding: 16px;
+}
+
+.p-5 {
+    padding: 20px;
+}
+
+.p-6 {
+    padding: 24px;
+}
+
+.px-3 {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.px-4 {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.px-5 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.px-6 {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.py-3 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.py-4 {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+.py-5 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.py-6 {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+/* Enhanced Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: var(--color-white);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-error {
+    color: var(--color-danger);
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container-max {
+        padding: 0 16px;
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+}

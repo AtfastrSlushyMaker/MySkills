@@ -13,11 +13,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Create test users first
+        User::factory()->create([
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'email' => 'admin@myskills.com',
+            'role' => 'admin',
+        ]);
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'first_name' => 'John',
+            'last_name' => 'Trainer',
+            'email' => 'trainer@myskills.com',
+            'role' => 'trainer',
+        ]);
+
+        User::factory()->create([
+            'first_name' => 'Jane',
+            'last_name' => 'Student',
+            'email' => 'student@myskills.com',
+            'role' => 'trainee',
+        ]);
+
+        // Create additional sample users
+        User::factory(7)->create();
+
+        // Run other seeders
+        $this->call([
+            NotificationSeeder::class,
         ]);
     }
 }

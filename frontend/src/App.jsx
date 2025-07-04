@@ -1,34 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+
+// Import page components
+import HomePage from './pages/HomePage'
+import SimpleLoginPage2 from './pages/SimpleLoginPage2'
+import DashboardPage from './pages/DashboardPage'
+import CoursesPage from './pages/CoursesPage'
+
+// Import navigation component
+import Navigation from './components/Navigation'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      {/* Navigation will be visible on all pages */}
+      <Navigation />
+
+      {/* Main content area with proper spacing */}
+      <main>
+        {/* Routes define which component to show for each URL */}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<SimpleLoginPage2 />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          {/* 404 page for unknown routes */}
+          <Route path="*" element={
+            <div>
+              <h1>404 - Page Not Found</h1>
+              <p>The page you're looking for doesn't exist.</p>
+            </div>
+          } />
+        </Routes>
+      </main>
+    </div>
   )
 }
 

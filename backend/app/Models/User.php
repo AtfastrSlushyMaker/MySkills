@@ -83,6 +83,16 @@ class User extends Authenticatable
         return $this->hasMany(TrainingCourse::class, 'created_by');
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->hasMany(Notification::class)->unread()->notExpired();
+    }
+
     // Role check methods
     public function isAdmin(): bool
     {

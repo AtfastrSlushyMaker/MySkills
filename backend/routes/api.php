@@ -27,10 +27,15 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Authentication routes
+require __DIR__.'/auth.php';
+
 // Resource routes for all models
-
-
-
-
-
-
+require __DIR__.'/user.php';
+require __DIR__.'/category.php';
+require __DIR__.'/trainingCourse.php';
+require __DIR__.'/trainingSession.php';
+require __DIR__.'/registration.php';
+require __DIR__.'/attendance.php';
+require __DIR__.'/feedback.php';
+require __DIR__.'/notification.php';
