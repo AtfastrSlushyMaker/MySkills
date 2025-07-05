@@ -46,6 +46,11 @@ class Registration extends Model
         return $this->hasOne(Feedback::class);
     }
 
+    public function sessionCompletion()
+    {
+        return $this->hasOne(SessionCompletion::class);
+    }
+
     // Helper methods
     public function canBeCancelled(): bool
     {

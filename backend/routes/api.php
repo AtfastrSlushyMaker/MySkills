@@ -38,4 +38,5 @@ require __DIR__.'/trainingSession.php';
 require __DIR__.'/registration.php';
 require __DIR__.'/attendance.php';
 require __DIR__.'/feedback.php';
+require __DIR__.'/sessionCompletion.php';
 require __DIR__.'/notification.php';

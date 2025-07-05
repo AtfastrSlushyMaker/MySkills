@@ -11,6 +11,7 @@ class Attendance extends Model
 
     protected $fillable = [
         'registration_id',       
+        'training_course_id',
         'present',             
         'marked_at'            
     ];
@@ -27,6 +28,22 @@ class Attendance extends Model
     public function registration()
     {
         return $this->belongsTo(Registration::class);
+    }
+
+    public function trainingCourse()
+    {
+        return $this->belongsTo(TrainingCourse::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Get user through registration
+    public function getUserAttribute()
+    {
+        return $this->registration->user ?? null;
     }
 
     // Helper methods

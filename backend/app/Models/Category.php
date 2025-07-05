@@ -23,8 +23,8 @@ class Category extends Model
     }
 
     // Relationships
-    public function trainingCourses()
+    public function trainingSessions()
     {
-        return $this->hasMany(TrainingCourse::class);
+        return $this->hasMany(TrainingSession::class);
     }
 }

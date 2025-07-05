@@ -7,6 +7,8 @@ enum RegistrationStatus: string
     case PENDING = 'pending';
     case CONFIRMED = 'confirmed';
     case CANCELLED = 'cancelled';
+    case COMPLETED = 'completed';
+    case FAILED = 'failed';
 
     /**
      * Get all status values as array
@@ -25,6 +27,8 @@ enum RegistrationStatus: string
             self::PENDING => 'Pending Approval',
             self::CONFIRMED => 'Confirmed',
             self::CANCELLED => 'Cancelled',
+            self::COMPLETED => 'Completed',
+            self::FAILED => 'Failed',
         };
     }
 

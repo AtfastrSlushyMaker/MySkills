@@ -11,14 +11,16 @@ class TrainingSession extends Model
     use HasFactory;
 
     protected $fillable = [
-        'training_course_id',
+        'category_id',
         'coordinator_id',       
         'trainer_id',
         'date',
         'start_time',
         'end_time',
         'location',
-        'max_participants'
+        'max_participants',
+        'skill_name',
+        'skill_description'
     ];
 
     protected function casts(): array
@@ -32,9 +34,14 @@ class TrainingSession extends Model
     }
 
     // Relationships
-    public function trainingCourse()
+    public function category()
     {
-        return $this->belongsTo(TrainingCourse::class);
+        return $this->belongsTo(Category::class);
+    }
+
+    public function trainingCourses()
+    {
+        return $this->hasMany(TrainingCourse::class);
     }
 
     public function trainer()
@@ -50,6 +57,16 @@ class TrainingSession extends Model
     public function registrations()
     {
         return $this->hasMany(Registration::class);
+    }
+
+    public function sessionCompletions()
+    {
+        return $this->hasMany(SessionCompletion::class);
+    }
+
+    public function feedback()
+    {
+        return $this->hasMany(Feedback::class);
     }
 
     public function attendances()

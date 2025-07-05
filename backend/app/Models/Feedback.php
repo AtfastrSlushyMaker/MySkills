@@ -11,9 +11,9 @@ class Feedback extends Model
 
     protected $fillable = [
         'registration_id',
+        'training_session_id',
         'rating',
         'comment'
-        
     ];
 
     protected function casts(): array
@@ -27,6 +27,11 @@ class Feedback extends Model
     public function registration()
     {
         return $this->belongsTo(Registration::class);
+    }
+
+    public function trainingSession()
+    {
+        return $this->belongsTo(TrainingSession::class);
     }
 
     // Helper methods

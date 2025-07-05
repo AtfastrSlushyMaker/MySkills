@@ -13,7 +13,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return response()->json(Category::all(), 200);
+        $categories = Category::with('trainingSessions')->get();
+        return response()->json($categories, 200);
     }
 
     /**
@@ -35,6 +36,7 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
+        $category->load('trainingSessions');
         return response()->json($category, 200);
     }
 

@@ -22,11 +22,19 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'registration_id' => 'required|exists:registrations,id',
             'training_session_id' => 'required|exists:training_sessions,id',
             'rating' => 'required|integer|min:1|max:5',
-            'comments' => 'nullable|string|max:1000',
+            'comment' => 'nullable|string|max:1000',
         ]);
+
+        // Validate that registration belongs to the specified training session
+        $registration = \App\Models\Registration::find($validated['registration_id']);
+        if ($registration->training_session_id != $validated['training_session_id']) {
+            return response()->json([
+                'message' => 'Registration does not belong to the specified training session'
+            ], 422);
+        }
         $feedback = Feedback::create($validated);
         return response()->json($feedback, 201);
     }

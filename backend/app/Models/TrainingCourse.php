@@ -14,7 +14,7 @@ class TrainingCourse extends Model
         'description',
         'duration_hours',
         'max_participants',
-        'category_id',
+        'training_session_id',
         'created_by',
         'is_active'
     ];
@@ -29,9 +29,9 @@ class TrainingCourse extends Model
     }
 
     // Relationships
-    public function category()
+    public function trainingSession()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(TrainingSession::class);
     }
 
     public function creator()
@@ -39,27 +39,27 @@ class TrainingCourse extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function trainingSessions()
+    public function attendances()
     {
-        return $this->hasMany(TrainingSession::class);
+        return $this->hasMany(Attendance::class);
     }
 
     // Helper methods
-    public function getUpcomingSessionsAttribute()
+    public function getRegistrationsAttribute()
     {
-        return $this->trainingSessions()
-            ->where('date', '>=', now()->toDateString())
-            ->orderBy('date')
-            ->orderBy('start_time');
+        return $this->trainingSession
+            ? $this->trainingSession->registrations()
+                ->where('status', 'confirmed')
+                ->get()
+            : collect();
     }
 
     public function getTotalRegistrationsAttribute(): int
     {
-        return $this->trainingSessions()
-            ->withCount(['registrations' => function($query) {
-                $query->where('status', 'confirmed');
-            }])
-            ->get()
-            ->sum('registrations_count');
+        return $this->trainingSession
+            ? $this->trainingSession->registrations()
+                ->where('status', 'confirmed')
+                ->count()
+            : 0;
     }
 }

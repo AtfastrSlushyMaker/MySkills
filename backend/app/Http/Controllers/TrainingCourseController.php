@@ -13,7 +13,9 @@ class TrainingCourseController extends Controller
      */
     public function index()
     {
-        return response()->json(TrainingCourse::all(), 200);
+        $courses = TrainingCourse::with(['trainingSession', 'creator'])
+                                 ->get();
+        return response()->json($courses, 200);
     }
 
     /**
@@ -24,13 +26,15 @@ class TrainingCourseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'duration' => 'required|integer|min:1', // Duration in hours
+            'duration_hours' => 'required|integer|min:1',
+            'max_participants' => 'required|integer|min:1',
+            'training_session_id' => 'required|exists:training_sessions,id',
+            'created_by' => 'required|exists:users,id',
             'is_active' => 'boolean',
-            'category_id' => 'required|exists:categories,id', // Assuming a category relationship
-            // Add any other validation rules as necessary
         ]);
+        
         $course = TrainingCourse::create($validated);
-        return response()->json($course, 201);
+        return response()->json($course->load(['trainingSession', 'creator']), 201);
     }
 
     /**
@@ -38,6 +42,7 @@ class TrainingCourseController extends Controller
      */
     public function show(TrainingCourse $trainingCourse)
     {
+        $trainingCourse->load(['trainingSession', 'creator', 'attendances']);
         return response()->json($trainingCourse, 200);
     }
 
@@ -49,13 +54,15 @@ class TrainingCourseController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|nullable|string|max:1000',
-            'duration' => 'sometimes|required|integer|min:1', // Duration in hours
+            'duration_hours' => 'sometimes|required|integer|min:1',
+            'max_participants' => 'sometimes|required|integer|min:1',
+            'training_session_id' => 'sometimes|required|exists:training_sessions,id',
+            'created_by' => 'sometimes|required|exists:users,id',
             'is_active' => 'sometimes|boolean',
-            'category_id' => 'sometimes|required|exists:categories,id', // Assuming a category relationship
-            // Add any other validation rules as necessary
         ]);
+        
         $trainingCourse->update($validated);
-        return response()->json($trainingCourse, 200);
+        return response()->json($trainingCourse->load(['trainingSession', 'creator']), 200);
     }
 
     /**
