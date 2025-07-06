@@ -1,43 +1,389 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import LoadingSpinner from './LoadingSpinner'
 
 function Navigation() {
     const location = useLocation()
+    const { user, logout, loading } = useAuth()
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+    const dropdownRef = useRef(null)
 
-    const navItems = [
-        { path: '/', label: 'Home' },
-        { path: '/login', label: 'Login' },
-        { path: '/dashboard', label: 'Dashboard' },
-        { path: '/courses', label: 'Courses' }
-    ]
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsProfileDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    // Define navigation items based on authentication and role
+    const getNavItems = () => {
+        const publicItems = [
+            { path: '/', label: 'Home', icon: 'fas fa-home' },
+        ]
+
+        if (!user) {
+            return [
+                ...publicItems,
+                { path: '/login', label: 'Login', icon: 'fas fa-sign-in-alt' },
+            ]
+        }
+
+        // Authenticated user items
+        const authenticatedItems = [
+            ...publicItems,
+            { path: '/dashboard', label: 'Dashboard', icon: 'fas fa-chart-pie' },
+            { path: '/courses', label: 'Courses', icon: 'fas fa-graduation-cap' },
+        ]
+
+        // Add role-specific items
+        if (user.role === 'admin' || user.role === 'super_admin') {
+            authenticatedItems.push(
+                { path: '/admin', label: 'Admin Panel', icon: 'fas fa-cogs' },
+                { path: '/users', label: 'Users', icon: 'fas fa-users' }
+            )
+        }
+
+        if (user.role === 'instructor' || user.role === 'admin' || user.role === 'super_admin') {
+            authenticatedItems.push(
+                { path: '/instructor', label: 'Instructor', icon: 'fas fa-chalkboard-teacher' }
+            )
+        }
+
+        return authenticatedItems
+    }
+
+    const navItems = getNavItems()
+
+    const handleLogout = () => {
+        logout()
+        setIsProfileDropdownOpen(false)
+    }
 
     return (
-        <nav className="bg-primary shadow-lg" style={{ backgroundColor: '#1E40AF', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
-            <div className="max-w-7xl mx-auto px-6" style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1.5rem' }}>
-                <div className="flex items-center justify-between py-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0' }}>
-                    {/* Logo Section */}
-                    <Link to="/" className="flex items-center space-x-3 text-white hover:text-gray-200 transition-colors" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'white' }}>
-                        <img
-                            src="/logos/myskills-logo-icon.png"
-                            alt="MySkills Logo"
-                            className="h-10 w-auto"
-                            style={{ height: '40px', width: 'auto' }}
-                        />
-                        <span className="text-xl font-bold" style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>MySkills</span>
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl">
+            {/* Glassmorphism overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 backdrop-blur-2xl"></div>
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-18 py-2">
+                    {/* Logo Section - Enhanced Glassmorphism */}
+                    <Link
+                        to="/"
+                        className="flex items-center space-x-3 text-white hover:text-blue-100 transition-all duration-500 group relative"
+                    >
+                        {/* Glass background for logo */}
+                        <div className="absolute inset-0 bg-white/5 rounded-2xl backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 scale-95 group-hover:scale-100"></div>
+
+                        <div className="relative flex items-center space-x-3 px-4 py-2">
+                            <div className="relative">
+                                <img
+                                    src="/logos/myskills-logo-icon.png"
+                                    alt="MySkills Logo"
+                                    className="h-12 w-auto transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-2xl"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none'
+                                        e.target.nextSibling.style.display = 'flex'
+                                    }}
+                                />
+                                <div
+                                    className="h-12 w-12 bg-gradient-to-br from-white/30 to-white/10 rounded-xl flex items-center justify-center text-white font-bold text-xl backdrop-blur-sm border border-white/20 shadow-xl hidden"
+                                    style={{ display: 'none' }}
+                                >
+                                    MS
+                                </div>
+                                {/* Glow effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-blue-400/20 rounded-xl blur-xl opacity-0 group-hover:opacity-60 transition-all duration-500"></div>
+                            </div>
+                            <div className="relative">
+                                <span className="text-2xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-lg">
+                                    MySkills
+                                </span>
+                                {/* Text glow */}
+                                <div className="absolute inset-0 text-2xl font-bold text-white/20 blur-sm">
+                                    MySkills
+                                </div>
+                            </div>
+                        </div>
                     </Link>
 
-                    {/* Navigation Links */}
-                    <div className="flex items-center space-x-3">
+                    {/* Desktop Navigation - Glassmorphism Style */}
+                    <div className="hidden md:flex items-center space-x-2">
                         {navItems.map(item => (
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                                className={`relative px-5 py-3 rounded-2xl text-sm font-medium transition-all duration-500 flex items-center space-x-2 group overflow-hidden ${location.pathname === item.path
+                                    ? 'bg-white/20 text-white shadow-2xl backdrop-blur-md border border-white/30'
+                                    : 'text-white/90 hover:bg-white/10 hover:text-white hover:backdrop-blur-md hover:border-white/20 border border-transparent'
+                                    }`}
                             >
-                                {item.label}
+                                {/* Glass background effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-xl"></div>
+
+                                {/* Shimmer effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                                <span className="relative group-hover:scale-110 transition-all duration-300 drop-shadow-lg">
+                                    <i className={`${item.icon} text-lg`}></i>
+                                </span>
+                                <span className="relative font-semibold tracking-wide drop-shadow-sm">{item.label}</span>
+
+                                {/* Active indicator */}
+                                {location.pathname === item.path && (
+                                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-purple-300 to-blue-300 rounded-full shadow-lg"></div>
+                                )}
                             </Link>
                         ))}
+
+                        {/* User Profile Section - Enhanced Glassmorphism */}
+                        {loading ? (
+                            <div className="ml-6 flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+                                <LoadingSpinner size="sm" />
+                                <span className="text-white/80 text-sm">Loading...</span>
+                            </div>
+                        ) : user && (
+                            <div className="relative ml-6" ref={dropdownRef}>
+                                <button
+                                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                    className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-xl px-5 py-3 rounded-2xl transition-all duration-500 border border-white/20 hover:border-white/40 shadow-xl hover:shadow-2xl group"
+                                >
+                                    {/* User avatar with glassmorphism */}
+                                    <div className="relative">
+                                        <div className="h-10 w-10 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-2xl border border-white/30 backdrop-blur-sm">
+                                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                                        </div>
+                                        {/* Avatar glow */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 to-blue-400/40 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-all duration-500"></div>
+                                    </div>
+
+                                    <div className="hidden lg:block">
+                                        <span className="text-white font-semibold text-sm drop-shadow-sm">
+                                            {user.name || 'User'}
+                                        </span>
+                                        <div className="text-xs text-white/70 font-medium uppercase tracking-widest">
+                                            {user.role}
+                                        </div>
+                                    </div>
+
+                                    <svg
+                                        className={`h-4 w-4 text-white/80 transition-all duration-500 ${isProfileDropdownOpen ? 'rotate-180' : ''} group-hover:text-white`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Enhanced Dropdown Menu with Glassmorphism */}
+                                {isProfileDropdownOpen && (
+                                    <div className="absolute right-0 mt-4 w-80 bg-white/5 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/20 z-dropdown overflow-hidden">
+                                        {/* Glass overlay with gradient */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/8 to-white/5"></div>
+
+                                        {/* Shimmer effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30"></div>
+
+                                        {/* Header section */}
+                                        <div className="relative p-6 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 border-b border-white/20">
+                                            <div className="flex items-center space-x-4">
+                                                <div className="relative">
+                                                    <div className="h-16 w-16 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-2xl border border-white/30">
+                                                        {user.name?.charAt(0).toUpperCase() || 'U'}
+                                                    </div>
+                                                    {/* Enhanced avatar glow */}
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 to-blue-400/40 rounded-2xl blur-xl"></div>
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-lg text-white drop-shadow-lg">{user.name || 'User'}</p>
+                                                    <p className="text-sm text-white/80 drop-shadow-sm">{user.email}</p>
+                                                    <div className="inline-block mt-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                                                        <p className="text-xs text-white font-bold uppercase tracking-widest">
+                                                            {user.role}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Menu items */}
+                                        <div className="relative p-2">
+                                            <Link
+                                                to="/profile"
+                                                className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/20"
+                                                onClick={() => setIsProfileDropdownOpen(false)}
+                                            >
+                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-user"></i>
+                                                </span>
+                                                <span className="font-medium">My Profile</span>
+                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
+                                            </Link>
+
+                                            <Link
+                                                to="/settings"
+                                                className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/20"
+                                                onClick={() => setIsProfileDropdownOpen(false)}
+                                            >
+                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-cog"></i>
+                                                </span>
+                                                <span className="font-medium">Settings</span>
+                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
+                                            </Link>
+
+                                            <hr className="my-3 border-white/20" />
+
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full flex items-center space-x-4 px-4 py-3 text-red-300 hover:bg-red-500/20 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-red-300/30"
+                                            >
+                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-sign-out-alt"></i>
+                                                </span>
+                                                <span className="font-medium">Sign Out</span>
+                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
+
+                    {/* Mobile menu button - Glassmorphism Style */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="md:hidden p-3 rounded-2xl text-white hover:bg-white/20 transition-all duration-500 backdrop-blur-md border border-white/20 hover:border-white/40 shadow-xl"
+                    >
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {isMobileMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            )}
+                        </svg>
+                    </button>
                 </div>
+
+                {/* Mobile Navigation Menu - Enhanced Glassmorphism with Fixed Z-Index */}
+                {isMobileMenuOpen && (
+                    <>
+                        {/* Mobile menu backdrop overlay - FIXED: Higher z-index and better coverage */}
+                        <div
+                            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] md:hidden"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        ></div>
+
+                        <div className="fixed top-[72px] left-0 right-0 bg-white/10 backdrop-blur-3xl border-t border-white/30 shadow-2xl z-[70] md:hidden min-h-screen">
+                            {/* Glass overlay for enhanced effect */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-purple-500/20 via-blue-500/15 to-indigo-500/20"></div>
+                            <div className="relative px-4 pt-4 pb-6 space-y-2">
+                                {navItems.map(item => (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className={`flex items-center space-x-4 px-4 py-3 rounded-2xl text-base font-medium transition-all duration-500 backdrop-blur-sm border ${location.pathname === item.path
+                                            ? 'bg-white/20 text-white border-white/30 shadow-xl'
+                                            : 'text-white/90 hover:bg-white/10 hover:text-white border-transparent hover:border-white/20'
+                                            }`}
+                                    >
+                                        <span className="text-lg">
+                                            <i className={item.icon}></i>
+                                        </span>
+                                        <span>{item.label}</span>
+                                    </Link>
+                                ))}
+
+                                {loading ? (
+                                    <div className="px-4 py-3 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                                        <LoadingSpinner size="sm" />
+                                        <span className="ml-3 text-white/70">Loading...</span>
+                                    </div>
+                                ) : user && (
+                                    <>
+                                        <hr className="my-4 border-white/20" />
+
+                                        {/* Mobile user profile section */}
+                                        <div className="px-4 py-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20">
+                                            <div className="flex items-center space-x-4 mb-4">
+                                                <div className="relative">
+                                                    <div className="h-12 w-12 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-2xl border border-white/30">
+                                                        {user.name?.charAt(0).toUpperCase() || 'U'}
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 to-blue-400/30 rounded-2xl blur-lg"></div>
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-white drop-shadow-lg">{user.name || 'User'}</p>
+                                                    <p className="text-sm text-white/80 drop-shadow-sm">{user.email}</p>
+                                                    <div className="inline-block mt-1 px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                                                        <p className="text-xs text-white font-bold uppercase tracking-wider">
+                                                            {user.role}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Link
+                                            to="/profile"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-300 backdrop-blur-sm border border-transparent hover:border-white/20"
+                                        >
+                                            <span className="text-lg">
+                                                <i className="fas fa-user"></i>
+                                            </span>
+                                            <span className="font-medium">My Profile</span>
+                                        </Link>
+
+                                        <Link
+                                            to="/settings"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-300 backdrop-blur-sm border border-transparent hover:border-white/20"
+                                        >
+                                            <span className="text-lg">
+                                                <i className="fas fa-cog"></i>
+                                            </span>
+                                            <span className="font-medium">Settings</span>
+                                        </Link>
+
+                                        <button
+                                            onClick={() => {
+                                                handleLogout()
+                                                setIsMobileMenuOpen(false)
+                                            }}
+                                            className="w-full flex items-center space-x-4 px-4 py-3 text-red-300 hover:bg-red-500/20 hover:text-red-200 rounded-2xl transition-all duration-300 backdrop-blur-sm border border-transparent hover:border-red-300/30"
+                                        >
+                                            <span className="text-lg">
+                                                <i className="fas fa-sign-out-alt"></i>
+                                            </span>
+                                            <span className="font-medium">Sign Out</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </nav>
     )

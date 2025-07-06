@@ -139,13 +139,15 @@ function SignUpPage() {
                 <div className="p-8 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-600 to-blue-600 flex items-center justify-center">
-                            <span className="text-2xl">✨</span>
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl border border-white/30">
+                            <span className="text-2xl">🎓</span>
                         </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                            Join MySkills
+                        <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
+                            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                Join MySkills
+                            </span>
                         </h1>
-                        <p className="text-gray-400 mt-2">Create your account and start learning</p>
+                        <p className="text-white/80 drop-shadow-sm">Create your account and start your learning journey</p>
                     </div>
 
                     {/* Signup Form */}
