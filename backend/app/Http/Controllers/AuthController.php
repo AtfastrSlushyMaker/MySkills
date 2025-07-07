@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Enums\UserStatus;
 use App\Enums\UserRole;
+use App\Http\Controllers\UserController;
 
 class AuthController extends Controller
 {
@@ -23,6 +24,7 @@ class AuthController extends Controller
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
+                'phone' => 'nullable|string|max:20',
                 'password' => 'required|string|min:8|confirmed',
                 'role' => 'required|in:' . implode(',', UserRole::values()),
                 'terms_accepted' => 'required|accepted',
@@ -32,6 +34,7 @@ class AuthController extends Controller
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
                 'password' => bcrypt($validated['password']),
                 'role' => $validated['role'],
                 'status' => UserStatus::ACTIVE->value,
@@ -46,6 +49,7 @@ class AuthController extends Controller
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'role' => $user->role,
                     'status' => $user->status,
                 ],
@@ -103,6 +107,7 @@ class AuthController extends Controller
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'role' => $user->role,
                     'status' => $user->status,
                 ],
@@ -129,7 +134,7 @@ class AuthController extends Controller
     {
         try {
             $request->user()->currentAccessToken()->delete();
-            
+
             return response()->json([
                 'message' => 'Logout successful'
             ], 200);
@@ -148,13 +153,14 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             return response()->json([
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'role' => $user->role,
                     'status' => $user->status,
                 ]
@@ -174,13 +180,13 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             // Revoke current token
             $request->user()->currentAccessToken()->delete();
-            
+
             // Create new token
             $token = $user->createToken('auth_token')->plainTextToken;
-            
+
             return response()->json([
                 'message' => 'Token refreshed successfully',
                 'token' => $token,
@@ -189,6 +195,7 @@ class AuthController extends Controller
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
                     'role' => $user->role,
                     'status' => $user->status,
                 ]

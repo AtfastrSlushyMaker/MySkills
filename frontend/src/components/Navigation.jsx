@@ -164,7 +164,7 @@ function Navigation() {
 
                                     <div className="hidden lg:block">
                                         <span className="text-white font-semibold text-sm drop-shadow-sm">
-                                            {user.name || 'User'}
+                                            {user?.first_name || 'User'}
                                         </span>
                                         <div className="text-xs text-white/70 font-medium uppercase tracking-widest">
                                             {user.role}
@@ -183,48 +183,68 @@ function Navigation() {
 
                                 {/* Enhanced Dropdown Menu with Glassmorphism */}
                                 {isProfileDropdownOpen && (
-                                    <div className="absolute right-0 mt-4 w-80 bg-white/5 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/20 z-dropdown overflow-hidden">
-                                        {/* Glass overlay with gradient */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/8 to-white/5"></div>
+                                    <div className="absolute right-0 mt-4 w-96 bg-white/8 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/30 z-dropdown overflow-hidden transform transition-all duration-300 scale-100 opacity-100 animate-in slide-in-from-top-2">
+                                        {/* Enhanced glass overlay with gradient */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-white/5"></div>
 
-                                        {/* Shimmer effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-30"></div>
+                                        {/* Animated shimmer effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-30 animate-pulse"></div>
 
-                                        {/* Header section */}
-                                        <div className="relative p-6 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 border-b border-white/20">
-                                            <div className="flex items-center space-x-4">
+                                        {/* Enhanced Header section */}
+                                        <div className="relative p-8 bg-gradient-to-br from-purple-500/25 via-blue-500/20 to-indigo-500/25 border-b border-white/25">
+                                            <div className="flex items-center space-x-5">
                                                 <div className="relative">
-                                                    <div className="h-16 w-16 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-2xl border border-white/30">
-                                                        {user.name?.charAt(0).toUpperCase() || 'U'}
+                                                    <div className="h-20 w-20 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-2xl shadow-2xl border-2 border-white/40 backdrop-blur-sm">
+                                                        {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
                                                     </div>
-                                                    {/* Enhanced avatar glow */}
-                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 to-blue-400/40 rounded-2xl blur-xl"></div>
+                                                    {/* Enhanced avatar glow with animation */}
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/50 to-blue-400/50 rounded-3xl blur-xl animate-pulse"></div>
+                                                    {/* Status indicator with enhanced animation */}
+                                                    <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-400 rounded-full border-2 border-white/60 shadow-lg">
+                                                        <div className="h-full w-full bg-green-400 rounded-full animate-ping opacity-75"></div>
+                                                        <div className="absolute inset-0 h-full w-full bg-green-300 rounded-full animate-pulse"></div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-lg text-white drop-shadow-lg">{user.name || 'User'}</p>
-                                                    <p className="text-sm text-white/80 drop-shadow-sm">{user.email}</p>
-                                                    <div className="inline-block mt-1 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
-                                                        <p className="text-xs text-white font-bold uppercase tracking-widest">
-                                                            {user.role}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center space-x-2 mb-1">
+                                                        <p className="font-bold text-xl text-white drop-shadow-lg">
+                                                            {user?.first_name || 'User'} {user?.last_name || ''}
                                                         </p>
+                                                        <div className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse shadow-sm"></div>
+                                                    </div>
+                                                    <p className="text-sm text-white/90 drop-shadow-sm mb-3 font-medium">{user?.email}</p>
+                                                    <div className="flex items-center space-x-2">
+                                                        <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-white/25 to-white/15 backdrop-blur-sm rounded-2xl border border-white/40 shadow-lg">
+                                                            <div className="h-2 w-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
+                                                            <p className="text-xs text-white font-bold uppercase tracking-widest">
+                                                                {user?.role}
+                                                            </p>
+                                                        </div>
+                                                        <div className="px-3 py-1 bg-green-400/20 backdrop-blur-sm rounded-xl border border-green-400/30">
+                                                            <p className="text-xs text-green-300 font-semibold">Active</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Menu items */}
-                                        <div className="relative p-2">
+                                        {/* Enhanced Menu items */}
+                                        <div className="relative p-3">
+
                                             <Link
                                                 to="/profile"
-                                                className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/20"
+                                                className="flex items-center space-x-4 px-5 py-4 text-white/90 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/30 hover:shadow-lg mb-2"
                                                 onClick={() => setIsProfileDropdownOpen(false)}
                                             >
-                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
-                                                    <i className="fas fa-user"></i>
-                                                </span>
-                                                <span className="font-medium">My Profile</span>
-                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-user text-blue-400"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <span className="font-semibold text-white">My Profile</span>
+                                                    <div className="text-xs text-white/60">View and edit your profile</div>
+                                                </div>
+                                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1">
+                                                    <svg className="h-5 w-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                     </svg>
                                                 </div>
@@ -232,32 +252,59 @@ function Navigation() {
 
                                             <Link
                                                 to="/settings"
-                                                className="flex items-center space-x-4 px-4 py-3 text-white/90 hover:bg-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/20"
+                                                className="flex items-center space-x-4 px-5 py-4 text-white/90 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-white/30 hover:shadow-lg mb-2"
                                                 onClick={() => setIsProfileDropdownOpen(false)}
                                             >
-                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
-                                                    <i className="fas fa-cog"></i>
-                                                </span>
-                                                <span className="font-medium">Settings</span>
-                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-cog text-purple-400"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <span className="font-semibold text-white">Settings</span>
+                                                    <div className="text-xs text-white/60">Preferences and configuration</div>
+                                                </div>
+                                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1">
+                                                    <svg className="h-5 w-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                     </svg>
                                                 </div>
                                             </Link>
 
-                                            <hr className="my-3 border-white/20" />
+                                            {/* Notifications with enhanced badge */}
+                                            <Link
+                                                to="/notifications"
+                                                className="flex items-center space-x-4 px-5 py-4 text-white/90 hover:bg-gradient-to-r hover:from-yellow-500/10 hover:to-orange-500/10 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-yellow-400/20 hover:shadow-lg mb-2"
+                                                onClick={() => setIsProfileDropdownOpen(false)}
+                                            >
+                                                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl border border-yellow-400/30 group-hover:scale-110 transition-transform duration-300 relative">
+                                                    <i className="fas fa-bell text-yellow-400 group-hover:text-yellow-300"></i>
+                                                    {/* Notification badge - removed fake data */}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <span className="font-semibold text-white group-hover:text-yellow-100">Notifications</span>
+                                                    <div className="text-xs text-white/60 group-hover:text-yellow-200/80">View your notifications</div>
+                                                </div>
+                                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1">
+                                                    <svg className="h-5 w-5 text-white/70 group-hover:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
+                                            </Link>
+
+                                            <hr className="my-4 border-white/25" />
 
                                             <button
                                                 onClick={handleLogout}
-                                                className="w-full flex items-center space-x-4 px-4 py-3 text-red-300 hover:bg-red-500/20 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-red-300/30"
+                                                className="w-full flex items-center space-x-4 px-5 py-4 text-red-300 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-pink-500/20 rounded-2xl transition-all duration-300 group backdrop-blur-sm hover:backdrop-blur-md border border-transparent hover:border-red-300/40 hover:shadow-lg"
                                             >
-                                                <span className="text-lg group-hover:scale-110 transition-transform duration-300">
-                                                    <i className="fas fa-sign-out-alt"></i>
-                                                </span>
-                                                <span className="font-medium">Sign Out</span>
-                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-xl border border-red-400/30 group-hover:scale-110 transition-transform duration-300">
+                                                    <i className="fas fa-sign-out-alt text-red-400"></i>
+                                                </div>
+                                                <div className="flex-1 text-left">
+                                                    <span className="font-semibold text-red-300">Sign Out</span>
+                                                    <div className="text-xs text-red-300/70">End your session securely</div>
+                                                </div>
+                                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1">
+                                                    <svg className="h-5 w-5 text-red-300/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                     </svg>
                                                 </div>

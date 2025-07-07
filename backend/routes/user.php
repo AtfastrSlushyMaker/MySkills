@@ -3,6 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Profile management routes (authenticated user only) - MUST come before resource routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::put('users/profile', [App\Http\Controllers\UserController::class, 'updateProfile']);
+    Route::post('users/change-password', [App\Http\Controllers\UserController::class, 'changePassword']);
+});
 
 Route::apiResource('users', App\Http\Controllers\UserController::class);
 

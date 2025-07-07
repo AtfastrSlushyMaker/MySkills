@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import GlassmorphismBackground from '../components/GlassmorphismBackground'
 
 function SignUpPage() {
     const { register } = useAuth()
@@ -11,6 +12,7 @@ function SignUpPage() {
         firstName: '',
         lastName: '',
         email: '',
+        phone: '',
         password: '',
         confirmPassword: '',
         role: 'trainee', // default role
@@ -54,6 +56,10 @@ function SignUpPage() {
             newErrors.email = 'Email is invalid'
         }
 
+        if (formData.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+            newErrors.phone = 'Phone number is invalid'
+        }
+
         if (!formData.password) {
             newErrors.password = 'Password is required'
         } else if (formData.password.length < 8) {
@@ -90,6 +96,7 @@ function SignUpPage() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
+            phone: formData.phone || null,
             password: formData.password,
             password_confirmation: formData.confirmPassword,
             role: formData.role,
@@ -108,7 +115,8 @@ function SignUpPage() {
                 Object.keys(result.errors).forEach(key => {
                     // Convert Laravel field names back to frontend field names
                     const frontendKey = key === 'first_name' ? 'firstName' :
-                        key === 'last_name' ? 'lastName' : key
+                        key === 'last_name' ? 'lastName' :
+                            key === 'phone' ? 'phone' : key
                     backendErrors[frontendKey] = result.errors[key][0] // Take first error message
                 })
                 setErrors(backendErrors)
@@ -126,279 +134,342 @@ function SignUpPage() {
     ]
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20 py-12">
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-4 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-                <div className="absolute -top-4 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '4s' }}></div>
-            </div>
+        <div className="min-h-screen pt-20 pb-8">
+            <GlassmorphismBackground />
 
-            <div className="relative max-w-md w-full mx-4">
-                {/* Signup Card */}
-                <div className="p-8 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 shadow-2xl">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl border border-white/30">
-                            <span className="text-2xl">🎓</span>
+            <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold text-white mb-4">
+                        <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                            Join MySkills
+                        </span>
+                    </h1>
+                    <p className="text-white/80 text-lg">
+                        Create your account and start your learning journey
+                    </p>
+                </div>
+
+                {/* Registration Card */}
+                <div className="bg-white/10 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+                    {/* Header Section */}
+                    <div className="relative p-8 bg-gradient-to-br from-purple-500/25 via-blue-500/20 to-indigo-500/25 border-b border-white/20">
+                        <div className="text-center">
+                            <div className="h-20 w-20 mx-auto mb-4 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-2xl border-2 border-white/40">
+                                <i className="fas fa-rocket"></i>
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-2">
+                                Create Your Account
+                            </h2>
+                            <p className="text-white/80">Start your learning journey with us today</p>
                         </div>
-                        <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
-                            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                Join MySkills
-                            </span>
-                        </h1>
-                        <p className="text-white/80 drop-shadow-sm">Create your account and start your learning journey</p>
                     </div>
 
-                    {/* Signup Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* API Error Display */}
-                        {apiError && (
-                            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                                <span className="mr-2">⚠️</span>
-                                {apiError}
-                            </div>
-                        )}
-
-                        {/* Name Fields */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">
-                                    First Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    name="firstName"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    placeholder="John"
-                                    className={`
-                                        w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 
-                                        focus:outline-none focus:ring-2 transition-all duration-300
-                                        ${errors.firstName
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-white/20 focus:ring-blue-500 focus:border-blue-500'
-                                        }
-                                    `}
-                                />
-                                {errors.firstName && (
-                                    <p className="mt-1 text-xs text-red-400">{errors.firstName}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Last Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    placeholder="Doe"
-                                    className={`
-                                        w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 
-                                        focus:outline-none focus:ring-2 transition-all duration-300
-                                        ${errors.lastName
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-white/20 focus:ring-blue-500 focus:border-blue-500'
-                                        }
-                                    `}
-                                />
-                                {errors.lastName && (
-                                    <p className="mt-1 text-xs text-red-400">{errors.lastName}</p>
-                                )}
+                    {/* Messages */}
+                    {apiError && (
+                        <div className="mx-8 mt-6 p-4 bg-red-500/20 backdrop-blur-sm border border-red-500/30 rounded-2xl">
+                            <div className="flex items-center">
+                                <i className="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                                <span className="text-red-200">{apiError}</span>
                             </div>
                         </div>
+                    )}
 
-                        {/* Email Field */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="john.doe@example.com"
-                                    className={`
-                                        w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 
-                                        focus:outline-none focus:ring-2 transition-all duration-300
-                                        ${errors.email
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-white/20 focus:ring-blue-500 focus:border-blue-500'
-                                        }
-                                    `}
-                                />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <span className="text-gray-400">📧</span>
+                    {/* Form Section */}
+                    <div className="p-8">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Personal Information */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <div className="h-10 w-10 bg-gradient-to-br from-blue-400/30 to-purple-400/30 backdrop-blur-sm rounded-2xl border border-blue-400/30 flex items-center justify-center">
+                                        <i className="fas fa-user text-blue-400"></i>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-white">Personal Information</h3>
                                 </div>
-                            </div>
-                            {errors.email && (
-                                <p className="mt-1 text-sm text-red-400 flex items-center">
-                                    <span className="mr-1">⚠️</span>
-                                    {errors.email}
-                                </p>
-                            )}
-                        </div>
 
-                        {/* Role Selection */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-3">
-                                I want to join as:
-                            </label>
-                            <div className="space-y-2">
-                                {roleOptions.map((role) => (
-                                    <label key={role.value} className="flex items-center p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* First Name */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            First Name *
+                                        </label>
                                         <input
-                                            type="radio"
-                                            name="role"
-                                            value={role.value}
-                                            checked={formData.role === role.value}
+                                            type="text"
+                                            name="firstName"
+                                            value={formData.firstName}
                                             onChange={handleChange}
-                                            className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 focus:ring-blue-500 focus:ring-2"
+                                            placeholder="Enter your first name"
+                                            className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.firstName ? 'border-red-500/50 bg-red-500/10' : ''
+                                                }`}
                                         />
-                                        <div className="ml-3">
-                                            <div className="text-white font-medium">{role.label}</div>
-                                            <div className="text-gray-400 text-sm">{role.description}</div>
+                                        {errors.firstName && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.firstName}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Last Name */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            Last Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleChange}
+                                            placeholder="Enter your last name"
+                                            className={`w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.lastName ? 'border-red-500/50 bg-red-500/10' : ''
+                                                }`}
+                                        />
+                                        {errors.lastName && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.lastName}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Email */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            Email Address *
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                placeholder="your.email@example.com"
+                                                className={`w-full px-4 py-3 pl-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.email ? 'border-red-500/50 bg-red-500/10' : ''
+                                                    }`}
+                                            />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                                <i className="fas fa-envelope text-white/60"></i>
+                                            </div>
                                         </div>
+                                        {errors.email && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.email}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            Phone Number <span className="text-white/60 text-xs">(Optional)</span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="tel"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleChange}
+                                                placeholder="+1 (555) 123-4567"
+                                                className={`w-full px-4 py-3 pl-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.phone ? 'border-red-500/50 bg-red-500/10' : ''
+                                                    }`}
+                                            />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                                <i className="fas fa-phone text-white/60"></i>
+                                            </div>
+                                        </div>
+                                        {errors.phone && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.phone}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Role Selection */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <div className="h-10 w-10 bg-gradient-to-br from-purple-400/30 to-indigo-400/30 backdrop-blur-sm rounded-2xl border border-purple-400/30 flex items-center justify-center">
+                                        <i className="fas fa-users text-purple-400"></i>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-white">Choose Your Role</h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {roleOptions.map((role) => (
+                                        <label key={role.value} className={`
+                                            relative flex flex-col p-6 rounded-2xl border cursor-pointer transition-all duration-300 backdrop-blur-sm
+                                            ${formData.role === role.value
+                                                ? 'border-blue-400/50 bg-blue-500/20 shadow-lg shadow-blue-500/20'
+                                                : 'border-white/20 bg-white/10 hover:border-white/30 hover:bg-white/15'
+                                            }
+                                        `}>
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={role.value}
+                                                checked={formData.role === role.value}
+                                                onChange={handleChange}
+                                                className="sr-only"
+                                            />
+                                            <div className="text-center">
+                                                <div className="text-3xl mb-3">
+                                                    {role.value === 'trainee' && <i className="fas fa-user-graduate text-green-400"></i>}
+                                                    {role.value === 'trainer' && <i className="fas fa-chalkboard-teacher text-blue-400"></i>}
+                                                    {role.value === 'coordinator' && <i className="fas fa-user-tie text-purple-400"></i>}
+                                                </div>
+                                                <div className="font-semibold text-white mb-2">
+                                                    {role.label.split(' ').slice(1).join(' ')}
+                                                </div>
+                                                <div className="text-sm text-white/70">{role.description}</div>
+                                            </div>
+                                            {formData.role === role.value && (
+                                                <div className="absolute top-3 right-3 h-6 w-6 bg-blue-400 rounded-full flex items-center justify-center border border-white/20">
+                                                    <i className="fas fa-check text-white text-xs"></i>
+                                                </div>
+                                            )}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Security */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <div className="h-10 w-10 bg-gradient-to-br from-green-400/30 to-teal-400/30 backdrop-blur-sm rounded-2xl border border-green-400/30 flex items-center justify-center">
+                                        <i className="fas fa-shield-alt text-green-400"></i>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-white">Account Security</h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Password */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            Password *
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                placeholder="Create a strong password"
+                                                className={`w-full px-4 py-3 pl-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.password ? 'border-red-500/50 bg-red-500/10' : ''
+                                                    }`}
+                                            />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                                <i className="fas fa-lock text-white/60"></i>
+                                            </div>
+                                        </div>
+                                        {errors.password && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.password}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Confirm Password */}
+                                    <div>
+                                        <label className="block text-white/90 text-sm font-semibold mb-2">
+                                            Confirm Password *
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="password"
+                                                name="confirmPassword"
+                                                value={formData.confirmPassword}
+                                                onChange={handleChange}
+                                                placeholder="Confirm your password"
+                                                className={`w-full px-4 py-3 pl-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-blue-400/50 focus:bg-white/15 transition-all duration-300 ${errors.confirmPassword ? 'border-red-500/50 bg-red-500/10' : ''
+                                                    }`}
+                                            />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                                <i className="fas fa-lock text-white/60"></i>
+                                            </div>
+                                        </div>
+                                        {errors.confirmPassword && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center">
+                                                <i className="fas fa-exclamation-circle mr-2"></i>
+                                                {errors.confirmPassword}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Terms Agreement */}
+                            <div className="space-y-4">
+                                <div className="flex items-start space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                                    <input
+                                        type="checkbox"
+                                        id="agreeToTerms"
+                                        name="agreeToTerms"
+                                        checked={formData.agreeToTerms}
+                                        onChange={handleChange}
+                                        className="mt-1 w-4 h-4 text-blue-600 bg-white/10 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
+                                    />
+                                    <label htmlFor="agreeToTerms" className="text-sm text-white/90">
+                                        I agree to the{' '}
+                                        <Link to="/terms" className="text-blue-400 hover:text-blue-300 font-medium">
+                                            Terms of Service
+                                        </Link>{' '}
+                                        and{' '}
+                                        <Link to="/privacy" className="text-blue-400 hover:text-blue-300 font-medium">
+                                            Privacy Policy
+                                        </Link>
                                     </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Password Fields */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Create a strong password"
-                                    className={`
-                                        w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 
-                                        focus:outline-none focus:ring-2 transition-all duration-300
-                                        ${errors.password
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-white/20 focus:ring-blue-500 focus:border-blue-500'
-                                        }
-                                    `}
-                                />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <span className="text-gray-400">🔒</span>
                                 </div>
+                                {errors.agreeToTerms && (
+                                    <p className="text-sm text-red-400 flex items-center">
+                                        <i className="fas fa-exclamation-circle mr-2"></i>
+                                        {errors.agreeToTerms}
+                                    </p>
+                                )}
                             </div>
-                            {errors.password && (
-                                <p className="mt-1 text-sm text-red-400 flex items-center">
-                                    <span className="mr-1">⚠️</span>
-                                    {errors.password}
-                                </p>
-                            )}
-                        </div>
 
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                                Confirm Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    placeholder="Confirm your password"
-                                    className={`
-                                        w-full px-4 py-3 rounded-lg bg-white/10 border text-white placeholder-gray-400 
-                                        focus:outline-none focus:ring-2 transition-all duration-300
-                                        ${errors.confirmPassword
-                                            ? 'border-red-500 focus:ring-red-500'
-                                            : 'border-white/20 focus:ring-blue-500 focus:border-blue-500'
-                                        }
-                                    `}
-                                />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <span className="text-gray-400">🔐</span>
-                                </div>
-                            </div>
-                            {errors.confirmPassword && (
-                                <p className="mt-1 text-sm text-red-400 flex items-center">
-                                    <span className="mr-1">⚠️</span>
-                                    {errors.confirmPassword}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Terms Agreement */}
-                        <div>
-                            <label className="flex items-start">
-                                <input
-                                    type="checkbox"
-                                    name="agreeToTerms"
-                                    checked={formData.agreeToTerms}
-                                    onChange={handleChange}
-                                    className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2 mt-1"
-                                />
-                                <span className="ml-3 text-sm text-gray-300">
-                                    I agree to the{' '}
-                                    <Link to="/terms" className="text-blue-400 hover:text-blue-300">
-                                        Terms of Service
-                                    </Link>{' '}
-                                    and{' '}
-                                    <Link to="/privacy" className="text-blue-400 hover:text-blue-300">
-                                        Privacy Policy
-                                    </Link>
-                                </span>
-                            </label>
-                            {errors.agreeToTerms && (
-                                <p className="mt-1 text-sm text-red-400 flex items-center">
-                                    <span className="mr-1">⚠️</span>
-                                    {errors.agreeToTerms}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className={`
-                                w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 
-                                ${isLoading
-                                    ? 'bg-gray-600 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg hover:scale-105'
-                                }
-                            `}
-                        >
-                            {isLoading ? (
-                                <div className="flex items-center justify-center">
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                                    Creating account...
-                                </div>
-                            ) : (
-                                'Create Account'
-                            )}
-                        </button>
-                    </form>
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className={`
+                                    w-full py-4 px-6 rounded-2xl text-white font-semibold text-lg
+                                    transition-all duration-300 transform backdrop-blur-sm border
+                                    ${isLoading
+                                        ? 'bg-gray-600/50 border-gray-500/30 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/30 hover:from-blue-500/30 hover:to-purple-500/30 hover:scale-105 active:scale-95'
+                                    }
+                                `}
+                            >
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center space-x-2">
+                                        <i className="fas fa-spinner animate-spin"></i>
+                                        <span>Creating your account...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center space-x-2">
+                                        <i className="fas fa-rocket"></i>
+                                        <span>Create My Account</span>
+                                    </div>
+                                )}
+                            </button>
+                        </form>
+                    </div>
 
                     {/* Footer */}
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-400">
+                    <div className="bg-white/5 backdrop-blur-sm px-8 py-6 text-center border-t border-white/20">
+                        <p className="text-white/80">
                             Already have an account?{' '}
                             <Link
                                 to="/login"
-                                className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300"
+                                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300"
                             >
-                                Sign in here
+                                Sign in here <i className="fas fa-arrow-right ml-1"></i>
                             </Link>
                         </p>
                     </div>

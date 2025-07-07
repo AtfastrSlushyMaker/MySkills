@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { setAuthToken } from '../services/api'
 
 const AuthContext = createContext()
 
@@ -6,6 +7,11 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [token, setToken] = useState(localStorage.getItem('auth_token'))
+
+    // Set auth token in API service whenever token changes
+    useEffect(() => {
+        setAuthToken(token)
+    }, [token])
 
     // Check if user is authenticated on app start
     useEffect(() => {
@@ -119,6 +125,10 @@ export function AuthProvider({ children }) {
         }
     }
 
+    const updateUser = (userData) => {
+        setUser(userData)
+    }
+
     const value = {
         user,
         token,
@@ -126,6 +136,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
         isTrainer: user?.role === 'trainer',

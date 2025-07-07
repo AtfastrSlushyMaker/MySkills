@@ -3,8 +3,12 @@ import { Routes, Route } from 'react-router-dom'
 // Import page components
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import SignUpPage from './pages/SignUpPage'
 import DashboardPage from './pages/DashboardPage'
 import CoursesPage from './pages/CoursesPage'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
+import NotificationsPage from './pages/NotificationsPage'
 
 // Import navigation component
 import Navigation from './components/Navigation'
@@ -32,8 +36,12 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             {/* 404 page for unknown routes */}
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center">

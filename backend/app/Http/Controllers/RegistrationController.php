@@ -63,4 +63,112 @@ class RegistrationController extends Controller
         $registration->delete();
         return response()->json(null, 204);
     }
+
+    /**
+     * Approve a registration (Coordinator function)
+     */
+    public function approve(Registration $registration)
+    {
+        if($registration->trainingSession->coordinator_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'You are not authorized to approve this registration'
+            ], Response::HTTP_FORBIDDEN);
+        }
+        $registration->status = RegistrationStatus::CONFIRMED;
+        $registration->save();
+
+        return response()->json([
+            'message' => 'Registration approved successfully',
+            'registration' => $registration->load(['user', 'trainingSession'])
+        ], 200);
+    }
+
+    /**
+     * Reject a registration (Coordinator function)
+     */
+    public function reject(Registration $registration)
+    {
+        if($registration->trainingSession->coordinator_id !== auth()->id()) {
+            return response()->json([
+                'message' => 'You are not authorized to reject this registration'
+            ], Response::HTTP_FORBIDDEN);
+        }
+        $registration->status = RegistrationStatus::CANCELLED;
+        $registration->save();
+
+        return response()->json([
+            'message' => 'Registration rejected',
+            'registration' => $registration->load(['user', 'trainingSession'])
+        ], 200);
+    }
+
+    /**
+     * Get all pending registrations for coordinator review
+     */
+    public function pending()
+    {
+        $pendingRegistrations = Registration::with(['user', 'trainingSession.category'])
+            ->where('status', RegistrationStatus::PENDING)
+            ->whereHas('trainingSession', function($query) {
+        $query->where('coordinator_id', auth()->id());
+    })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Pending registrations retrieved successfully',
+            'registrations' => $pendingRegistrations,
+            'count' => $pendingRegistrations->count()
+        ], 200);
+    }
+
+    /**
+     * Get registrations for a specific training session
+     */
+    public function bySession($sessionId)
+    {
+        $registrations = Registration::with(['user'])
+            ->where('training_session_id', $sessionId)
+            ->whereHas('trainingSession', function($query) {
+        $query->where('coordinator_id', auth()->id());
+    })
+            ->get();
+
+        return response()->json([
+            'message' => 'Session registrations retrieved successfully',
+            'registrations' => $registrations,
+            'count' => $registrations->count()
+        ], 200);
+    }
+
+    /**
+     * Get registration statistics for coordinator dashboard
+     */
+    public function stats()
+{
+    $coordinatorId = auth()->id();
+
+    $stats = [
+        'total' => Registration::whereHas('trainingSession', function($query) use ($coordinatorId) {
+            $query->where('coordinator_id', $coordinatorId);
+        })->count(),
+
+        'pending' => Registration::whereHas('trainingSession', function($query) use ($coordinatorId) {
+            $query->where('coordinator_id', $coordinatorId);
+        })->where('status', RegistrationStatus::PENDING)->count(),
+
+        'confirmed' => Registration::whereHas('trainingSession', function($query) use ($coordinatorId) {
+            $query->where('coordinator_id', $coordinatorId);
+        })->where('status', RegistrationStatus::CONFIRMED)->count(),
+
+        'cancelled' => Registration::whereHas('trainingSession', function($query) use ($coordinatorId) {
+            $query->where('coordinator_id', $coordinatorId);
+        })->where('status', RegistrationStatus::CANCELLED)->count(),
+    ];
+
+    return response()->json([
+        'message' => 'Registration statistics retrieved successfully',
+        'stats' => $stats
+    ], 200);
+}
 }

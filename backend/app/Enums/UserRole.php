@@ -36,7 +36,7 @@ enum UserRole: string
     public function canCreateCourses(): bool
     {
         return match($this) {
-            self::ADMIN, self::COORDINATOR => true,
+            self::ADMIN, self::TRAINER => true,
             default => false,
         };
     }
@@ -56,6 +56,39 @@ enum UserRole: string
     {
         return match($this) {
             self::TRAINER, self::ADMIN => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if role can create and manage training sessions
+     */
+    public function canManageSessions(): bool
+    {
+        return match($this) {
+            self::ADMIN, self::COORDINATOR => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if role can manage registrations
+     */
+    public function canManageRegistrations(): bool
+    {
+        return match($this) {
+            self::ADMIN, self::COORDINATOR => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Check if role can assign trainers to sessions
+     */
+    public function canAssignTrainers(): bool
+    {
+        return match($this) {
+            self::ADMIN, self::COORDINATOR => true,
             default => false,
         };
     }

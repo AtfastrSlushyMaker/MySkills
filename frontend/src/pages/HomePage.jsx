@@ -1,4 +1,79 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom'
+
 function HomePage() {
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:8000/api/categories');
+            if (!response.ok) {
+                throw new Error('Failed to fetch categories');
+            }
+            const data = await response.json();
+            setCategories(data.filter(category => category.is_active));
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching categories:', err);
+            // Fallback to hardcoded data if API fails
+            setCategories([
+                { id: 1, name: 'Software Development', description: 'Master modern programming languages and development frameworks', is_active: 1 },
+                { id: 2, name: 'Data Science & Analytics', description: 'Learn data analysis, machine learning, and business intelligence', is_active: 1 },
+                { id: 3, name: 'Cloud Computing', description: 'Build scalable applications using cloud platforms and services', is_active: 1 },
+                { id: 4, name: 'Digital Marketing', description: 'Drive business growth through strategic digital marketing', is_active: 1 },
+                { id: 5, name: 'Project Management', description: 'Lead teams and deliver projects using agile methodologies', is_active: 1 },
+                { id: 6, name: 'Cybersecurity', description: 'Protect organizations from cyber threats and vulnerabilities', is_active: 1 },
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Icon mapping for categories
+    const getCategoryIcon = (categoryName) => {
+        const iconMap = {
+            'Software Development': 'fa-code',
+            'Data Science & Analytics': 'fa-chart-bar',
+            'Cloud Computing': 'fa-cloud',
+            'Digital Marketing': 'fa-bullhorn',
+            'Project Management': 'fa-tasks',
+            'Cybersecurity': 'fa-shield-alt',
+            'Artificial Intelligence': 'fa-brain',
+            'Mobile Development': 'fa-mobile-alt',
+            'Web Design & UX': 'fa-palette',
+            'Business Analytics': 'fa-chart-line',
+            'DevOps & Infrastructure': 'fa-cogs',
+            'Database Management': 'fa-database',
+        };
+        return iconMap[categoryName] || 'fa-code';
+    };
+
+    // Color schemes for categories
+    const getCategoryGradient = (index) => {
+        const gradients = [
+            'from-cyan-500 to-blue-600',
+            'from-purple-500 to-pink-600',
+            'from-emerald-500 to-cyan-600',
+            'from-orange-500 to-red-600',
+            'from-indigo-500 to-purple-600',
+            'from-blue-500 to-indigo-600',
+            'from-green-500 to-teal-600',
+            'from-pink-500 to-red-600',
+            'from-yellow-500 to-orange-600',
+            'from-violet-500 to-purple-600',
+            'from-teal-500 to-green-600',
+            'from-red-500 to-pink-600',
+        ];
+        return gradients[index % gradients.length];
+    };
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Stunning Hero Section */}
@@ -40,32 +115,31 @@ function HomePage() {
                         {/* Key Benefits */}
                         <div className="flex flex-wrap justify-center gap-4 mb-12">
                             <div className="bg-white/10 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/20 text-white/90">
-                                <span className="text-cyan-400">✨</span> Expert-Led Courses
+                                <i className="fas fa-star text-cyan-400 mr-2"></i> Expert-Led Courses
                             </div>
                             <div className="bg-white/10 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/20 text-white/90">
-                                <span className="text-purple-400">🏆</span> Industry Certifications
+                                <i className="fas fa-certificate text-purple-400 mr-2"></i> Industry Certifications
                             </div>
                             <div className="bg-white/10 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/20 text-white/90">
-                                <span className="text-pink-400">🚀</span> Career Advancement
+                                <i className="fas fa-rocket text-pink-400 mr-2"></i> Career Advancement
                             </div>
                         </div>
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                            <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25">
-                                <span className="relative z-10">Start Learning Today</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            </button>
-                            <button className="px-12 py-5 text-lg font-semibold text-white bg-white/10 backdrop-blur-2xl hover:bg-white/20 border border-white/30 hover:border-white/50 rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl">
-                                Watch Demo
-                            </button>
+                            <Link to="/login" >
+                                <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25">
+                                    <span className="relative z-10">Start Learning Today</span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </button>
+                            </Link>
                         </div>
 
                         {/* Trust Indicators */}
                         <div className="mt-16 pt-8 border-t border-white/20">
                             <p className="text-white/60 text-sm mb-6">Trusted by professionals at</p>
                             <div className="flex flex-wrap justify-center items-center gap-8">
-                                {['Microsoft', 'Google', 'Amazon', 'Apple', 'Meta', 'Tesla'].map((company) => (
+                                {['Microsoft', 'Google', 'Amazon', 'IBM', 'Oracle', 'Salesforce'].map((company) => (
                                     <div key={company} className="bg-white/5 backdrop-blur-xl px-6 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white/90 hover:bg-white/10 transition-all duration-300">
                                         {company}
                                     </div>
@@ -80,14 +154,14 @@ function HomePage() {
                     <div className="max-w-6xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                             {[
-                                { value: '50K+', label: 'Students Trained', icon: '👥', color: 'cyan' },
-                                { value: '200+', label: 'Expert Courses', icon: '📚', color: 'purple' },
-                                { value: '98%', label: 'Success Rate', icon: '🎯', color: 'pink' },
-                                { value: '24/7', label: 'Support', icon: '🤝', color: 'emerald' }
+                                { value: '25,000+', label: 'Students Enrolled', icon: 'fa-users', color: 'cyan' },
+                                { value: '150+', label: 'Professional Courses', icon: 'fa-graduation-cap', color: 'purple' },
+                                { value: `${categories.length}+`, label: 'Learning Categories', icon: 'fa-chart-line', color: 'pink' },
+                                { value: '24/7', label: 'Learning Support', icon: 'fa-headset', color: 'emerald' }
                             ].map((stat, index) => (
                                 <div key={index} className="text-center group">
                                     <div className={`w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
-                                        <span className="text-3xl">{stat.icon}</span>
+                                        <i className={`fas ${stat.icon} text-2xl text-${stat.color}-400`}></i>
                                     </div>
                                     <div className={`text-4xl font-black mb-2 text-${stat.color}-400`}>{stat.value}</div>
                                     <div className="text-white/70 font-medium">{stat.label}</div>
@@ -109,135 +183,51 @@ function HomePage() {
                             <p className="text-xl text-white/80 max-w-3xl mx-auto">
                                 Choose from our expertly crafted learning paths designed to accelerate your career
                             </p>
+                            {error && (
+                                <div className="mt-4 p-4 bg-red-500/20 backdrop-blur-xl rounded-xl border border-red-500/30 text-red-200 max-w-md mx-auto">
+                                    <i className="fas fa-exclamation-triangle mr-2"></i>
+                                    Unable to load latest categories. Showing popular paths.
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[
-                                {
-                                    title: 'Tech Leadership',
-                                    description: 'Master technical leadership, architecture design, and team management',
-                                    icon: '⚡',
-                                    gradient: 'from-cyan-500 to-blue-600',
-                                    features: ['System Design', 'Team Leadership', 'Strategic Planning']
-                                },
-                                {
-                                    title: 'Full-Stack Development',
-                                    description: 'Build modern web applications with cutting-edge technologies',
-                                    icon: '💻',
-                                    gradient: 'from-purple-500 to-pink-600',
-                                    features: ['React & Vue', 'Node.js & Python', 'Cloud Deployment']
-                                },
-                                {
-                                    title: 'Data Science & AI',
-                                    description: 'Harness the power of data and artificial intelligence',
-                                    icon: '🧠',
-                                    gradient: 'from-emerald-500 to-cyan-600',
-                                    features: ['Machine Learning', 'Data Analysis', 'AI Implementation']
-                                },
-                                {
-                                    title: 'Digital Marketing',
-                                    description: 'Drive growth through strategic digital marketing campaigns',
-                                    icon: '📈',
-                                    gradient: 'from-orange-500 to-red-600',
-                                    features: ['SEO & SEM', 'Social Media', 'Analytics']
-                                },
-                                {
-                                    title: 'Product Management',
-                                    description: 'Lead product strategy and drive business outcomes',
-                                    icon: '🎯',
-                                    gradient: 'from-indigo-500 to-purple-600',
-                                    features: ['Product Strategy', 'User Research', 'Agile Methods']
-                                },
-                                {
-                                    title: 'Cloud Architecture',
-                                    description: 'Design and deploy scalable cloud infrastructure',
-                                    icon: '☁️',
-                                    gradient: 'from-blue-500 to-indigo-600',
-                                    features: ['AWS & Azure', 'DevOps', 'Security']
-                                }
-                            ].map((path, index) => (
-                                <div key={index} className="group relative">
-                                    <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-xl" style={{ background: `linear-gradient(135deg, ${path.gradient.replace('from-', '').replace(' to-', ', ')})` }}></div>
-                                    <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 hover:border-white/40 transition-all duration-500 group-hover:scale-105 shadow-xl">
-                                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${path.gradient} flex items-center justify-center mb-6 shadow-lg`}>
-                                            <span className="text-3xl">{path.icon}</span>
-                                        </div>
-                                        <h3 className="text-2xl font-bold text-white mb-4">{path.title}</h3>
-                                        <p className="text-white/70 mb-6 leading-relaxed">{path.description}</p>
-                                        <ul className="space-y-2">
-                                            {path.features.map((feature, i) => (
-                                                <li key={i} className="text-white/80 flex items-center">
-                                                    <span className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full mr-3"></span>
-                                                    {feature}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <button className="mt-6 w-full py-3 px-6 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300">
-                                            Explore Path
-                                        </button>
+                            {loading ? (
+                                // Loading state
+                                Array.from({ length: 6 }).map((_, index) => (
+                                    <div key={index} className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 animate-pulse h-80">
+                                        <div className="w-16 h-16 rounded-2xl bg-gray-400/20 mb-6"></div>
+                                        <div className="h-6 bg-gray-400/20 rounded mb-4"></div>
+                                        <div className="h-20 bg-gray-400/20 rounded mb-6"></div>
+                                        <div className="h-12 bg-gray-400/20 rounded"></div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                categories.map((category, index) => {
+                                    const gradient = getCategoryGradient(index);
+                                    const icon = getCategoryIcon(category.name);
+
+                                    return (
+                                        <div key={category.id} className="group relative">
+                                            <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-xl" style={{ background: `linear-gradient(135deg, ${gradient.replace('from-', '').replace(' to-', ', ')})` }}></div>
+                                            <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 hover:border-white/40 transition-all duration-500 group-hover:scale-105 shadow-xl h-80 flex flex-col">
+                                                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${gradient} flex items-center justify-center mb-6 shadow-lg`}>
+                                                    <i className={`fas ${icon} text-2xl text-white`}></i>
+                                                </div>
+                                                <h3 className="text-2xl font-bold text-white mb-4">{category.name}</h3>
+                                                <p className="text-white/70 leading-relaxed text-sm flex-grow">{category.description}</p>
+                                                <button className="mt-6 w-full py-3 px-6 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300">
+                                                    Explore Path
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </section>
 
-                {/* Testimonials Section */}
-                <section className="py-24 px-6">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-20">
-                            <h2 className="text-5xl font-black mb-6">
-                                <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                    Success Stories
-                                </span>
-                            </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {[
-                                {
-                                    name: 'Sarah Chen',
-                                    role: 'Senior Developer at Google',
-                                    image: '👩‍💻',
-                                    quote: 'MySkills Academy transformed my career. The hands-on approach and expert mentorship helped me land my dream job.',
-                                    course: 'Full-Stack Development'
-                                },
-                                {
-                                    name: 'Marcus Rodriguez',
-                                    role: 'Product Manager at Meta',
-                                    image: '👨‍💼',
-                                    quote: 'The product management course gave me the skills and confidence to lead cross-functional teams effectively.',
-                                    course: 'Product Management'
-                                },
-                                {
-                                    name: 'Emily Watson',
-                                    role: 'Data Scientist at Microsoft',
-                                    image: '👩‍🔬',
-                                    quote: 'From zero to data scientist in 6 months. The curriculum is perfectly structured for career changers.',
-                                    course: 'Data Science & AI'
-                                }
-                            ].map((testimonial, index) => (
-                                <div key={index} className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 hover:border-white/40 transition-all duration-500 hover:scale-105 shadow-xl">
-                                    <div className="text-center mb-6">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-cyan-400/20 to-purple-400/20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl border border-white/20">
-                                            {testimonial.image}
-                                        </div>
-                                        <h4 className="text-xl font-bold text-white">{testimonial.name}</h4>
-                                        <p className="text-cyan-400 font-medium">{testimonial.role}</p>
-                                    </div>
-                                    <blockquote className="text-white/80 italic mb-4 leading-relaxed">
-                                        "{testimonial.quote}"
-                                    </blockquote>
-                                    <div className="text-center">
-                                        <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text font-semibold">
-                                            {testimonial.course}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
 
                 {/* CTA Section */}
                 <section className="py-24 px-6">
@@ -256,20 +246,21 @@ function HomePage() {
                                     Join thousands of professionals who have accelerated their careers with MySkills Academy
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                                    <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25">
-                                        <span className="relative z-10">Start Your Journey</span>
-                                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    </button>
-                                    <button className="px-12 py-5 text-lg font-semibold text-white bg-white/10 backdrop-blur-2xl hover:bg-white/20 border border-white/30 hover:border-white/50 rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl">
-                                        Free Trial
-                                    </button>
+                                    <Link to="/signup" >
+
+                                        <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25" >
+                                            <span className="relative z-10">Start Your Journey</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        </button>
+                                    </Link>
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
 

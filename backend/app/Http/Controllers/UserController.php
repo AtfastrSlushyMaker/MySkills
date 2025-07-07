@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 use App\Enums\UserStatus;
 use App\Enums\UserRole;
 
@@ -88,4 +89,77 @@ class UserController extends Controller
         $user->save();
         return response()->json(['message' => 'User set to inactive', 'user' => $user], 200);
     }
+
+    /**
+     * Reactivate the specified user account.
+     */
+    public function reactivate(User $user)
+
+    {
+        $user->status= 'active';
+        $user->save();
+        return response()->json(['message' => 'User reactivated', 'user' => $user], 200);
+    }
+
+    /**
+     * Get the current authenticated user.
+     */
+    public function currentUser(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+        return response()->json($user, 200);
+    }
+
+    /**
+     * Update the current authenticated user's profile.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'first_name' => 'sometimes|required|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+        return response()->json($user, 200);
+    }
+
+    /**
+     * Change the current authenticated user's password.
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8',
+        ]);
+
+        // Check if current password is correct
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 400);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($validated['new_password'])
+        ]);
+
+        return response()->json(['message' => 'Password updated successfully'], 200);
+    }
+
 }
