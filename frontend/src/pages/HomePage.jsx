@@ -25,12 +25,7 @@ function HomePage() {
             console.error('Error fetching categories:', err);
             // Fallback to hardcoded data if API fails
             setCategories([
-                { id: 1, name: 'Software Development', description: 'Master modern programming languages and development frameworks', is_active: 1 },
-                { id: 2, name: 'Data Science & Analytics', description: 'Learn data analysis, machine learning, and business intelligence', is_active: 1 },
-                { id: 3, name: 'Cloud Computing', description: 'Build scalable applications using cloud platforms and services', is_active: 1 },
-                { id: 4, name: 'Digital Marketing', description: 'Drive business growth through strategic digital marketing', is_active: 1 },
-                { id: 5, name: 'Project Management', description: 'Lead teams and deliver projects using agile methodologies', is_active: 1 },
-                { id: 6, name: 'Cybersecurity', description: 'Protect organizations from cyber threats and vulnerabilities', is_active: 1 },
+                { id: -1, name: 'Error Retriving ', description: 'Error fetching categories', is_active: 0 }
             ]);
         } finally {
             setLoading(false);
