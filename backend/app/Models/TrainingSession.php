@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TrainingSessionStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ class TrainingSession extends Model
 
     protected $fillable = [
         'category_id',
-        'coordinator_id',       
+        'coordinator_id',
         'trainer_id',
         'date',
         'start_time',
@@ -20,7 +21,8 @@ class TrainingSession extends Model
         'location',
         'max_participants',
         'skill_name',
-        'skill_description'
+        'skill_description',
+        'status',
     ];
 
     protected function casts(): array
@@ -30,6 +32,7 @@ class TrainingSession extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'max_participants' => 'integer',
+            'status' => TrainingSessionStatus::class, // enum cast
         ];
     }
 
@@ -79,8 +82,8 @@ class TrainingSession extends Model
         return $this->hasMany(Feedback::class);
     }
 
-    // Computed Status Properties (No enum needed!)
-    public function getStatusAttribute(): string
+    // Computed Status Properties (renamed to avoid conflict with enum cast)
+    public function getComputedStatusAttribute(): string
     {
         $now = now();
         $sessionStart = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->start_time->format('H:i:s'));
@@ -95,9 +98,9 @@ class TrainingSession extends Model
         }
     }
 
-    public function getStatusLabelAttribute(): string
+    public function getComputedStatusLabelAttribute(): string
     {
-        return match($this->status) {
+        return match($this->computed_status) {
             'scheduled' => 'Scheduled',
             'ongoing' => 'Ongoing',
             'completed' => 'Completed',
@@ -105,9 +108,9 @@ class TrainingSession extends Model
         };
     }
 
-    public function getStatusColorAttribute(): string
+    public function getComputedStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match($this->computed_status) {
             'scheduled' => 'blue',
             'ongoing' => 'yellow',
             'completed' => 'green',
@@ -118,17 +121,17 @@ class TrainingSession extends Model
     // Business Logic Methods
     public function isScheduled(): bool
     {
-        return $this->status === 'scheduled';
+        return $this->computed_status === 'scheduled';
     }
 
     public function isOngoing(): bool
     {
-        return $this->status === 'ongoing';
+        return $this->computed_status === 'ongoing';
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->computed_status === 'completed';
     }
 
     public function canBeEdited(): bool
@@ -155,5 +158,11 @@ class TrainingSession extends Model
     public function isFull(): bool
     {
         return $this->available_spots <= 0;
+    }
+
+    // Optionally, add a status enum helper
+    public static function statusOptions()
+    {
+        return ['created', 'confirmed', 'cancelled', 'archived'];
     }
 }

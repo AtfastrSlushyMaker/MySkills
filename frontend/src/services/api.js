@@ -74,6 +74,7 @@ export const trainingSessionApi = {
     createSession: (data) => api.post('/training-sessions', data),
     updateSession: (id, data) => api.put(`/training-sessions/${id}`, data),
     deleteSession: (id) => api.delete(`/training-sessions/${id}`),
+    archiveSession: (id) => api.post(`/training-sessions/${id}/archive`),
 
     getSessionsByTrainer: (trainerId) => api.get(`/training-sessions/trainer/${trainerId}`),
     getSessionsByCoordinator: (coordinatorId) => api.get(`/training-sessions/coordinator/${coordinatorId}`),

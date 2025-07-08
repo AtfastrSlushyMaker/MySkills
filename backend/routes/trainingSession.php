@@ -8,4 +8,5 @@ Route::get('training-sessions/trainer/{trainerId}', [App\Http\Controllers\Traini
 Route::get('training-sessions/coordinator/{coordinatorId}', [App\Http\Controllers\TrainingSessionController::class, 'getSessionsByCoordinator']);
 Route::get('training-sessions/category/{categoryId}', [App\Http\Controllers\TrainingSessionController::class, 'getSessionsByCategory']);
 Route::get('training-sessions/recent-activity/coordinator/{coordinatorId}', [App\Http\Controllers\TrainingSessionController::class, 'RecentActivityByCoordinator']);
+Route::patch('training-sessions/{trainingSession}/archive', [App\Http\Controllers\TrainingSessionController::class, 'archiveByCoordinator']);
 

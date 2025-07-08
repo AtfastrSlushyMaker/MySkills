@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TrainingSession;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Enums\TrainingSessionStatus;
 
 class TrainingSessionController extends Controller
 {
@@ -74,10 +75,22 @@ class TrainingSessionController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Archive (soft-delete) a session by coordinator.
+     */
+    public function archiveByCoordinator(Request $request, TrainingSession $trainingSession)
+    {
+        // Optionally, check if the user is the coordinator (auth logic can be added here)
+        $trainingSession->status = TrainingSessionStatus::ARCHIVED;
+        $trainingSession->save();
+        return response()->json(['message' => 'Session archived successfully.'], 200);
+    }
+
+    /**
+     * Remove the specified resource from storage (admin only).
      */
     public function destroy(TrainingSession $trainingSession)
     {
+        // Optionally, check if the user is admin (auth logic can be added here)
         $trainingSession->delete();
         return response()->json(null, 204);
     }
@@ -128,11 +141,11 @@ class TrainingSessionController extends Controller
         // Add session activities
         foreach ($sessions as $session) {
             $timeDiff = now()->diffInHours($session->updated_at);
-            
+
             // Determine activity type based on session properties
             $activityType = 'session_created';
             $description = 'Created new training session';
-            
+
             if ($session->status === 'confirmed') {
                 $activityType = 'session_confirmed';
                 $description = 'Confirmed training session';
@@ -147,7 +160,7 @@ class TrainingSessionController extends Controller
             $activities->push([
                 'type' => $activityType,
                 'description' => $description,
-                'details' => ($session->category ? $session->category->name : 'Training') . 
+                'details' => ($session->category ? $session->category->name : 'Training') .
                            ' - ' . ($session->trainer ? $session->trainer->name : 'No trainer assigned'),
                 'created_at' => $session->updated_at->toISOString(),
                 'session_id' => $session->id
@@ -158,7 +171,7 @@ class TrainingSessionController extends Controller
         foreach ($registrations as $registration) {
             $activityType = 'registration_approved';
             $description = 'Approved participant registration';
-            
+
             if ($registration->status === 'rejected') {
                 $activityType = 'registration_rejected';
                 $description = 'Rejected registration request';
@@ -170,7 +183,7 @@ class TrainingSessionController extends Controller
             $activities->push([
                 'type' => $activityType,
                 'description' => $description,
-                'details' => ($registration->user ? $registration->user->name : 'Unknown user') . 
+                'details' => ($registration->user ? $registration->user->name : 'Unknown user') .
                            ' - ' . ($registration->trainingSession->category ? $registration->trainingSession->category->name : 'Training'),
                 'created_at' => $registration->updated_at->toISOString(),
                 'session_id' => $registration->training_session_id
@@ -185,4 +198,6 @@ class TrainingSessionController extends Controller
             'activities' => $sortedActivities
         ], 200);
     }
+
+    public function show
 }

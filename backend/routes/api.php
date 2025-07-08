@@ -22,11 +22,6 @@ Route::get('/health', function () {
     ]);
 });
 
-// Protected route example
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
 // Authentication routes
 require __DIR__.'/auth.php';
 

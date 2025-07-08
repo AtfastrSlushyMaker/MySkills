@@ -69,7 +69,7 @@ const SessionManagement = ({ onSessionUpdate }) => {
         setDeleteLoading(sessionToDelete)
         setShowDeleteConfirm(false)
         try {
-            await trainingSessionApi.deleteSession(sessionToDelete)
+            await trainingSessionApi.archiveSession(sessionToDelete)
             await fetchSessions()
             onSessionUpdate?.()
         } catch (error) {
