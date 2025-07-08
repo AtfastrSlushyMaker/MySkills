@@ -28,6 +28,7 @@ class TrainingSessionController extends Controller
             'coordinator_id' => 'required|exists:users,id',
             'trainer_id' => 'required|exists:users,id',
             'date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'location' => 'required|string|max:255',
@@ -35,7 +36,7 @@ class TrainingSessionController extends Controller
             'skill_name' => 'required|string|max:255',
             'skill_description' => 'nullable|string|max:1000',
         ]);
-        
+
         $session = TrainingSession::create($validated);
         return response()->json($session->load(['category', 'trainer', 'coordinator']), 201);
     }
@@ -59,6 +60,7 @@ class TrainingSessionController extends Controller
             'coordinator_id' => 'sometimes|required|exists:users,id',
             'trainer_id' => 'sometimes|required|exists:users,id',
             'date' => 'sometimes|required|date',
+            'end_date' => 'sometimes|nullable|date|after_or_equal:date',
             'start_time' => 'sometimes|required|date_format:H:i',
             'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
             'location' => 'sometimes|required|string|max:255',
@@ -66,7 +68,7 @@ class TrainingSessionController extends Controller
             'skill_name' => 'sometimes|required|string|max:255',
             'skill_description' => 'sometimes|nullable|string|max:1000',
         ]);
-        
+
         $trainingSession->update($validated);
         return response()->json($trainingSession->load(['category', 'trainer', 'coordinator']), 200);
     }
@@ -78,5 +80,109 @@ class TrainingSessionController extends Controller
     {
         $trainingSession->delete();
         return response()->json(null, 204);
+    }
+
+    public function getSessionsByTrainer($trainerId)
+    {
+        $sessions = TrainingSession::where('trainer_id', $trainerId)
+                                    ->with(['category', 'coordinator'])
+                                    ->get();
+        return response()->json($sessions, 200);
+    }
+
+    public function getSessionsByCoordinator($coordinatorId)
+    {
+        $sessions = TrainingSession::where('coordinator_id', $coordinatorId)
+                                    ->with(['category', 'trainer'])
+                                    ->get();
+        return response()->json($sessions, 200);
+    }
+    public function getSessionsByCategory($categoryId)
+    {
+        $sessions = TrainingSession::where('category_id', $categoryId)
+                                    ->with(['trainer', 'coordinator'])
+                                    ->get();
+        return response()->json($sessions, 200);
+    }
+
+    public function RecentActivityByCoordinator(int $coordinatorId)
+    {
+        // Get recent sessions
+        $sessions = TrainingSession::where('coordinator_id', $coordinatorId)
+                                    ->with(['category', 'trainer'])
+                                    ->orderBy('updated_at', 'desc')
+                                    ->take(8)
+                                    ->get();
+
+        // Get recent registrations for coordinator's sessions
+        $registrations = \App\Models\Registration::whereHas('trainingSession', function($query) use ($coordinatorId) {
+                                $query->where('coordinator_id', $coordinatorId);
+                            })
+                            ->with(['trainingSession.category', 'user'])
+                            ->orderBy('updated_at', 'desc')
+                            ->take(5)
+                            ->get();
+
+        $activities = collect();
+
+        // Add session activities
+        foreach ($sessions as $session) {
+            $timeDiff = now()->diffInHours($session->updated_at);
+            
+            // Determine activity type based on session properties
+            $activityType = 'session_created';
+            $description = 'Created new training session';
+            
+            if ($session->status === 'confirmed') {
+                $activityType = 'session_confirmed';
+                $description = 'Confirmed training session';
+            } elseif ($session->status === 'cancelled') {
+                $activityType = 'session_cancelled';
+                $description = 'Cancelled training session';
+            } elseif ($timeDiff < 48 && $session->created_at != $session->updated_at) {
+                $activityType = 'session_updated';
+                $description = 'Updated session details';
+            }
+
+            $activities->push([
+                'type' => $activityType,
+                'description' => $description,
+                'details' => ($session->category ? $session->category->name : 'Training') . 
+                           ' - ' . ($session->trainer ? $session->trainer->name : 'No trainer assigned'),
+                'created_at' => $session->updated_at->toISOString(),
+                'session_id' => $session->id
+            ]);
+        }
+
+        // Add registration activities
+        foreach ($registrations as $registration) {
+            $activityType = 'registration_approved';
+            $description = 'Approved participant registration';
+            
+            if ($registration->status === 'rejected') {
+                $activityType = 'registration_rejected';
+                $description = 'Rejected registration request';
+            } elseif ($registration->status === 'pending') {
+                $activityType = 'registration_pending';
+                $description = 'New registration request received';
+            }
+
+            $activities->push([
+                'type' => $activityType,
+                'description' => $description,
+                'details' => ($registration->user ? $registration->user->name : 'Unknown user') . 
+                           ' - ' . ($registration->trainingSession->category ? $registration->trainingSession->category->name : 'Training'),
+                'created_at' => $registration->updated_at->toISOString(),
+                'session_id' => $registration->training_session_id
+            ]);
+        }
+
+        // Sort all activities by date and take the most recent ones
+        $sortedActivities = $activities->sortByDesc('created_at')->take(8)->values();
+
+        return response()->json([
+            'success' => true,
+            'activities' => $sortedActivities
+        ], 200);
     }
 }

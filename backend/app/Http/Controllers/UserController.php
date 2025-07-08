@@ -162,4 +162,13 @@ class UserController extends Controller
         return response()->json(['message' => 'Password updated successfully'], 200);
     }
 
+    public function getAllTrainers()
+    {
+        $trainers = User::where('role', UserRole::TRAINER)
+                       ->where('status', UserStatus::ACTIVE)
+                       ->get();
+
+        return response()->json($trainers, 200);
+    }
+
 }
