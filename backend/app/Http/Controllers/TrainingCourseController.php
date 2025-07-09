@@ -27,12 +27,11 @@ class TrainingCourseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'duration_hours' => 'required|integer|min:1',
-            'max_participants' => 'required|integer|min:1',
             'training_session_id' => 'required|exists:training_sessions,id',
             'created_by' => 'required|exists:users,id',
             'is_active' => 'boolean',
         ]);
-        
+
         $course = TrainingCourse::create($validated);
         return response()->json($course->load(['trainingSession', 'creator']), 201);
     }
@@ -55,12 +54,11 @@ class TrainingCourseController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|nullable|string|max:1000',
             'duration_hours' => 'sometimes|required|integer|min:1',
-            'max_participants' => 'sometimes|required|integer|min:1',
             'training_session_id' => 'sometimes|required|exists:training_sessions,id',
             'created_by' => 'sometimes|required|exists:users,id',
             'is_active' => 'sometimes|boolean',
         ]);
-        
+
         $trainingCourse->update($validated);
         return response()->json($trainingCourse->load(['trainingSession', 'creator']), 200);
     }
@@ -72,5 +70,29 @@ class TrainingCourseController extends Controller
     {
         $trainingCourse->delete();
         return response()->json(null, 204);
+    }
+
+    /**
+     * Get all courses created by a specific trainer.
+     */
+    public function getCoursesByTrainer($trainerId)
+    {
+        $courses = TrainingCourse::with(['trainingSession', 'creator'])
+            ->where('created_by', $trainerId)
+            ->get();
+        return response()->json($courses, 200);
+    }
+
+    /**
+     * Toggle the active status of a course.
+     */
+    public function toggleActive(Request $request, TrainingCourse $trainingCourse)
+    {
+        $validated = $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+        $trainingCourse->is_active = $validated['is_active'];
+        $trainingCourse->save();
+        return response()->json($trainingCourse->fresh(['trainingSession', 'creator']), 200);
     }
 }

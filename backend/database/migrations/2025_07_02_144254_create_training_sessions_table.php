@@ -21,6 +21,9 @@ return new class extends Migration
             $table->dateTime('end_time');
             $table->string('location')->nullable();
             $table->integer('max_participants')->nullable();
+            $table->enum('status', ['active', 'archived'])->default('active');
+            $table->string('skill_name', 255);
+            $table->string('skill_description', 1000)->nullable();
             $table->timestamps();
         });
     }

@@ -13,22 +13,33 @@ return new class extends Migration
     {
         // Step 1: Remove category_id from training_courses
         Schema::table('training_courses', function (Blueprint $table) {
-            $table->dropForeign(['category_id']);
-            $table->dropColumn('category_id');
+            if (Schema::hasColumn('training_courses', 'category_id')) {
+                try {
+                    $table->dropForeign(['category_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('category_id');
+            }
         });
 
         // Step 2: Remove training_course_id from training_sessions and add category_id
         Schema::table('training_sessions', function (Blueprint $table) {
-            $table->dropForeign(['training_course_id']);
-            $table->dropColumn('training_course_id');
-            
+            if (Schema::hasColumn('training_sessions', 'training_course_id')) {
+                try {
+                    $table->dropForeign(['training_course_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('training_course_id');
+            }
             // Add category_id to training_sessions
-            $table->foreignId('category_id')->after('id')->constrained('categories')->onDelete('cascade');
+            if (!Schema::hasColumn('training_sessions', 'category_id')) {
+                $table->foreignId('category_id')->after('id')->constrained('categories')->onDelete('cascade');
+            }
         });
 
         // Step 3: Add training_session_id to training_courses (reverse the relationship)
         Schema::table('training_courses', function (Blueprint $table) {
-            $table->foreignId('training_session_id')->after('id')->constrained('training_sessions')->onDelete('cascade');
+            if (!Schema::hasColumn('training_courses', 'training_session_id')) {
+                $table->foreignId('training_session_id')->after('id')->constrained('training_sessions')->onDelete('cascade');
+            }
         });
     }
 
@@ -41,7 +52,7 @@ return new class extends Migration
         Schema::table('training_courses', function (Blueprint $table) {
             $table->dropForeign(['training_session_id']);
             $table->dropColumn('training_session_id');
-            
+
             // Add category_id back to training_courses
             $table->foreignId('category_id')->after('description')->constrained('categories')->onDelete('cascade');
         });
@@ -49,7 +60,7 @@ return new class extends Migration
         Schema::table('training_sessions', function (Blueprint $table) {
             $table->dropForeign(['category_id']);
             $table->dropColumn('category_id');
-            
+
             // Add training_course_id back to training_sessions
             $table->foreignId('training_course_id')->after('id')->constrained('training_courses')->onDelete('cascade');
         });

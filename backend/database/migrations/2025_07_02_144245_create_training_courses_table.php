@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->integer('duration_hours')->nullable();
-            $table->integer('max_participants')->nullable();
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

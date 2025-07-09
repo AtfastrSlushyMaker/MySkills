@@ -9,6 +9,7 @@ import CoursesPage from './pages/CoursesPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotificationsPage from './pages/NotificationsPage'
+import SessionDetailsPage from './pages/SessionDetailsPage'
 
 // Import navigation component
 import Navigation from './components/Navigation'
@@ -42,6 +43,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
             {/* 404 page for unknown routes */}
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center">

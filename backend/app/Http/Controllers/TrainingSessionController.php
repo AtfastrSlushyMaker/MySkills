@@ -101,7 +101,7 @@ class TrainingSessionController extends Controller
     public function getSessionsByTrainer($trainerId)
     {
         $sessions = TrainingSession::where('trainer_id', $trainerId)
-                                    ->with(['category', 'coordinator'])
+                                    ->with(['category', 'coordinator',"trainingCourses"])
                                     ->get();
         return response()->json($sessions, 200);
     }
@@ -109,14 +109,14 @@ class TrainingSessionController extends Controller
     public function getSessionsByCoordinator($coordinatorId)
     {
         $sessions = TrainingSession::where('coordinator_id', $coordinatorId)
-                                    ->with(['category', 'trainer'])
+                                    ->with(['category', 'trainer', 'trainingCourses'])
                                     ->get();
         return response()->json($sessions, 200);
     }
     public function getSessionsByCategory($categoryId)
     {
         $sessions = TrainingSession::where('category_id', $categoryId)
-                                    ->with(['trainer', 'coordinator'])
+                                    ->with(['trainer', 'coordinator', 'trainingCourses'])
                                     ->get();
         return response()->json($sessions, 200);
     }
@@ -125,7 +125,7 @@ class TrainingSessionController extends Controller
     {
         // Get recent sessions
         $sessions = TrainingSession::where('coordinator_id', $coordinatorId)
-                                    ->with(['category', 'trainer'])
+                                    ->with(['category', 'trainer', 'trainingCourses'])
                                     ->orderBy('updated_at', 'desc')
                                     ->take(8)
                                     ->get();

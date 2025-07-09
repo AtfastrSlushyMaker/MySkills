@@ -31,12 +31,19 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'first_name' => 'Jane',
             'last_name' => 'Student',
-            'email' => 'student@myskills.com',
+            'email' => 'trainee@myskills.com',
             'role' => 'trainee',
         ]);
 
+        User::factory()->create([
+            'first_name' => 'Sam',
+            'last_name' => 'Coordinator',
+            'email' => 'coordinator@myskills.com',
+            'role' => 'coordinator',
+        ]);
+
         // Create additional sample users
-        User::factory(7)->create();
+        User::factory(6)->create();
 
         // Run other seeders
         $this->call([

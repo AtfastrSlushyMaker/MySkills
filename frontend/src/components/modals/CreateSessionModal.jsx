@@ -30,21 +30,19 @@ const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
 
     const fetchTrainers = async () => {
         try {
-            const response = await userApi.getAllTrainers()
-            setTrainers(response.data)
-        }
-        catch (error) {
-            console.error('Error fetching trainers:', error)
+            const res = await userApi.getTrainers()
+            setTrainers(res.data)
+        } catch (error) {
+            // Removed debug log
         }
     }
 
     const fetchCategories = async () => {
         try {
-            const response = await categoryApi.getAllCategories()
-            setCategories(response.data)
-        }
-        catch (error) {
-            console.error('Error fetching categories:', error)
+            const res = await categoryApi.getCategories()
+            setCategories(res.data)
+        } catch (error) {
+            // Removed debug log
         }
     }
 
@@ -75,7 +73,6 @@ const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
                 coordinator_id: user?.id
             }
 
-            console.log('Submitting session data:', dataToSubmit)
             const response = await trainingSessionApi.createSession(dataToSubmit)
             onSessionCreated(response.data)
             setSuccessMessage('Training session created successfully!')
@@ -86,15 +83,12 @@ const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
                 onClose()
             }, 2000)
         } catch (error) {
-            console.error('Error creating session:', error)
             if (error.response && error.response.data) {
-                console.log('Validation errors:', error.response.data.errors)
-                setErrors(error.response.data.errors || {})
+                setErrors(error.response.data.errors)
             } else {
                 setErrors({ general: 'An unexpected error occurred. Please try again.' })
             }
-        }
-        finally {
+        } finally {
             setLoading(false)
         }
     }

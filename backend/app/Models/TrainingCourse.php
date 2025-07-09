@@ -13,7 +13,6 @@ class TrainingCourse extends Model
         'title',
         'description',
         'duration_hours',
-        'max_participants',
         'training_session_id',
         'created_by',
         'is_active'
@@ -24,7 +23,6 @@ class TrainingCourse extends Model
         return [
             'is_active' => 'boolean',
             'duration_hours' => 'integer',
-            'max_participants' => 'integer',
         ];
     }
 

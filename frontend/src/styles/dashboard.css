@@ -1,0 +1,120 @@
+/* Coordinator/Trainer Dashboard Shared Styles */
+
+.dashboard-header {
+    @apply bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl relative overflow-hidden;
+}
+
+.dashboard-title {
+    @apply text-5xl font-black mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent;
+}
+
+.dashboard-welcome {
+    @apply text-3xl font-bold text-white;
+}
+
+.dashboard-tabs {
+    @apply flex space-x-4 mb-8;
+}
+
+.dashboard-tab {
+    @apply px-8 py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center;
+}
+
+.dashboard-tab-active {
+    @apply bg-gradient-to-r from-cyan-400 to-purple-500 text-white shadow-lg transform scale-105;
+}
+
+.dashboard-tab-inactive {
+    @apply bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/40;
+}
+
+.dashboard-stats-card {
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 hover:border-white/40 transition-all duration-500 hover:scale-105 shadow-xl;
+}
+
+.dashboard-main-card {
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl;
+}
+
+.dashboard-session-card {
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl;
+}
+
+.dashboard-session-title {
+    @apply text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300 truncate;
+    /* Removed text-glow, which is not a Tailwind class. Add custom glow below if needed. */
+}
+
+/* Optional: Custom text glow effect (uncomment if you want a glow)
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 8px #67e8f9, 0 0 16px #a78bfa;
+  }
+}
+*/
+
+.dashboard-session-category {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 9999px;
+    background-color: rgba(34, 211, 238, 0.2);
+    color: #67e8f9;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    max-width: 140px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dashboard-session-courses {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.dashboard-sidebar-card {
+    background: rgba(255, 255, 255, 0.10);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
+}
+
+.dashboard-search-bar {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-shadow: inset 0 2px 8px 0 rgba(0, 0, 0, 0.10);
+    transition: all 0.3s;
+    outline: none;
+}
+
+.dashboard-search-bar::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-scroll {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+}
+
+.dashboard-scroll::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+}
+
+.dashboard-scroll::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.15);
+    border-radius: 8px;
+}

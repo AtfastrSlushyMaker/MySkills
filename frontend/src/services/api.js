@@ -83,6 +83,15 @@ export const trainingSessionApi = {
 
 };
 
+export const trainingCourseApi = {
+    getAllCourses: () => api.get('/courses'),
+    getCourse: (id) => api.get(`/courses/${id}`),
+    createCourse: (data) => api.post('/courses', data),
+    updateCourse: (id, data) => api.put(`/courses/${id}`, data),
+    deleteCourse: (id) => api.delete(`/courses/${id}`),
+    getCoursesByTrainer: (trainerId) => api.get(`/courses/trainer/${trainerId}`),
+};
+
 export const categoryApi = {
     getAllCategories: () => api.get('/categories'),
     getCategory: (id) => api.get(`/categories/${id}`),
@@ -90,3 +99,7 @@ export const categoryApi = {
     updateCategory: (id, data) => api.put(`/categories/${id}`, data),
     deleteCategory: (id) => api.delete(`/categories/${id}`)
 };
+
+// Add this function for toggling course active status
+export const toggleCourseActiveApi = (courseId, isActive) =>
+    api.patch(`/courses/${courseId}/toggle-active`, { is_active: isActive });
