@@ -38,6 +38,9 @@ class TrainingSessionController extends Controller
             'skill_description' => 'nullable|string|max:1000',
         ]);
 
+        // Set default status to active for new sessions
+        $validated['status'] = TrainingSessionStatus::ACTIVE;
+
         $session = TrainingSession::create($validated);
         return response()->json($session->load(['category', 'trainer', 'coordinator']), 201);
     }
@@ -146,15 +149,17 @@ class TrainingSessionController extends Controller
             $activityType = 'session_created';
             $description = 'Created new training session';
 
-            if ($session->status === 'confirmed') {
-                $activityType = 'session_confirmed';
-                $description = 'Confirmed training session';
-            } elseif ($session->status === 'cancelled') {
-                $activityType = 'session_cancelled';
-                $description = 'Cancelled training session';
-            } elseif ($timeDiff < 48 && $session->created_at != $session->updated_at) {
-                $activityType = 'session_updated';
-                $description = 'Updated session details';
+            if ($session->status === TrainingSessionStatus::ACTIVE) {
+                if ($timeDiff < 48 && $session->created_at != $session->updated_at) {
+                    $activityType = 'session_updated';
+                    $description = 'Updated session details';
+                } else {
+                    $activityType = 'session_active';
+                    $description = 'Training session is active';
+                }
+            } elseif ($session->status === TrainingSessionStatus::ARCHIVED) {
+                $activityType = 'session_archived';
+                $description = 'Archived training session';
             }
 
             $activities->push([
@@ -199,5 +204,4 @@ class TrainingSessionController extends Controller
         ], 200);
     }
 
-    public function show
 }

@@ -160,9 +160,12 @@ class TrainingSession extends Model
         return $this->available_spots <= 0;
     }
 
-    // Optionally, add a status enum helper
+    // Status enum helper
     public static function statusOptions()
     {
-        return ['created', 'confirmed', 'cancelled', 'archived'];
+        return [
+            TrainingSessionStatus::ACTIVE->value,
+            TrainingSessionStatus::ARCHIVED->value,
+        ];
     }
 }

@@ -25,7 +25,8 @@ const SessionManagement = ({ onSessionUpdate }) => {
         try {
             setLoading(true)
             const response = await trainingSessionApi.getAllSessions()
-            setSessions(response.data)
+            // Only keep sessions with status 'active'
+            setSessions(response.data.filter(session => session.status === 'active'))
         } catch (error) {
             console.error('Error fetching sessions:', error)
         } finally {
@@ -37,15 +38,18 @@ const SessionManagement = ({ onSessionUpdate }) => {
         const today = new Date()
         today.setHours(0, 0, 0, 0) // Reset time to start of day
 
+        // Only consider sessions with status 'active'
+        const activeSessions = sessions.filter(session => session.status === 'active')
+
         if (activeTab === 'current') {
-            const currentSessions = sessions.filter(session => {
+            const currentSessions = activeSessions.filter(session => {
                 const sessionDate = new Date(session.date)
                 sessionDate.setHours(0, 0, 0, 0) // Reset time to start of day
                 return sessionDate.getTime() >= today.getTime()
             })
             setFilteredSessions(currentSessions)
         } else {
-            const pastSessions = sessions.filter(session => {
+            const pastSessions = activeSessions.filter(session => {
                 const sessionDate = new Date(session.date)
                 sessionDate.setHours(0, 0, 0, 0) // Reset time to start of day
                 return sessionDate.getTime() < today.getTime()
@@ -75,23 +79,6 @@ const SessionManagement = ({ onSessionUpdate }) => {
         } catch (error) {
             console.error('Error deleting session:', error)
             alert('Failed to delete session. Please try again.')
-        } finally {
-            setDeleteLoading(null)
-            setSessionToDelete(null)
-        }
-    }
-
-    const handleArchiveSession = async () => {
-        if (!sessionToDelete) return
-        setDeleteLoading(sessionToDelete)
-        setShowDeleteConfirm(false)
-        try {
-            await trainingSessionApi.updateSession(sessionToDelete, { status: 'archived' })
-            await fetchSessions()
-            onSessionUpdate?.()
-        } catch (error) {
-            console.error('Error archiving session:', error)
-            alert('Failed to archive session. Please try again.')
         } finally {
             setDeleteLoading(null)
             setSessionToDelete(null)
@@ -358,11 +345,10 @@ const SessionManagement = ({ onSessionUpdate }) => {
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
                     <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full">
-                        <h2 className="text-xl font-bold mb-4 text-red-600 flex items-center"><i className="fas fa-exclamation-triangle mr-2"></i>Confirm Action</h2>
-                        <p className="mb-6 text-gray-700">Do you want to <span className="font-semibold text-red-500">delete</span> this training session permanently, or <span className="font-semibold text-blue-500">archive</span> it (keep in database, but hidden from users)?</p>
+                        <h2 className="text-xl font-bold mb-4 text-red-600 flex items-center"><i className="fas fa-exclamation-triangle mr-2"></i>Confirm Delete</h2>
+                        <p className="mb-6 text-gray-700">Are you sure you want to <span className="font-semibold text-red-500">delete</span> this training session permanently? This action cannot be undone.</p>
                         <div className="flex justify-end space-x-3">
                             <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold">Cancel</button>
-                            <button onClick={handleArchiveSession} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold">Archive</button>
                             <button onClick={confirmDeleteSession} className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold">Delete</button>
                         </div>
                     </div>

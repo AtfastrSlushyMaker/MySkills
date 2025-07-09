@@ -4,8 +4,6 @@ namespace App\Enums;
 
 enum TrainingSessionStatus: string
 {
-    case CREATED = 'created';
-    case CONFIRMED = 'confirmed';
-    case CANCELLED = 'cancelled';
+    case ACTIVE = 'active';
     case ARCHIVED = 'archived';
 }
