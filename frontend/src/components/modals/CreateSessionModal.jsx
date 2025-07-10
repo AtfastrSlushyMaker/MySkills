@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { trainingSessionApi } from '../../services/api'
-import { categoryApi } from '../../services/api'
-import { userApi } from '../../services/api'
+import '../../styles/myskills-modal.css'
 
 
 
-const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
-
+const CreateSessionModal = ({ isOpen, onClose, onSessionCreated, categories = [], trainers = [] }) => {
     const { user } = useAuth()
     const [sessionData, setSessionData] = useState({
         category_id: '',
@@ -22,36 +20,10 @@ const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
         skill_name: '',
         skill_description: ''
     })
-    const [trainers, setTrainers] = useState([])
-    const [categories, setCategories] = useState([])
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
     const [successMessage, setSuccessMessage] = useState('')
 
-    const fetchTrainers = async () => {
-        try {
-            const res = await userApi.getTrainers()
-            setTrainers(res.data)
-        } catch (error) {
-            // Removed debug log
-        }
-    }
-
-    const fetchCategories = async () => {
-        try {
-            const res = await categoryApi.getCategories()
-            setCategories(res.data)
-        } catch (error) {
-            // Removed debug log
-        }
-    }
-
-    useEffect(() => {
-        if (isOpen) {
-            fetchTrainers()
-            fetchCategories()
-        }
-    }, [isOpen])
     const handleChange = (e) => {
         const { name, value } = e.target
         setSessionData({
@@ -65,6 +37,31 @@ const CreateSessionModal = ({ isOpen, onClose, onSessionCreated }) => {
         e.preventDefault()
         setLoading(true)
         setErrors({})
+
+        // Combine date and time fields into Date objects for comparison
+        let validationErrors = {}
+        const startDate = sessionData.date
+        const endDate = sessionData.end_date
+        const startTime = sessionData.start_time
+        const endTime = sessionData.end_time
+
+        // Only validate if all fields are present
+        if (startDate && endDate && startTime && endTime) {
+            const startDateTime = new Date(`${startDate}T${startTime}`)
+            const endDateTime = new Date(`${endDate}T${endTime}`)
+            if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+                validationErrors.general = 'Please provide valid start and end dates and times.'
+            } else if (endDateTime <= startDateTime) {
+                validationErrors.end_date = ['End date/time must be after start date/time.']
+                validationErrors.end_time = ['End date/time must be after start date/time.']
+            }
+        }
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors)
+            setLoading(false)
+            return
+        }
 
         try {
             // Ensure coordinator_id is set to current user

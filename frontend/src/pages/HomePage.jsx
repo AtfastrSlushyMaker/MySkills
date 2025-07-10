@@ -189,7 +189,7 @@ function HomePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {loading ? (
                                 // Loading state
-                                Array.from({ length: 6 }).map((_, index) => (
+                                Array.from({ length: 3 }).map((_, index) => (
                                     <div key={index} className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 animate-pulse h-80">
                                         <div className="w-16 h-16 rounded-2xl bg-gray-400/20 mb-6"></div>
                                         <div className="h-6 bg-gray-400/20 rounded mb-4"></div>
@@ -198,24 +198,35 @@ function HomePage() {
                                     </div>
                                 ))
                             ) : (
-                                categories.map((category, index) => {
+                                categories.slice(0, 3).map((category, index) => {
                                     const gradient = getCategoryGradient(index);
                                     const icon = getCategoryIcon(category.name);
 
                                     return (
-                                        <div key={category.id} className="group relative">
-                                            <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-xl" style={{ background: `linear-gradient(135deg, ${gradient.replace('from-', '').replace(' to-', ', ')})` }}></div>
-                                            <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 hover:border-white/40 transition-all duration-500 group-hover:scale-105 shadow-xl h-80 flex flex-col">
-                                                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${gradient} flex items-center justify-center mb-6 shadow-lg`}>
-                                                    <i className={`fas ${icon} text-2xl text-white`}></i>
+                                        <React.Fragment key={category.id}>
+                                            <div className="group relative">
+                                                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl blur-xl" style={{ background: `linear-gradient(135deg, ${gradient.replace('from-', '').replace(' to-', ', ')})` }}></div>
+                                                <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 hover:border-white/40 transition-all duration-500 group-hover:scale-105 shadow-xl h-80 flex flex-col">
+                                                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${gradient} flex items-center justify-center mb-6 shadow-lg`}>
+                                                        <i className={`fas ${icon} text-2xl text-white`}></i>
+                                                    </div>
+                                                    <h3 className="text-2xl font-bold text-white mb-4">{category.name}</h3>
+                                                    <p className="text-white/70 leading-relaxed text-sm flex-grow">{category.description}</p>
+                                                    <button className="mt-6 w-full py-3 px-6 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300">
+                                                        Explore Category
+                                                    </button>
                                                 </div>
-                                                <h3 className="text-2xl font-bold text-white mb-4">{category.name}</h3>
-                                                <p className="text-white/70 leading-relaxed text-sm flex-grow">{category.description}</p>
-                                                <button className="mt-6 w-full py-3 px-6 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300">
-                                                    Explore Path
-                                                </button>
                                             </div>
-                                        </div>
+                                            {index === 2 && (
+                                                <div className="col-span-full flex justify-center mt-8 w-full">
+                                                    <Link to="/categories">
+                                                        <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white font-bold rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300">
+                                                            Explore All Our Categories
+                                                        </button>
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </React.Fragment>
                                     );
                                 })
                             )}

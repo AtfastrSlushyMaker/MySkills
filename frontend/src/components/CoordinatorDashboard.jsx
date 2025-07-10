@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { registrationApi, trainingSessionApi } from '../services/api'
+import { registrationApi, trainingSessionApi, categoryApi, userApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import CreateSessionModal from './modals/CreateSessionModal'
 import SessionManagement from './SessionManagement'
@@ -17,9 +17,12 @@ function CoordinatorDashboard() {
     const [pendingRegistrations, setPendingRegistrations] = useState([])
     const [loading, setLoading] = useState(true)
     const [showCreateModal, setShowCreateModal] = useState(false)
+    const [categories, setCategories] = useState([])
+    const [trainers, setTrainers] = useState([])
 
     useEffect(() => {
         fetchDashboardData()
+        fetchCategoriesAndTrainers()
     }, [])
 
     const fetchDashboardData = async () => {
@@ -144,6 +147,20 @@ function CoordinatorDashboard() {
             console.error('Error fetching dashboard data:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchCategoriesAndTrainers = async () => {
+        try {
+            const [catRes, trainerRes] = await Promise.all([
+                categoryApi.getAllCategories(),
+                userApi.getAllTrainers()
+            ])
+            setCategories(catRes.data)
+            setTrainers(trainerRes.data)
+        } catch (err) {
+            setCategories([])
+            setTrainers([])
         }
     }
 
@@ -410,14 +427,14 @@ function CoordinatorDashboard() {
                                             recentActivity.slice(0, 5).map((activity, index) => (
                                                 <div key={index} className="flex items-start space-x-3 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20">
                                                     <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${activity.type === 'registration_approved' ? 'bg-green-400/20 text-green-400' :
-                                                            activity.type === 'registration_rejected' ? 'bg-red-400/20 text-red-400' :
-                                                                activity.type === 'registration_pending' ? 'bg-orange-400/20 text-orange-400' :
-                                                                    activity.type === 'session_created' ? 'bg-blue-400/20 text-blue-400' :
-                                                                        activity.type === 'session_updated' ? 'bg-yellow-400/20 text-yellow-400' :
-                                                                            activity.type === 'session_confirmed' ? 'bg-green-400/20 text-green-400' :
-                                                                                activity.type === 'session_cancelled' ? 'bg-red-400/20 text-red-400' :
-                                                                                    activity.type === 'session_deleted' ? 'bg-red-500/20 text-red-500' :
-                                                                                        'bg-cyan-400/20 text-cyan-400'
+                                                        activity.type === 'registration_rejected' ? 'bg-red-400/20 text-red-400' :
+                                                            activity.type === 'registration_pending' ? 'bg-orange-400/20 text-orange-400' :
+                                                                activity.type === 'session_created' ? 'bg-blue-400/20 text-blue-400' :
+                                                                    activity.type === 'session_updated' ? 'bg-yellow-400/20 text-yellow-400' :
+                                                                        activity.type === 'session_confirmed' ? 'bg-green-400/20 text-green-400' :
+                                                                            activity.type === 'session_cancelled' ? 'bg-red-400/20 text-red-400' :
+                                                                                activity.type === 'session_deleted' ? 'bg-red-500/20 text-red-500' :
+                                                                                    'bg-cyan-400/20 text-cyan-400'
                                                         }`}>
                                                         <i className={
                                                             activity.type === 'registration_approved' ? 'fas fa-user-check' :
@@ -508,6 +525,8 @@ function CoordinatorDashboard() {
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onSessionCreated={handleSessionCreated}
+                categories={categories}
+                trainers={trainers}
             />
         </div>
     )

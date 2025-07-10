@@ -16,6 +16,7 @@ class TrainingSession extends Model
         'coordinator_id',
         'trainer_id',
         'date',
+        'end_date', // <-- add this line
         'start_time',
         'end_time',
         'location',
@@ -29,8 +30,9 @@ class TrainingSession extends Model
     {
         return [
             'date' => 'date',
-            'start_time' => 'datetime',
-            'end_time' => 'datetime',
+            'end_date' => 'date', // <-- add this line
+            'start_time' => 'string', // changed from datetime to string
+            'end_time' => 'string',   // changed from datetime to string
             'max_participants' => 'integer',
             'status' => TrainingSessionStatus::class, // enum cast
         ];
@@ -86,8 +88,9 @@ class TrainingSession extends Model
     public function getComputedStatusAttribute(): string
     {
         $now = now();
-        $sessionStart = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->start_time->format('H:i:s'));
-        $sessionEnd = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->end_time->format('H:i:s'));
+        // Use only the time string, not Carbon object
+        $sessionStart = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->start_time);
+        $sessionEnd = Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->end_time);
 
         if ($now->lt($sessionStart)) {
             return 'scheduled';

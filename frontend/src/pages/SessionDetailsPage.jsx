@@ -8,7 +8,6 @@ function SessionDetailsPage({ role = 'trainer' }) {
         <SessionDetails
             sessionId={sessionId}
             onBack={() => navigate(-1)}
-            canCreateCourse={role === 'trainer' || role === 'coordinator'}
         />
     );
 }

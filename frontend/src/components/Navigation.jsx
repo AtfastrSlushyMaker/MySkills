@@ -25,12 +25,15 @@ function Navigation() {
     const getNavItems = () => {
         const publicItems = [
             { path: '/', label: 'Home', icon: 'fas fa-home' },
+
         ]
 
         if (!user) {
             return [
                 ...publicItems,
+                { path: '/categories', label: 'Categories', icon: 'fas fa-th-list' },
                 { path: '/login', label: 'Login', icon: 'fas fa-sign-in-alt' },
+
             ]
         }
 
@@ -38,7 +41,7 @@ function Navigation() {
         const authenticatedItems = [
             ...publicItems,
             { path: '/dashboard', label: 'Dashboard', icon: 'fas fa-chart-pie' },
-            { path: '/courses', label: 'Courses', icon: 'fas fa-graduation-cap' },
+            { path: '/sessions', label: 'Sessions', icon: 'fas fa-graduation-cap' },
         ]
 
         // Add role-specific items

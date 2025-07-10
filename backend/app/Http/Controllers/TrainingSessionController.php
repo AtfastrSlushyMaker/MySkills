@@ -28,15 +28,28 @@ class TrainingSessionController extends Controller
             'category_id' => 'required|exists:categories,id',
             'coordinator_id' => 'required|exists:users,id',
             'trainer_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'date' => 'required|date',//start date
+            'end_date' => 'nullable|date|after_or_equal:date', //end date
+            'start_time' => 'required|date_format:H:i',// start time
+            'end_time' => 'required|date_format:H:i',// end time
             'location' => 'required|string|max:255',
             'max_participants' => 'required|integer|min:1',
             'skill_name' => 'required|string|max:255',
             'skill_description' => 'nullable|string|max:1000',
         ]);
+
+        // Custom validation: end datetime must be after start datetime
+        $startDateTime = strtotime($validated['date'] . ' ' . $validated['start_time']);
+        $endDateTime = strtotime(($validated['end_date'] ?? $validated['date']) . ' ' . $validated['end_time']);
+        if ($endDateTime <= $startDateTime) {
+            return response()->json([
+                'message' => 'The end date/time must be after the start date/time.',
+                'errors' => [
+                    'end_date' => ['The end date/time must be after the start date/time.'],
+                    'end_time' => ['The end date/time must be after the start date/time.']
+                ]
+            ], 422);
+        }
 
         // Set default status to active for new sessions
         $validated['status'] = TrainingSessionStatus::ACTIVE;
@@ -204,4 +217,6 @@ class TrainingSessionController extends Controller
         ], 200);
     }
 
+
 }
+

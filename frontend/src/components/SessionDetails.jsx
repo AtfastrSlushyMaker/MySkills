@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { trainingSessionApi, trainingCourseApi, toggleCourseActiveApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext'; // Assuming user context provides role
 import Modal from './modals/CreateSessionModal' // for style reference only
+import CreateCourseModal from './modals/CreateCourseModal';
 
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [session, setSession] = useState(null);
@@ -11,6 +13,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [selectedCourse, setSelectedCourse] = useState(null)
     const [updating, setUpdating] = useState(false)
     const [updateForm, setUpdateForm] = useState({ title: '', description: '' })
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -202,11 +205,11 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                             </div>
                         )}
                         {/* Only show create course if allowed */}
-                        {canCreateCourse && (
+                        {user && (user.role === 'trainer') && (
                             <div className="mt-8 flex justify-end">
                                 <button
                                     onClick={() => setShowCreateCourseModal(true)}
-                                    className="px-7 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 rounded-xl text-white font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+                                    className="mt-6 px-7 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300 text-base flex items-center justify-center gap-2 shadow-none cursor-pointer"
                                 >
                                     <i className="fas fa-plus mr-2"></i> Create Course for this Session
                                 </button>
@@ -215,13 +218,24 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     </div>
                 </div>
                 {/* Modal rendered at root level for proper overlay */}
-                {/* You can add CreateCourseModal here if needed */}
+                <CreateCourseModal
+                    isOpen={showCreateCourseModal}
+                    onClose={() => setShowCreateCourseModal(false)}
+                    session={session}
+                    onCourseCreated={(newCourse) => {
+                        // Refetch session to update course list
+                        trainingSessionApi.getSession(sessionId).then(res => setSession(res.data));
+                        setShowCreateCourseModal(false);
+                    }}
+                    modalClassName="bg-white/80 backdrop-blur-3xl rounded-3xl p-6 border border-white/30 shadow-2xl max-w-lg w-full relative transform transition-all duration-300 ease-out"
+                    innerSectionClassName="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25"
+                />
             </div>
             {/* Update Course Modal styled like CreateSessionModal */}
             {showUpdateModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-lg p-4 overflow-y-auto pt-24">
                     <div className="min-h-full flex items-center justify-center py-4">
-                        <div className="bg-white/25 backdrop-blur-3xl rounded-3xl p-6 border border-white/30 shadow-2xl max-w-lg w-full relative transform transition-all duration-300 ease-out">
+                        <div className="bg-white/80 backdrop-blur-3xl rounded-3xl p-6 border border-white/30 shadow-2xl max-w-lg w-full relative transform transition-all duration-300 ease-out">
                             {/* Decorative background elements */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
                             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
@@ -238,7 +252,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                     </button>
                                 </div>
                                 <form onSubmit={handleUpdateSubmit} className="space-y-3">
-                                    <div className="mb-4">
+                                    <div className="mb-4 bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25">
                                         <label className="block text-white/90 text-sm font-medium mb-1.5">Title</label>
                                         <input
                                             type="text"
@@ -249,7 +263,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                             required
                                         />
                                     </div>
-                                    <div className="mb-6">
+                                    <div className="mb-6 bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25">
                                         <label className="block text-white/90 text-sm font-medium mb-1.5">Description</label>
                                         <textarea
                                             name="description"

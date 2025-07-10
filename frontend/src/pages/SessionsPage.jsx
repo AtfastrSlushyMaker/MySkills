@@ -1,4 +1,4 @@
-function CoursesPage() {
+function SessionsPage() {
     return (
         <div className="min-h-screen relative overflow-hidden">
             <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
@@ -188,4 +188,4 @@ function CoursesPage() {
     )
 }
 
-export default CoursesPage
+export default SessionsPage

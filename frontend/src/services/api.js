@@ -79,8 +79,8 @@ export const trainingSessionApi = {
     getSessionsByTrainer: (trainerId) => api.get(`/training-sessions/trainer/${trainerId}`),
     getSessionsByCoordinator: (coordinatorId) => api.get(`/training-sessions/coordinator/${coordinatorId}`),
     getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
-    getRecentActivityByCoordinator: (coordinatorId) => api.get(`/training-sessions/recent-activity/coordinator/${coordinatorId}`)
-
+    getRecentActivityByCoordinator: (coordinatorId) => api.get(`/training-sessions/recent-activity/coordinator/${coordinatorId}`),
+    getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
 };
 
 export const trainingCourseApi = {

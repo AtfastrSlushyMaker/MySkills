@@ -1,439 +1,120 @@
-/* MySkills CSS with Tailwind-like utilities */
+/*
+  Coordinator/Trainer Dashboard Shared Styles
+  Author: Your Name/Team
+  Date: July 10, 2025
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-    line-height: 1.6;
-    color: #374151;
-    background-color: #F8FAFC;
-}
-
-/* Color Variables */
-:root {
-    --primary: #1E40AF;
-    --primary-hover: #1D4ED8;
-    --accent-green: #10B981;
-    --accent-blue: #3B82F6;
-    --accent-orange: #F97316;
-    --accent-purple: #8B5CF6;
-    --gray-50: #F8FAFC;
-    --gray-100: #F1F5F9;
-    --gray-200: #E2E8F0;
-    --gray-600: #6B7280;
-    --gray-700: #374151;
-}
-
-/* Layout Classes */
-.min-h-screen {
-    min-height: 100vh;
-}
-
-.flex {
-    display: flex;
-}
-
-.flex-col {
-    flex-direction: column;
-}
-
-.flex-1 {
-    flex: 1;
-}
-
-.items-center {
-    align-items: center;
-}
-
-.justify-between {
-    justify-content: space-between;
-}
-
-.justify-center {
-    justify-content: center;
-}
-
-.text-center {
-    text-align: center;
-}
-
-/* Background Colors */
-.bg-gray-50 {
-    background-color: var(--gray-50);
-}
-
-.bg-white {
-    background-color: white;
-}
-
-.bg-primary {
-    background-color: var(--primary);
-}
-
-/* Text Colors */
-.text-white {
-    color: white;
-}
-
-.text-primary {
-    color: var(--primary);
-}
-
-.text-gray-600 {
-    color: var(--gray-600);
-}
-
-.text-gray-700 {
-    color: var(--gray-700);
-}
-
-/* Spacing */
-.py-8 {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-.py-4 {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
-
-.py-20 {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-}
-
-.px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-}
-
-.p-16 {
-    padding: 4rem;
-}
-
-.p-8 {
-    padding: 2rem;
-}
-
-.p-6 {
-    padding: 1.5rem;
-}
-
-.mb-8 {
-    margin-bottom: 2rem;
-}
-
-.mb-6 {
-    margin-bottom: 1.5rem;
-}
-
-.mb-4 {
-    margin-bottom: 1rem;
-}
-
-.mb-3 {
-    margin-bottom: 0.75rem;
-}
-
-.space-x-3>*+* {
-    margin-left: 0.75rem;
-}
-
-/* Container */
-.max-w-7xl {
-    max-width: 80rem;
-}
-
-.mx-auto {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-}
-
-/* Typography */
-.text-5xl {
-    font-size: 3rem;
-}
-
-.text-4xl {
-    font-size: 2.25rem;
-}
-
-.text-3xl {
-    font-size: 1.875rem;
-}
-
-.text-2xl {
-    font-size: 1.5rem;
-}
-
-.text-xl {
-    font-size: 1.25rem;
-}
-
-.text-lg {
-    font-size: 1.125rem;
-}
-
-.font-bold {
-    font-weight: 700;
-}
-
-.font-semibold {
-    font-weight: 600;
-}
-
-.font-medium {
-    font-weight: 500;
-}
-
-.leading-relaxed {
-    line-height: 1.625;
-}
-
-/* Borders and Shadows */
-.rounded-2xl {
-    border-radius: 1rem;
-}
-
-.rounded-xl {
-    border-radius: 0.75rem;
-}
-
-.rounded-lg {
-    border-radius: 0.5rem;
-}
-
-.shadow-xl {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.border {
-    border: 1px solid #E2E8F0;
-}
-
-/* Grid */
-.grid {
-    display: grid;
-}
+  Purpose: Provides a consistent and responsive styling foundation for the
+           trainer/coordinator dashboard using Tailwind CSS and custom properties.
+*/
 
-.grid-cols-1 {
-    grid-template-columns: repeat(1, 1fr);
+/* Base Dashboard Layout & Header */
+.dashboard-header {
+    @apply bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl relative overflow-hidden;
 }
 
-.grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
+.dashboard-title {
+    @apply text-5xl font-black mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent;
 }
 
-.grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
+.dashboard-welcome {
+    @apply text-3xl font-bold text-white;
 }
 
-.gap-6 {
-    gap: 1.5rem;
+/* Navigation Tabs */
+.dashboard-tabs {
+    @apply flex flex-wrap gap-4 mb-8; /* Added flex-wrap and gap for better responsiveness */
 }
 
-.gap-4 {
-    gap: 1rem;
+.dashboard-tab {
+    @apply px-8 py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center text-center; /* Added justify-center, text-center */
 }
 
-/* Responsive Grid */
-@media (min-width: 768px) {
-    .md\:grid-cols-2 {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.dashboard-tab-active {
+    @apply bg-gradient-to-r from-cyan-400 to-purple-500 text-white shadow-lg transform scale-105;
 }
 
-@media (min-width: 1024px) {
-    .lg\:grid-cols-3 {
-        grid-template-columns: repeat(3, 1fr);
-    }
+.dashboard-tab-inactive {
+    @apply bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/40;
 }
 
-/* Button styles */
-.h-10 {
-    height: 2.5rem;
+/* Card Styles */
+.dashboard-stats-card {
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 hover:border-white/40 transition-all duration-500 hover:scale-105 shadow-xl flex flex-col justify-between; /* Added flex for better layout of content */
 }
 
-.w-auto {
-    width: auto;
+.dashboard-main-card {
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl;
 }
 
-.h-12 {
-    height: 3rem;
+.dashboard-session-card {
+    /* Adjusted padding slightly, ensured basic flex properties for internal content */
+    @apply bg-white/10 backdrop-blur-2xl rounded-3xl p-6 md:p-8 border border-white/20 shadow-xl h-full flex flex-col justify-between; /* Added h-full and flex-col for consistent height and content distribution */
 }
 
-.w-12 {
-    width: 3rem;
+.dashboard-session-title {
+    /* Kept truncate, but ensured it has enough horizontal space from its parent's flex behavior */
+    @apply text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300 truncate;
 }
 
-/* Gradients */
-.bg-gradient-to-br {
-    background: linear-gradient(to bottom right, var(--primary), var(--accent-blue));
+/* Fix for .dashboard-session-category */
+.dashboard-session-category {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 9999px;
+    background-color: rgba(34, 211, 238, 0.2); /* bg-cyan-400/20 */
+    color: #67e8f9; /* text-cyan-400 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 700; /* font-bold */
+    margin-bottom: 0.75rem; /* mb-3 */
+    /* REMOVED: max-width: 140px; <-- This was causing issues */
+    /* REMOVED: text-align: right; <-- Can cause issues with truncation */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Adding some Tailwind equivalents for clarity, but they are already applied via @apply if configured */
+    @apply text-sm font-bold; /* Ensure Tailwind classes are applied */
 }
 
-.bg-gradient-to-r {
-    background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
-}
-
-/* Opacity */
-.opacity-90 {
-    opacity: 0.9;
-}
-
-/* Transitions */
-.transition-all {
-    transition: all 0.3s ease;
-}
-
-.transition-colors {
-    transition: color 0.3s ease;
-}
-
-/* Hover Effects */
-.hover\:bg-white:hover {
-    background-color: white;
-}
-
-.hover\:shadow-lg:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.hover\:text-gray-200:hover {
-    color: #E5E7EB;
-}
-
-.hover\:bg-gray-100:hover {
-    background-color: #F3F4F6;
-}
-
-/* Feature-specific colors */
-.text-accent-green {
-    color: var(--accent-green);
-}
-
-.text-accent-blue {
-    color: var(--accent-blue);
-}
-
-.text-accent-orange {
-    color: var(--accent-orange);
-}
-
-.text-accent-purple {
-    color: var(--accent-purple);
-}
-
-.bg-accent-green {
-    background-color: var(--accent-green);
-}
-
-.bg-accent-blue {
-    background-color: var(--accent-blue);
-}
-
-.bg-accent-orange {
-    background-color: var(--accent-orange);
-}
-
-.bg-accent-purple {
-    background-color: var(--accent-purple);
-}
-
-/* Navigation specific */
-.nav-link {
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    text-decoration: none;
-}
 
-.nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
+.dashboard-session-courses {
+    @apply mt-2 flex flex-wrap gap-2; /* Adjusted mt to 2 for tighter spacing, gap for consistency */
 }
 
-.nav-link.active {
-    background-color: var(--primary-hover);
-    border-color: rgba(255, 255, 255, 0.5);
+/* Sidebar and Utility Elements */
+.dashboard-sidebar-card {
+    /* Replaced explicit rgba, backdrop-filter with Tailwind equivalents for consistency */
+    @apply bg-white/10 backdrop-blur-3xl rounded-3xl p-6 border border-white/10 shadow-lg; /* Adjusted blur and shadow slightly */
 }
 
-/* Buttons */
-.btn {
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: none;
+.dashboard-search-bar {
+    @apply w-full pl-12 pr-4 py-3 rounded-xl bg-white/20 text-white shadow-inner outline-none transition-all duration-300; /* Adjusted padding, replaced custom rgba, box-shadow */
 }
 
-.btn-primary {
-    background-color: white;
-    color: var(--primary);
+.dashboard-search-bar::placeholder {
+    @apply text-white/60;
 }
 
-.btn-primary:hover {
-    background-color: #F3F4F6;
+/* Custom Scrollbar Styles */
+.dashboard-scroll {
+    @apply border-t border-white/5 max-h-[60vh] overflow-y-auto pr-2; /* Changed border color for subtlety, added pr-2 for scrollbar space */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(59, 130, 246, 0.2) transparent; /* thumb track */
 }
 
-.btn-secondary {
-    border: 2px solid white;
-    color: white;
+.dashboard-scroll::-webkit-scrollbar {
+    width: 8px;
     background: transparent;
 }
 
-.btn-secondary:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.dashboard-scroll::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.15); /* bg-blue-500/15 */
+    border-radius: 8px;
 }
 
-/* Feature cards */
-.feature-card {
-    background-color: var(--gray-100);
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--gray-200);
-    transition: all 0.3s ease;
+/* Optional: Custom text glow effect (uncomment if you want a glow)
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 8px #67e8f9, 0 0 16px #a78bfa;
+  }
 }
-
-.feature-card:hover {
-    background-color: white;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .grid-cols-3 {
-        grid-template-columns: 1fr;
-    }
-
-    .grid-cols-2 {
-        grid-template-columns: 1fr;
-    }
-
-    .text-5xl {
-        font-size: 2.5rem;
-    }
-
-    .p-16 {
-        padding: 2rem;
-    }
-}
+*/

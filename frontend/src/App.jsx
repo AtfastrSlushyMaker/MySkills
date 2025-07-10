@@ -5,11 +5,13 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import DashboardPage from './pages/DashboardPage'
-import CoursesPage from './pages/CoursesPage'
+import SessionsPage from './pages/SessionsPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import SessionDetailsPage from './pages/SessionDetailsPage'
+import CategoriesPage from './pages/CategoriesPage'
+import CategorySessionsPage from './pages/CategorySessionsPage'
 
 // Import navigation component
 import Navigation from './components/Navigation'
@@ -39,11 +41,13 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/sessions" element={<SessionsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/categories/:categoryId" element={<CategorySessionsPage />} />
             {/* 404 page for unknown routes */}
             <Route path="*" element={
               <div className="min-h-screen flex items-center justify-center">
