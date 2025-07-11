@@ -13,14 +13,14 @@ class Registration extends Model
     protected $fillable = [
         'user_id',
         'training_session_id',
-        'registration_date',
+        'registered_at',
         'status'
     ];
 
     protected function casts(): array
     {
         return [
-            'registration_date' => 'datetime',
+            'registered_at' => 'datetime',
             'status' => RegistrationStatus::class,
         ];
     }

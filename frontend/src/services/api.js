@@ -58,14 +58,16 @@ export const userApi = {
 };
 
 export const registrationApi = {
-    getPendingRegistrations: () => api.get('/registrations/status/pending'),
+    getPendingRegistrations: (coordinatorId) => api.get(`/registrations/status/pending/${coordinatorId}`),
     getRegistrationStats: () => api.get('/registrations/dashboard/stats'),
     approveRegistration: (id) => api.post(`/registrations/${id}/approve`),
     rejectRegistration: (id) => api.post(`/registrations/${id}/reject`),
     getRegistrationDetails: (id) => api.get(`/registrations/${id}`),
     createRegistration: (data) => api.post('/registrations', data),
     updateRegistration: (id, data) => api.put(`/registrations/${id}`, data),
-    deleteRegistration: (id) => api.delete(`/registrations/${id}`)
+    deleteRegistration: (id) => api.delete(`/registrations/${id}`),
+
+    getStatusByUserAndSession: (userId, sessionId) => api.get(`/registrations/status/${userId}/${sessionId}`),
 };
 
 export const trainingSessionApi = {
@@ -81,6 +83,8 @@ export const trainingSessionApi = {
     getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
     getRecentActivityByCoordinator: (coordinatorId) => api.get(`/training-sessions/recent-activity/coordinator/${coordinatorId}`),
     getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
+
+
 };
 
 export const trainingCourseApi = {

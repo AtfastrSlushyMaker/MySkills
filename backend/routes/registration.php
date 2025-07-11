@@ -3,12 +3,16 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Standard CRUD routes
-Route::apiResource('registrations', App\Http\Controllers\RegistrationController::class);
+// Protect coordinator actions with auth:sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('registrations/{registration}/approve', [App\Http\Controllers\RegistrationController::class, 'approve']);
+    Route::post('registrations/{registration}/reject', [App\Http\Controllers\RegistrationController::class, 'reject']);
+    Route::get('registrations/dashboard/stats', [App\Http\Controllers\RegistrationController::class, 'stats']);
+    Route::get('registrations/session/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'bySession']);
+    Route::apiResource('registrations', App\Http\Controllers\RegistrationController::class);
+});
 
-// Coordinator-specific registration management routes
-Route::post('registrations/{registration}/approve', [App\Http\Controllers\RegistrationController::class, 'approve']);
-Route::post('registrations/{registration}/reject', [App\Http\Controllers\RegistrationController::class, 'reject']);
-Route::get('registrations/status/pending', [App\Http\Controllers\RegistrationController::class, 'pending']);
-Route::get('registrations/session/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'bySession']);
-Route::get('registrations/dashboard/stats', [App\Http\Controllers\RegistrationController::class, 'stats']);
+// Public or less sensitive endpoints
+Route::get('registrations/status/pending/{coordinatorId}', [App\Http\Controllers\RegistrationController::class, 'pending']);
+Route::get('registrations/status/{userId}/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'getStatusByUserAndSession']);
+

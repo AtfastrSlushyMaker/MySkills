@@ -14,7 +14,7 @@ class RegistrationController extends Controller
      */
     public function index()
     {
-        return response()->json(Registration::all(), 200);
+        return response()->json(Registration::with(['user', 'trainingSession'])->get(), 200);
     }
 
     /**
@@ -25,7 +25,7 @@ class RegistrationController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'training_session_id' => 'required|exists:training_sessions,id',
-            'registration_date' => 'required|date',
+            'registered_at' => 'required|date',
             'status' => 'required|in:'.implode(',', RegistrationStatus::values()),
         ]);
         $registration = Registration::create($validated);
@@ -48,7 +48,7 @@ class RegistrationController extends Controller
         $validated = $request->validate([
             'user_id' => 'sometimes|required|exists:users,id',
             'training_session_id' => 'sometimes|required|exists:training_sessions,id',
-            'registration_date' => 'sometimes|required|date',
+            'registered_at' => 'sometimes|required|date',
             'status' => 'sometimes|required|in:'.implode(',', RegistrationStatus::values()),
         ]);
         $registration->update($validated);
@@ -88,6 +88,8 @@ class RegistrationController extends Controller
      */
     public function reject(Registration $registration)
     {
+        logger()->info('Rejecting registration', ['registration_id' => $registration->id]);
+        logger()->info('Coordinator ID', ['coordinator_id' => auth()->id()]);
         if($registration->trainingSession->coordinator_id !== auth()->id()) {
             return response()->json([
                 'message' => 'You are not authorized to reject this registration'
@@ -105,15 +107,21 @@ class RegistrationController extends Controller
     /**
      * Get all pending registrations for coordinator review
      */
-    public function pending()
+    public function pending($coordinatorId)
     {
-        $pendingRegistrations = Registration::with(['user', 'trainingSession.category'])
+
+        $sessionCount = \App\Models\TrainingSession::where('coordinator_id', $coordinatorId)->count();
+
+
+        $pendingRegistrations = Registration::with(['user', 'trainingSession'])
             ->where('status', RegistrationStatus::PENDING)
-            ->whereHas('trainingSession', function($query) {
-        $query->where('coordinator_id', auth()->id());
-    })
+            ->whereHas('trainingSession', function($query) use ($coordinatorId) {
+                $query->where('coordinator_id', $coordinatorId);
+            })
             ->orderBy('created_at', 'asc')
             ->get();
+
+
 
         return response()->json([
             'message' => 'Pending registrations retrieved successfully',
@@ -171,4 +179,20 @@ class RegistrationController extends Controller
         'stats' => $stats
     ], 200);
 }
+
+    /**
+     * Get registration status for a user and session
+     */
+    public function getStatusByUserAndSession($userId, $sessionId)
+    {
+        $registration = \App\Models\Registration::where('user_id', $userId)
+            ->where('training_session_id', $sessionId)
+            ->first();
+
+        if (!$registration) {
+            return response()->json(['status' => null], 200);
+        }
+
+        return response()->json(['status' => $registration->status], 200);
+    }
 }

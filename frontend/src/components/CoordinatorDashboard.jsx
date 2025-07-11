@@ -5,7 +5,7 @@ import CreateSessionModal from './modals/CreateSessionModal'
 import SessionManagement from './SessionManagement'
 
 function CoordinatorDashboard() {
-    const { user } = useAuth()
+
     const [activeView, setActiveView] = useState('dashboard')
     const [stats, setStats] = useState({
         total: 0,
@@ -19,29 +19,31 @@ function CoordinatorDashboard() {
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [categories, setCategories] = useState([])
     const [trainers, setTrainers] = useState([])
+    const { user } = useAuth()
 
     useEffect(() => {
-        fetchDashboardData()
+        if (user?.id) {
+            fetchDashboardData();
+        }
+    }, [user?.id])
+
+    useEffect(() => {
         fetchCategoriesAndTrainers()
     }, [])
 
     const fetchDashboardData = async () => {
         try {
-            // Fetch both stats and pending registrations
             const [statsResponse, pendingResponse] = await Promise.all([
                 registrationApi.getRegistrationStats(),
-                registrationApi.getPendingRegistrations()
+                registrationApi.getPendingRegistrations(user?.id)
             ])
 
             try {
                 const recentActivityResponse = await trainingSessionApi.getRecentActivityByCoordinator(user?.id)
-                console.log('Recent Activity Response:', recentActivityResponse.data)
 
-                // Check if the response has the new format with activities
                 if (recentActivityResponse.data.activities) {
                     setRecentActivity(recentActivityResponse.data.activities)
                 } else {
-                    // Transform training sessions into CRUD activities (fallback for old API format)
                     const activities = recentActivityResponse.data.map((session) => {
                         // Determine activity type based on session status and date
                         const sessionDate = new Date(session.date)
@@ -94,55 +96,18 @@ function CoordinatorDashboard() {
                 }
             } catch (activityError) {
                 console.error('Error fetching recent activity:', activityError)
-                // Set mock CRUD activities as fallback with detailed information
-                setRecentActivity([
-                    {
-                        type: 'session_created',
-                        description: 'Created new training session',
-                        details: 'React Advanced Workshop • John Smith • Conference Room A • Max 25 participants',
-                        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                        sessionInfo: {
-                            location: 'Conference Room A',
-                            maxParticipants: 25,
-                            date: new Date().toLocaleDateString(),
-                            time: '09:00 AM'
-                        }
-                    },
-                    {
-                        type: 'registration_approved',
-                        description: 'Approved participant registration',
-                        details: 'John Doe enrolled in Laravel Basics • Confirmed for Dec 15th',
-                        created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-                    },
-                    {
-                        type: 'session_updated',
-                        description: 'Updated session details',
-                        details: 'Vue.js Fundamentals • Changed location from Room B to Lab 1 • Updated time to 2:00 PM',
-                        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-                    },
-                    {
-                        type: 'registration_rejected',
-                        description: 'Rejected registration request',
-                        details: 'Jane Smith - Angular Workshop • Session already full (20/20 participants)',
-                        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-                    },
-                    {
-                        type: 'session_confirmed',
-                        description: 'Confirmed training session',
-                        details: 'Python for Data Science • Dr. Sarah Wilson • Lab 2 • 18/30 participants registered',
-                        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-                    },
-                    {
-                        type: 'session_deleted',
-                        description: 'Deleted training session',
-                        details: 'PHP Workshop • Cancelled due to insufficient registrations (3/15)',
-                        created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
-                    }
-                ])
+                // Remove mock CRUD activities fallback
+                setRecentActivity([])
             }
 
             setStats(statsResponse.data.stats)
-            setPendingRegistrations(pendingResponse.data.registrations)
+            setPendingRegistrations(
+                Array.isArray(pendingResponse.data?.registrations)
+                    ? pendingResponse.data.registrations
+                    : Array.isArray(pendingResponse.data)
+                        ? pendingResponse.data
+                        : []
+            )
         } catch (error) {
             console.error('Error fetching dashboard data:', error)
         } finally {
@@ -338,196 +303,155 @@ function CoordinatorDashboard() {
                                         </div>
                                     ) : (
                                         <div className="space-y-4 max-h-96 overflow-y-auto">
-                                            {pendingRegistrations.map((registration) => (
-                                                <div key={registration.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300">
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div className="flex-1">
-                                                            <h3 className="text-xl font-bold text-white mb-1">
-                                                                {registration.user?.first_name} {registration.user?.last_name}
-                                                            </h3>
-                                                            <p className="text-white/70 mb-2">{registration.user?.email}</p>
-                                                            <div className="flex items-center text-white/60 text-sm">
-                                                                <i className="fas fa-calendar mr-2"></i>
-                                                                <span>Applied: {new Date(registration.created_at).toLocaleDateString()}</span>
-                                                            </div>
-                                                            {registration.trainingSession && (
-                                                                <div className="mt-2 flex items-center text-white/60 text-sm">
-                                                                    <i className="fas fa-chalkboard-teacher mr-2"></i>
-                                                                    <span>{registration.trainingSession.skill_name}</span>
+                                            {pendingRegistrations.map((registration) => {
+                                                const applicantName = registration.user?.first_name && registration.user?.last_name
+                                                    ? `${registration.user.first_name} ${registration.user.last_name}`
+                                                    : 'Applicant';
+                                                const applicantEmail = registration.user?.email || '';
+                                                const session = registration.training_session || {};
+                                                const sessionName = session.skill_name || 'Training Session';
+                                                const sessionCategory = session.category?.name || '';
+                                                const trainerName = session.trainer?.first_name && session.trainer?.last_name ? `${session.trainer.first_name} ${session.trainer.last_name}` : session.trainer?.name || '';
+                                                const maxParticipants = session.max_participants ? `Max ${session.max_participants}` : '';
+                                                const sessionDate = session.date ? new Date(session.date).toLocaleDateString() : '-';
+                                                const sessionTime = session.start_time && session.end_time ? `${session.start_time} - ${session.end_time}` : session.start_time ? session.start_time : '';
+                                                const sessionLocation = session.location || 'No location specified';
+                                                const appliedDate = registration.created_at ? new Date(registration.created_at).toLocaleDateString() : '-';
+                                                const status = registration.status ? registration.status.charAt(0).toUpperCase() + registration.status.slice(1) : 'Pending';
+                                                return (
+                                                    <div key={registration.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300 shadow-lg">
+                                                        <div className="flex items-start justify-between mb-4">
+                                                            <div className="flex-1">
+                                                                <h3 className="text-xl font-bold text-white mb-1">{applicantName}</h3>
+                                                                <p className="text-white/70 mb-2">{applicantEmail}</p>
+                                                                <div className="flex flex-wrap gap-x-6 gap-y-1 mb-2">
+                                                                    <div className="flex items-center text-white/60 text-sm">
+                                                                        <i className="fas fa-calendar mr-2"></i>
+                                                                        <span>Applied: {appliedDate}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center text-white/60 text-sm">
+                                                                        <i className="fas fa-chalkboard-teacher mr-2"></i>
+                                                                        <span>Session: {sessionName}</span>
+                                                                    </div>
+                                                                    {sessionCategory && (
+                                                                        <div className="flex items-center text-white/60 text-sm">
+                                                                            <i className="fas fa-layer-group mr-2"></i>
+                                                                            <span>Category: {sessionCategory}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {trainerName && (
+                                                                        <div className="flex items-center text-white/60 text-sm">
+                                                                            <i className="fas fa-user-tie mr-2"></i>
+                                                                            <span>Trainer: {trainerName}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {maxParticipants && (
+                                                                        <div className="flex items-center text-white/60 text-sm">
+                                                                            <i className="fas fa-users mr-2"></i>
+                                                                            <span>{maxParticipants}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex items-center text-white/60 text-sm">
+                                                                        <i className="fas fa-map-marker-alt mr-2"></i>
+                                                                        <span>Location: {sessionLocation}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center text-white/60 text-sm">
+                                                                        <i className="fas fa-clock mr-2"></i>
+                                                                        <span>Date: {sessionDate}</span>
+                                                                        {sessionTime && (
+                                                                            <span className="ml-2">Time: {sessionTime}</span>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex items-center space-x-3">
-                                                            <button
-                                                                onClick={() => handleApproval(registration.id)}
-                                                                className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 flex items-center"
-                                                            >
-                                                                <i className="fas fa-check mr-2"></i>
-                                                                Approve
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleRejection(registration.id)}
-                                                                className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 flex items-center"
-                                                            >
-                                                                <i className="fas fa-times mr-2"></i>
-                                                                Reject
-                                                            </button>
+                                                                <div className="mt-2 text-white/80 text-sm font-semibold">
+                                                                    Status: <span className="px-2 py-1 rounded bg-yellow-400/20 text-yellow-400">{status}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center space-x-3">
+                                                                <button
+                                                                    onClick={() => handleApproval(registration.id)}
+                                                                    className="px-4 py-2 border-2 border-green-400 text-green-400 bg-transparent hover:bg-green-400/10 hover:border-green-500 hover:text-green-500 rounded-xl font-semibold transition-all duration-200 flex items-center group"
+                                                                    aria-label="Approve registration"
+                                                                >
+                                                                    <i className="fas fa-check mr-2 group-hover:scale-125 transition-transform duration-200"></i>
+                                                                    Approve
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleRejection(registration.id)}
+                                                                    className="px-4 py-2 border-2 border-red-400 text-red-400 bg-transparent hover:bg-red-400/10 hover:border-red-500 hover:text-red-500 rounded-xl font-semibold transition-all duration-200 flex items-center group"
+                                                                    aria-label="Reject registration"
+                                                                >
+                                                                    <i className="fas fa-times mr-2 group-hover:scale-125 transition-transform duration-200"></i>
+                                                                    Reject
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Sidebar */}
-                            <div className="space-y-8">
-                                {/* Quick Actions */}
-                                <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
-                                    <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                                        <i className="fas fa-bolt text-yellow-400 mr-2"></i>
-                                        Quick Actions
-                                    </h3>
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={() => setShowCreateModal(true)}
-                                            className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center"
-                                        >
-                                            <i className="fas fa-plus mr-2"></i>
-                                            Create Session
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveView('sessions')}
-                                            className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-white font-semibold transition-all duration-300 flex items-center justify-center"
-                                        >
-                                            <i className="fas fa-calendar-alt mr-2"></i>
-                                            Manage Sessions
-                                        </button>
-                                        <button className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-white font-semibold transition-all duration-300 flex items-center justify-center">
-                                            <i className="fas fa-chart-bar mr-2"></i>
-                                            Analytics
-                                        </button>
-                                    </div>
-                                </div>
+                            {/* Recent Activity Feed - Hidden for now
+                            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
+                                <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                                    <i className="fas fa-bell text-blue-400 mr-3"></i>
+                                    Recent Activity
+                                </h2>
 
-                                {/* Recent Activity */}
-                                <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
-                                    <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                                        <i className="fas fa-history text-cyan-400 mr-2"></i>
-                                        Recent Activity
-                                    </h3>
-                                    <div className="space-y-3">
-                                        {recentActivity.length === 0 ? (
-                                            <div className="text-center py-4">
-                                                <i className="fas fa-clock text-white/40 text-2xl mb-2"></i>
-                                                <p className="text-white/60 text-sm">No recent activity</p>
-                                            </div>
-                                        ) : (
-                                            recentActivity.slice(0, 5).map((activity, index) => (
-                                                <div key={index} className="flex items-start space-x-3 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20">
-                                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${activity.type === 'registration_approved' ? 'bg-green-400/20 text-green-400' :
-                                                        activity.type === 'registration_rejected' ? 'bg-red-400/20 text-red-400' :
-                                                            activity.type === 'registration_pending' ? 'bg-orange-400/20 text-orange-400' :
-                                                                activity.type === 'session_created' ? 'bg-blue-400/20 text-blue-400' :
-                                                                    activity.type === 'session_updated' ? 'bg-yellow-400/20 text-yellow-400' :
-                                                                        activity.type === 'session_confirmed' ? 'bg-green-400/20 text-green-400' :
-                                                                            activity.type === 'session_cancelled' ? 'bg-red-400/20 text-red-400' :
-                                                                                activity.type === 'session_deleted' ? 'bg-red-500/20 text-red-500' :
-                                                                                    'bg-cyan-400/20 text-cyan-400'
-                                                        }`}>
-                                                        <i className={
-                                                            activity.type === 'registration_approved' ? 'fas fa-user-check' :
-                                                                activity.type === 'registration_rejected' ? 'fas fa-user-times' :
-                                                                    activity.type === 'registration_pending' ? 'fas fa-user-clock' :
-                                                                        activity.type === 'session_created' ? 'fas fa-plus-circle' :
-                                                                            activity.type === 'session_updated' ? 'fas fa-edit' :
-                                                                                activity.type === 'session_confirmed' ? 'fas fa-check-circle' :
-                                                                                    activity.type === 'session_cancelled' ? 'fas fa-ban' :
-                                                                                        activity.type === 'session_deleted' ? 'fas fa-trash' :
-                                                                                            'fas fa-activity'
-                                                        }></i>
+                                {recentActivity.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i className="fas fa-check-double text-3xl text-green-400"></i>
+                                        </div>
+                                        <h3 className="text-xl font-semibold text-white mb-2">No Recent Activity</h3>
+                                        <p className="text-white/70">You're all caught up! No recent activities to show.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                                        {recentActivity.map((activity, index) => (
+                                            <div key={index} className="p-4 bg-white/10 rounded-xl border border-white/20 shadow-md transition-all duration-300 hover:scale-105">
+                                                <div className="flex items-center mb-2">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${activity.type === 'session_created' ? 'bg-green-500/20' : activity.type === 'session_confirmed' ? 'bg-blue-500/20' : 'bg-red-500/20'}`}>
+                                                        <i className={`fas fa-${activity.type === 'session_created' ? 'plus' : activity.type === 'session_confirmed' ? 'check' : 'times'} text-xl ${activity.type === 'session_created' ? 'text-green-500' : activity.type === 'session_confirmed' ? 'text-blue-500' : 'text-red-500'}`}></i>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <div className="text-white font-semibold text-sm truncate pr-2">{activity.description}</div>
-                                                            <div className="text-white/60 text-xs flex-shrink-0">
-                                                                {new Date(activity.created_at).toLocaleDateString('en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-white/70 text-xs leading-relaxed">{activity.details}</div>
-                                                        {activity.sessionInfo && (
-                                                            <div className="mt-2 flex items-center space-x-3 text-xs text-white/50">
-                                                                {activity.sessionInfo.location && (
-                                                                    <span className="flex items-center">
-                                                                        <i className="fas fa-map-marker-alt mr-1"></i>
-                                                                        {activity.sessionInfo.location}
-                                                                    </span>
-                                                                )}
-                                                                {activity.sessionInfo.maxParticipants && (
-                                                                    <span className="flex items-center">
-                                                                        <i className="fas fa-users mr-1"></i>
-                                                                        {activity.sessionInfo.maxParticipants} max
-                                                                    </span>
-                                                                )}
-                                                                {activity.sessionInfo.time && (
-                                                                    <span className="flex items-center">
-                                                                        <i className="fas fa-clock mr-1"></i>
-                                                                        {activity.sessionInfo.time}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                    <div className="flex-1">
+                                                        <p className="text-white font-semibold text-sm mb-1">{activity.description}</p>
+                                                        <p className="text-white/70 text-xs">{activity.details}</p>
                                                     </div>
                                                 </div>
-                                            ))
-                                        )}
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-
-                                {/* Performance Metrics */}
-                                <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
-                                    <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                                        <i className="fas fa-trophy text-yellow-400 mr-2"></i>
-                                        This Month
-                                    </h3>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-white/80">Sessions Created</span>
-                                            <span className="text-2xl font-bold text-blue-400">8</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-white/80">Registrations Processed</span>
-                                            <span className="text-2xl font-bold text-green-400">47</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-white/80">Completion Rate</span>
-                                            <span className="text-2xl font-bold text-purple-400">94%</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                )}
                             </div>
+                            */}
                         </div>
                     </>
                 ) : (
-                    /* Sessions Management View */
-                    <SessionManagement onSessionUpdate={handleSessionUpdate} />
+                    <SessionManagement
+                        onSessionCreated={handleSessionCreated}
+                        onSessionUpdated={handleSessionUpdate}
+                        categories={categories}
+                        trainers={trainers}
+                        userId={user.id}
+                    />
+                )}
+
+                {/* Create Session Modal */}
+                {showCreateModal && (
+                    <CreateSessionModal
+                        isOpen={showCreateModal}
+                        onClose={() => setShowCreateModal(false)}
+                        onSessionCreated={handleSessionCreated}
+                        categories={categories}
+                        trainers={trainers}
+                        userId={user.id}
+                    />
                 )}
             </div>
-
-            {/* Create Session Modal */}
-            <CreateSessionModal
-                isOpen={showCreateModal}
-                onClose={() => setShowCreateModal(false)}
-                onSessionCreated={handleSessionCreated}
-                categories={categories}
-                trainers={trainers}
-            />
         </div>
     )
 }
