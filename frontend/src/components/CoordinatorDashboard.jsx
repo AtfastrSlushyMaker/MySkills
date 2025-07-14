@@ -241,6 +241,19 @@ function CoordinatorDashboard() {
                     <SessionDetails sessionId={selectedSessionId} onBack={() => setSelectedSessionId(null)} />
                 ) : activeView === 'dashboard' ? (
                     <>
+                        {/* Quick Actions */}
+                        <div className="mb-10">
+                            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl flex items-center gap-6">
+                                <button
+                                    className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-2xl shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3"
+                                    onClick={() => setShowCreateModal(true)}
+                                >
+                                    <i className="fas fa-plus text-xl"></i>
+                                    Create Session
+                                </button>
+                                {/* Add more quick actions here in the future */}
+                            </div>
+                        </div>
                         {/* Registration Stats Overview */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                             {[
@@ -312,131 +325,31 @@ function CoordinatorDashboard() {
                                     ) : (
                                         <div className="space-y-4 max-h-96 overflow-y-auto">
                                             {pendingRegistrations.map((registration) => {
-                                                const applicantName = registration.user?.first_name && registration.user?.last_name
-                                                    ? `${registration.user.first_name} ${registration.user.last_name}`
-                                                    : 'Applicant';
-                                                const applicantEmail = registration.user?.email || '';
-                                                const session = registration.training_session || {};
-                                                const sessionName = session.skill_name || 'Training Session';
-                                                const sessionCategory = session.category?.name || '';
-                                                const trainerName = session.trainer?.first_name && session.trainer?.last_name ? `${session.trainer.first_name} ${session.trainer.last_name}` : session.trainer?.name || '';
-                                                const maxParticipants = session.max_participants ? `Max ${session.max_participants}` : '';
-                                                const sessionDate = session.date ? new Date(session.date).toLocaleDateString() : '-';
-                                                const sessionTime = session.start_time && session.end_time ? `${session.start_time} - ${session.end_time}` : session.start_time ? session.start_time : '';
-                                                const sessionLocation = session.location || 'No location specified';
-                                                const appliedDate = registration.created_at ? new Date(registration.created_at).toLocaleDateString() : '-';
-                                                const status = registration.status ? registration.status.charAt(0).toUpperCase() + registration.status.slice(1) : 'Pending';
-                                                return (
-                                                    <div key={registration.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300 shadow-lg">
-                                                        <div className="flex items-start justify-between mb-4">
-                                                            <div className="flex-1">
-                                                                <h3 className="text-xl font-bold text-white mb-1">{applicantName}</h3>
-                                                                <p className="text-white/70 mb-2">{applicantEmail}</p>
-                                                                <div className="flex flex-wrap gap-x-6 gap-y-1 mb-2">
-                                                                    <div className="flex items-center text-white/60 text-sm">
-                                                                        <i className="fas fa-calendar mr-2"></i>
-                                                                        <span>Applied: {appliedDate}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center text-white/60 text-sm">
-                                                                        <i className="fas fa-chalkboard-teacher mr-2"></i>
-                                                                        <span>Session: {sessionName}</span>
-                                                                    </div>
-                                                                    {sessionCategory && (
-                                                                        <div className="flex items-center text-white/60 text-sm">
-                                                                            <i className="fas fa-layer-group mr-2"></i>
-                                                                            <span>Category: {sessionCategory}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {trainerName && (
-                                                                        <div className="flex items-center text-white/60 text-sm">
-                                                                            <i className="fas fa-user-tie mr-2"></i>
-                                                                            <span>Trainer: {trainerName}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {maxParticipants && (
-                                                                        <div className="flex items-center text-white/60 text-sm">
-                                                                            <i className="fas fa-users mr-2"></i>
-                                                                            <span>{maxParticipants}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="flex items-center text-white/60 text-sm">
-                                                                        <i className="fas fa-map-marker-alt mr-2"></i>
-                                                                        <span>Location: {sessionLocation}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center text-white/60 text-sm">
-                                                                        <i className="fas fa-clock mr-2"></i>
-                                                                        <span>Date: {sessionDate}</span>
-                                                                        {sessionTime && (
-                                                                            <span className="ml-2">Time: {sessionTime}</span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="mt-2 text-white/80 text-sm font-semibold">
-                                                                    Status: <span className="px-2 py-1 rounded bg-yellow-400/20 text-yellow-400">{status}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center space-x-3">
-                                                                <button
-                                                                    onClick={() => handleApproval(registration.id)}
-                                                                    className="px-4 py-2 border-2 border-green-400 text-green-400 bg-transparent hover:bg-green-400/10 hover:border-green-500 hover:text-green-500 rounded-xl font-semibold transition-all duration-200 flex items-center group"
-                                                                    aria-label="Approve registration"
-                                                                >
-                                                                    <i className="fas fa-check mr-2 group-hover:scale-125 transition-transform duration-200"></i>
-                                                                    Approve
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleRejection(registration.id)}
-                                                                    className="px-4 py-2 border-2 border-red-400 text-red-400 bg-transparent hover:bg-red-400/10 hover:border-red-500 hover:text-red-500 rounded-xl font-semibold transition-all duration-200 flex items-center group"
-                                                                    aria-label="Reject registration"
-                                                                >
-                                                                    <i className="fas fa-times mr-2 group-hover:scale-125 transition-transform duration-200"></i>
-                                                                    Reject
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
+                                                // ...existing code...
                                             })}
                                         </div>
                                     )}
                                 </div>
                             </div>
-
-                            {/* Recent Activity Feed - Hidden for now */}
-                            {/*
-                            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
-                                <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
-                                    <i className="fas fa-bell text-blue-400 mr-3"></i>
-                                    Recent Activity
-                                </h2>
-
-                                {recentActivity.length === 0 ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i className="fas fa-check-double text-3xl text-green-400"></i>
-                                        </div>
-                                        <h3 className="text-xl font-semibold text-white mb-2">No Recent Activity</h3>
-                                        <p className="text-white/70">You're all caught up! No recent activities to show.</p>
+                            {/* Quick Actions to the right, glassmorphism style */}
+                            <div className="flex flex-col gap-6 min-w-[260px] justify-start items-stretch">
+                                <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl flex flex-col items-center gap-6">
+                                    <div className="flex flex-col items-center w-full">
+                                        <span className="flex items-center text-white text-lg font-bold mb-4 tracking-wide">
+                                            <i className="fas fa-bolt mr-2 text-cyan-400 text-xl"></i>
+                                            Quick Actions
+                                        </span>
+                                        <button
+                                            className="w-full px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-2xl shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3 justify-center"
+                                            onClick={() => setShowCreateModal(true)}
+                                        >
+                                            <i className="fas fa-calendar-plus text-xl"></i>
+                                            <span className="font-semibold">Create Session</span>
+                                        </button>
                                     </div>
-                                ) : (
-                                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                                        {recentActivity.map((activity, index) => (
-                                            <div key={index} className="p-4 bg-white/10 rounded-xl border border-white/20 shadow-md transition-all duration-300 hover:scale-105">
-                                                <div className="flex items-center mb-2">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${activity.type === 'session_created' ? 'bg-green-500/20' : activity.type === 'session_confirmed' ? 'bg-blue-500/20' : 'bg-red-500/20'}`}>
-                                                        <i className={`fas fa-${activity.type === 'session_created' ? 'plus' : activity.type === 'session_confirmed' ? 'check' : 'times'} text-xl ${activity.type === 'session_created' ? 'text-green-500' : activity.type === 'session_confirmed' ? 'text-blue-500' : 'text-red-500'}`}></i>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-white font-semibold text-sm mb-1">{activity.description}</p>
-                                                        <p className="text-white/70 text-xs">{activity.details}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                    {/* Add more quick actions here in the future */}
+                                </div>
                             </div>
-                            */}
                         </div>
                     </>
                 ) : (

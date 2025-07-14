@@ -41,10 +41,18 @@ function SessionsPage() {
     const CATEGORY_LIMIT = 10
     const visibleFilters = showAllCategories ? filters : filters.slice(0, CATEGORY_LIMIT)
 
-    // Filter sessions by category name
-    const filteredSessions = activeFilter === 'All Sessions'
+    // Filter sessions by category name and only show sessions that haven't started yet
+    const today = new Date();
+    const filteredSessions = (activeFilter === 'All Sessions'
         ? sessions
         : sessions.filter(s => s.category?.name === activeFilter)
+    ).filter(s => {
+        // Assume s.date is in YYYY-MM-DD format
+        if (!s.date) return false;
+        const sessionDate = new Date(s.date);
+        // Only show sessions with date after today
+        return sessionDate > today;
+    });
 
     // Helper: assign an icon and gradient color to each category (fallbacks for unknown)
     const categoryIconMap = {
@@ -264,16 +272,39 @@ function SessionsPage() {
                                                 <div className="text-lg font-bold text-white truncate max-w-xs" title={session.location}>
                                                     <i className="fas fa-map-marker-alt mr-2 text-cyan-400"></i>{session.location}
                                                 </div>
-                                                <button
-                                                    className={`relative px-6 py-3 bg-transparent hover:bg-white/5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg border border-white/20 overflow-hidden group backdrop-blur-xl`}
-                                                    onClick={() => navigate(`/sessions/${session.id}`)}
-                                                >
-                                                    <span className="flex items-center gap-2 relative z-10">
-                                                        <i className="fas fa-sign-in-alt"></i>
-                                                        Enroll
-                                                    </span>
-                                                    <span className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r ${gradient} bg-opacity-70 rounded-xl`}></span>
-                                                </button>
+                                                {/* Registration Status Button */}
+                                                {session.registration_status === 'registered' ? (
+                                                    <button
+                                                        className={`relative px-6 py-3 bg-emerald-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl`}
+                                                        disabled
+                                                    >
+                                                        <span className="flex items-center gap-2 relative z-10">
+                                                            <i className="fas fa-check-circle"></i>
+                                                            Registered
+                                                        </span>
+                                                    </button>
+                                                ) : session.registration_status === 'pending' ? (
+                                                    <button
+                                                        className={`relative px-6 py-3 bg-yellow-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl`}
+                                                        disabled
+                                                    >
+                                                        <span className="flex items-center gap-2 relative z-10">
+                                                            <i className="fas fa-hourglass-half"></i>
+                                                            Pending
+                                                        </span>
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className={`relative px-6 py-3 bg-transparent hover:bg-white/5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg border border-white/20 overflow-hidden group backdrop-blur-xl`}
+                                                        onClick={() => navigate(`/sessions/${session.id}`)}
+                                                    >
+                                                        <span className="flex items-center gap-2 relative z-10">
+                                                            <i className="fas fa-sign-in-alt"></i>
+                                                            Enroll
+                                                        </span>
+                                                        <span className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r ${gradient} bg-opacity-70 rounded-xl`}></span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
