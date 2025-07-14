@@ -41,17 +41,28 @@ function SessionsPage() {
     const CATEGORY_LIMIT = 10
     const visibleFilters = showAllCategories ? filters : filters.slice(0, CATEGORY_LIMIT)
 
-    // Filter sessions by category name and only show sessions that haven't started yet
-    const today = new Date();
+    // Filter sessions by category name and only show sessions that haven't started yet (today with future time or any future date)
+    const now = new Date();
     const filteredSessions = (activeFilter === 'All Sessions'
         ? sessions
         : sessions.filter(s => s.category?.name === activeFilter)
     ).filter(s => {
-        // Assume s.date is in YYYY-MM-DD format
         if (!s.date) return false;
         const sessionDate = new Date(s.date);
-        // Only show sessions with date after today
-        return sessionDate > today;
+        // If session is in the future, show it
+        if (sessionDate > now) return true;
+        // If session is today, check start_time
+        const isToday = sessionDate.getFullYear() === now.getFullYear() &&
+            sessionDate.getMonth() === now.getMonth() &&
+            sessionDate.getDate() === now.getDate();
+        if (isToday && s.start_time) {
+            // Parse start_time as HH:mm or HH:mm:ss
+            const [hour, minute, second] = s.start_time.split(':').map(Number);
+            const sessionStart = new Date(sessionDate);
+            sessionStart.setHours(hour || 0, minute || 0, second || 0, 0);
+            return sessionStart > now;
+        }
+        return false;
     });
 
     // Helper: assign an icon and gradient color to each category (fallbacks for unknown)
@@ -190,26 +201,36 @@ function SessionsPage() {
                         </div>
                     ) : (
                         filteredSessions.map((session, index) => {
-                            const cat = session.category?.name || 'General'
-                            const icon = categoryIconMap[cat] || 'fas fa-chalkboard-teacher'
-                            const gradient = cardGradients[index % cardGradients.length]
+                            const cat = session.category?.name || 'General';
+                            const icon = categoryIconMap[cat] || 'fas fa-chalkboard-teacher';
+                            const gradient = cardGradients[index % cardGradients.length];
                             // Format date and time
-                            let formattedDate = session.date
-                            let formattedTime = session.start_time
+                            let formattedDate = session.date;
+                            let formattedTime = session.start_time;
+                            let isPast = false;
                             if (session.date) {
-                                const dateObj = new Date(session.date)
+                                const dateObj = new Date(session.date);
                                 formattedDate = dateObj.toLocaleDateString('en-US', {
                                     year: 'numeric', month: 'short', day: 'numeric'
-                                })
+                                });
+                                if (session.start_time) {
+                                    const [hour, minute, second] = session.start_time.split(':').map(Number);
+                                    const sessionStart = new Date(dateObj);
+                                    sessionStart.setHours(hour || 0, minute || 0, second || 0, 0);
+                                    isPast = sessionStart <= now;
+                                } else {
+                                    // If no start_time, just compare date
+                                    isPast = dateObj < now;
+                                }
                             }
                             if (session.start_time) {
                                 // Assume start_time is in HH:mm:ss or HH:mm format
-                                const [hour, minute] = session.start_time.split(':')
-                                const timeObj = new Date()
-                                timeObj.setHours(hour, minute)
+                                const [hour, minute] = session.start_time.split(':');
+                                const timeObj = new Date();
+                                timeObj.setHours(hour, minute);
                                 formattedTime = timeObj.toLocaleTimeString('en-US', {
                                     hour: '2-digit', minute: '2-digit'
-                                })
+                                });
                             }
                             return (
                                 <div key={session.id || index} className="group relative">
@@ -272,30 +293,20 @@ function SessionsPage() {
                                                 <div className="text-lg font-bold text-white truncate max-w-xs" title={session.location}>
                                                     <i className="fas fa-map-marker-alt mr-2 text-cyan-400"></i>{session.location}
                                                 </div>
-                                                {/* Registration Status Button */}
-                                                {session.registration_status === 'registered' ? (
+                                                {/* Registration Status Button (SessionDetails logic) */}
+                                                {isPast ? (
                                                     <button
-                                                        className={`relative px-6 py-3 bg-emerald-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl`}
+                                                        className="relative px-6 py-3 bg-gray-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl"
                                                         disabled
                                                     >
                                                         <span className="flex items-center gap-2 relative z-10">
-                                                            <i className="fas fa-check-circle"></i>
-                                                            Registered
-                                                        </span>
-                                                    </button>
-                                                ) : session.registration_status === 'pending' ? (
-                                                    <button
-                                                        className={`relative px-6 py-3 bg-yellow-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl`}
-                                                        disabled
-                                                    >
-                                                        <span className="flex items-center gap-2 relative z-10">
-                                                            <i className="fas fa-hourglass-half"></i>
-                                                            Pending
+                                                            <i className="fas fa-lock"></i>
+                                                            Closed
                                                         </span>
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        className={`relative px-6 py-3 bg-transparent hover:bg-white/5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg border border-white/20 overflow-hidden group backdrop-blur-xl`}
+                                                        className="relative px-6 py-3 bg-transparent hover:bg-white/5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg border border-white/20 overflow-hidden group backdrop-blur-xl"
                                                         onClick={() => navigate(`/sessions/${session.id}`)}
                                                     >
                                                         <span className="flex items-center gap-2 relative z-10">
@@ -309,7 +320,7 @@ function SessionsPage() {
                                         </div>
                                     </div>
                                 </div>
-                            )
+                            );
                         })
                     )}
                 </div>
