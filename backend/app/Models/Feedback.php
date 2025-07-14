@@ -34,6 +34,12 @@ class Feedback extends Model
         return $this->belongsTo(TrainingSession::class);
     }
 
+    // Accessor for user via registration
+    public function getUserAttribute()
+    {
+        return $this->registration ? $this->registration->user : null;
+    }
+
     // Helper methods
     public function getRatingStarsAttribute(): string
     {

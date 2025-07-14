@@ -63,7 +63,13 @@ class TrainingSessionController extends Controller
      */
     public function show(TrainingSession $trainingSession)
     {
-        $trainingSession->load(['category', 'trainer', 'coordinator', 'trainingCourses', 'registrations']);
+        $trainingSession->load([
+            'category',
+            'trainer',
+            'coordinator',
+            'trainingCourses',
+            'registrations.user' // Eager-load user for each registration
+        ]);
         return response()->json($trainingSession, 200);
     }
 

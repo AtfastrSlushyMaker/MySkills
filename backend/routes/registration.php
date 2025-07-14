@@ -10,9 +10,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('registrations/dashboard/stats', [App\Http\Controllers\RegistrationController::class, 'stats']);
     Route::get('registrations/session/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'bySession']);
     Route::apiResource('registrations', App\Http\Controllers\RegistrationController::class);
+    Route::get('registrations/status/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'getStatusByUserAndSession']);
 });
 
 // Public or less sensitive endpoints
 Route::get('registrations/status/pending/{coordinatorId}', [App\Http\Controllers\RegistrationController::class, 'pending']);
-Route::get('registrations/status/{userId}/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'getStatusByUserAndSession']);
+
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { trainingSessionApi } from '../services/api'
 import UpdateSessionModal from './modals/UpdateSessionModal'
 
 const SessionManagement = ({ onSessionUpdate }) => {
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('current')
     const [sessions, setSessions] = useState([])
     const [filteredSessions, setFilteredSessions] = useState([])
@@ -186,6 +188,7 @@ const SessionManagement = ({ onSessionUpdate }) => {
         )
     }
 
+    // ...existing code...
     return (
         <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
             {/* Header */}
@@ -242,7 +245,8 @@ const SessionManagement = ({ onSessionUpdate }) => {
                     {filteredSessions.map((session) => {
                         const status = getSessionStatus(session)
                         return (
-                            <div key={session.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300">
+                            <div key={session.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-cyan-400 cursor-pointer transition-all duration-300"
+                                onClick={() => navigate(`/sessions/${session.id}`)}>
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         {/* Session Header */}
@@ -259,14 +263,14 @@ const SessionManagement = ({ onSessionUpdate }) => {
                                             {activeTab === 'current' && (
                                                 <div className="flex items-center space-x-2">
                                                     <button
-                                                        onClick={() => handleUpdateSession(session)}
+                                                        onClick={e => { e.stopPropagation(); handleUpdateSession(session); }}
                                                         className="p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl text-blue-400 transition-all duration-300 hover:scale-105"
                                                         title="Edit Session"
                                                     >
                                                         <i className="fas fa-edit"></i>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteSession(session.id)}
+                                                        onClick={e => { e.stopPropagation(); handleDeleteSession(session.id); }}
                                                         disabled={deleteLoading === session.id}
                                                         className="p-3 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-red-400 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title="Delete Session"

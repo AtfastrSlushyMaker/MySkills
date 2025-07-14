@@ -3,8 +3,14 @@ import { registrationApi, trainingSessionApi, categoryApi, userApi } from '../se
 import { useAuth } from '../contexts/AuthContext'
 import CreateSessionModal from './modals/CreateSessionModal'
 import SessionManagement from './SessionManagement'
+import SessionDetails from './SessionDetails'
 
 function CoordinatorDashboard() {
+    // Add session navigation state
+    const [selectedSessionId, setSelectedSessionId] = useState(null);
+    const handleSessionCardClick = (sessionId) => {
+        setSelectedSessionId(sessionId);
+    };
 
     const [activeView, setActiveView] = useState('dashboard')
     const [stats, setStats] = useState({
@@ -230,8 +236,10 @@ function CoordinatorDashboard() {
                     ))}
                 </div>
 
-                {/* Content based on active view */}
-                {activeView === 'dashboard' ? (
+                {/* Content based on active view and session navigation */}
+                {selectedSessionId ? (
+                    <SessionDetails sessionId={selectedSessionId} onBack={() => setSelectedSessionId(null)} />
+                ) : activeView === 'dashboard' ? (
                     <>
                         {/* Registration Stats Overview */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -394,7 +402,8 @@ function CoordinatorDashboard() {
                                 </div>
                             </div>
 
-                            {/* Recent Activity Feed - Hidden for now
+                            {/* Recent Activity Feed - Hidden for now */}
+                            {/*
                             <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
                                 <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
                                     <i className="fas fa-bell text-blue-400 mr-3"></i>
@@ -437,6 +446,7 @@ function CoordinatorDashboard() {
                         categories={categories}
                         trainers={trainers}
                         userId={user.id}
+                        onSessionClick={handleSessionCardClick}
                     />
                 )}
 

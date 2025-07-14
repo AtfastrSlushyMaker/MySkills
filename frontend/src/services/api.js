@@ -8,6 +8,7 @@ const api = axios.create({
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
+    withCredentials: true,
 })
 
 export const setAuthToken = (token) => {
@@ -67,7 +68,7 @@ export const registrationApi = {
     updateRegistration: (id, data) => api.put(`/registrations/${id}`, data),
     deleteRegistration: (id) => api.delete(`/registrations/${id}`),
 
-    getStatusByUserAndSession: (userId, sessionId) => api.get(`/registrations/status/${userId}/${sessionId}`),
+    getStatusByUserAndSession: (sessionId) => api.get(`/registrations/status/${sessionId}`),
 };
 
 export const trainingSessionApi = {
@@ -103,6 +104,20 @@ export const categoryApi = {
     updateCategory: (id, data) => api.put(`/categories/${id}`, data),
     deleteCategory: (id) => api.delete(`/categories/${id}`)
 };
+
+export const feedbackApi = {
+    // Get all feedback for a session
+    getFeedbackBySession: (sessionId) => api.get(`/feedbacks/session/${sessionId}`),
+    // Get all feedback for a user
+    getFeedbackByUser: (userId) => api.get(`/feedbacks/user/${userId}`),
+    // Create feedback (requires registration_id, training_session_id, rating, comment)
+    submitFeedback: (data) => api.post('/feedbacks', data),
+    // Update feedback
+    updateFeedback: (id, data) => api.put(`/feedbacks/${id}`, data),
+    // Delete feedback
+    deleteFeedback: (id) => api.delete(`/feedbacks/${id}`),
+};
+
 
 // Add this function for toggling course active status
 export const toggleCourseActiveApi = (courseId, isActive) =>

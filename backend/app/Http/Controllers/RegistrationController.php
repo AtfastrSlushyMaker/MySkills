@@ -37,7 +37,7 @@ class RegistrationController extends Controller
      */
     public function show(Registration $registration)
     {
-        return response()->json($registration, 200);
+        return response()->json($registration->load(['user', 'trainingSession', 'trainingCourse']), 200);
     }
 
     /**
@@ -183,8 +183,12 @@ class RegistrationController extends Controller
     /**
      * Get registration status for a user and session
      */
-    public function getStatusByUserAndSession($userId, $sessionId)
+    public function getStatusByUserAndSession($sessionId)
     {
+        $userId=auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
         $registration = \App\Models\Registration::where('user_id', $userId)
             ->where('training_session_id', $sessionId)
             ->first();

@@ -13,7 +13,20 @@ class FeedbackController extends Controller
      */
     public function index()
     {
-        return response()->json(Feedback::all(), 200);
+        $feedbacks = Feedback::with('registration.user')->get();
+        $result = $feedbacks->map(function($fb) {
+            $user = $fb->user;
+            return [
+                'id' => $fb->id,
+                'comment' => $fb->comment,
+                'rating' => $fb->rating,
+                'user' => $user ? [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name
+                ] : null
+            ];
+        });
+        return response()->json($result, 200);
     }
 
     /**
@@ -23,18 +36,9 @@ class FeedbackController extends Controller
     {
         $validated = $request->validate([
             'registration_id' => 'required|exists:registrations,id',
-            'training_session_id' => 'required|exists:training_sessions,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
         ]);
-
-        // Validate that registration belongs to the specified training session
-        $registration = \App\Models\Registration::find($validated['registration_id']);
-        if ($registration->training_session_id != $validated['training_session_id']) {
-            return response()->json([
-                'message' => 'Registration does not belong to the specified training session'
-            ], 422);
-        }
         $feedback = Feedback::create($validated);
         return response()->json($feedback, 201);
     }
@@ -44,7 +48,18 @@ class FeedbackController extends Controller
      */
     public function show(Feedback $feedback)
     {
-        return response()->json($feedback, 200);
+        $feedback->load('registration.user');
+        $user = $feedback->user;
+        $result = [
+            'id' => $feedback->id,
+            'comment' => $feedback->comment,
+            'rating' => $feedback->rating,
+            'user' => $user ? [
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name
+            ] : null
+        ];
+        return response()->json($result, 200);
     }
 
     /**
@@ -53,10 +68,9 @@ class FeedbackController extends Controller
     public function update(Request $request, Feedback $feedback)
     {
         $validated = $request->validate([
-            'user_id' => 'sometimes|required|exists:users,id',
-            'training_session_id' => 'sometimes|required|exists:training_sessions,id',
+            'registration_id' => 'sometimes|required|exists:registrations,id',
             'rating' => 'sometimes|required|integer|min:1|max:5',
-            'comments' => 'sometimes|nullable|string|max:1000',
+            'comment' => 'sometimes|nullable|string|max:1000',
         ]);
         $feedback->update($validated);
         return response()->json($feedback, 200);
@@ -69,5 +83,38 @@ class FeedbackController extends Controller
     {
         $feedback->delete();
         return response()->json(null, 204);
+    }
+
+    /**
+     * Get feedback for a specific training session
+     */
+    public function getFeedbackBySession($sessionId)
+    {
+        $feedbacks = Feedback::whereHas('registration', function ($query) use ($sessionId) {
+            $query->where('training_session_id', $sessionId);
+        })->with('registration.user')->get();
+        $result = $feedbacks->map(function($fb) {
+            $user = $fb->user;
+            return [
+                'id' => $fb->id,
+                'comment' => $fb->comment,
+                'rating' => $fb->rating,
+                'user' => $user ? [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name
+                ] : null
+            ];
+        });
+        return response()->json($result, 200);
+    }
+    /**
+     * Get feedback by user
+     */
+    public function getFeedbackByUser($userId)
+    {
+        $feedback = Feedback::whereHas('registration.user', function ($query) use ($userId) {
+            $query->where('id', $userId);
+        })->with('registration.trainingSession')->get();
+        return response()->json($feedback, 200);
     }
 }
