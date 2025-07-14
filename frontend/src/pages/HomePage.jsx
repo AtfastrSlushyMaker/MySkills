@@ -1,34 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom';
+import { categoryApi, trainingCourseApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 function HomePage() {
+    const { user, loading: authLoading } = useAuth();
+    const isLoggedIn = !!user;
+    const firstName = user?.first_name || '';
+
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userCount, setUserCount] = useState(null);
+    const [courseCount, setCourseCount] = useState(null);
 
     useEffect(() => {
         fetchCategories();
+        fetchStats();
     }, []);
 
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:8000/api/categories');
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
-            const data = await response.json();
+            const response = await categoryApi.getAllCategories();
+            const data = response.data;
             setCategories(data.filter(category => category.is_active));
             setError(null);
         } catch (err) {
             setError(err.message);
-            console.error('Error fetching categories:', err);
-            // Fallback to hardcoded data if API fails
             setCategories([
                 { id: -1, name: 'Error Retriving ', description: 'Error fetching categories', is_active: 0 }
             ]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Fetch stats for users and courses
+    const fetchStats = async () => {
+        try {
+            // Users
+            // You may want to replace this with a real user count endpoint
+            setUserCount('N/A');
+            // Courses
+            const courseRes = await trainingCourseApi.getAllCourses();
+            setCourseCount(courseRes.data?.length || 'N/A');
+        } catch (err) {
+            setUserCount('N/A');
+            setCourseCount('N/A');
         }
     };
 
@@ -69,9 +88,9 @@ function HomePage() {
         ];
         return gradients[index % gradients.length];
     };
+
     return (
         <div className="min-h-screen relative overflow-hidden">
-            {/* Stunning Hero Section */}
             <div className="relative z-10">
                 {/* Hero Section with Advanced Glassmorphism */}
                 <section className="min-h-screen flex items-center justify-center relative px-6">
@@ -120,16 +139,6 @@ function HomePage() {
                             </div>
                         </div>
 
-                        {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                            <Link to="/login" >
-                                <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25">
-                                    <span className="relative z-10">Start Learning Today</span>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </button>
-                            </Link>
-                        </div>
-
                         {/* Trust Indicators */}
                         <div className="mt-16 pt-8 border-t border-white/20">
                             <p className="text-white/60 text-sm mb-6">Trusted by professionals at</p>
@@ -148,20 +157,35 @@ function HomePage() {
                 <section className="py-24 px-6">
                     <div className="max-w-6xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                            {[
-                                { value: '25,000+', label: 'Students Enrolled', icon: 'fa-users', color: 'cyan' },
-                                { value: '150+', label: 'Professional Courses', icon: 'fa-graduation-cap', color: 'purple' },
-                                { value: `${categories.length}+`, label: 'Learning Categories', icon: 'fa-chart-line', color: 'pink' },
-                                { value: '24/7', label: 'Learning Support', icon: 'fa-headset', color: 'emerald' }
-                            ].map((stat, index) => (
-                                <div key={index} className="text-center group">
-                                    <div className={`w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
-                                        <i className={`fas ${stat.icon} text-2xl text-${stat.color}-400`}></i>
-                                    </div>
-                                    <div className={`text-4xl font-black mb-2 text-${stat.color}-400`}>{stat.value}</div>
-                                    <div className="text-white/70 font-medium">{stat.label}</div>
+                            {/* Real stats from API */}
+                            <div className="text-center group">
+                                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cyan-400/20 to-cyan-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                                    <i className="fas fa-users text-2xl text-cyan-400"></i>
                                 </div>
-                            ))}
+                                <div className="text-4xl font-black mb-2 text-cyan-400">{userCount !== null ? `${userCount}+` : '...'}</div>
+                                <div className="text-white/70 font-medium">Students Enrolled</div>
+                            </div>
+                            <div className="text-center group">
+                                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-400/20 to-purple-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                                    <i className="fas fa-graduation-cap text-2xl text-purple-400"></i>
+                                </div>
+                                <div className="text-4xl font-black mb-2 text-purple-400">{courseCount !== null ? `${courseCount}+` : '...'}</div>
+                                <div className="text-white/70 font-medium">Professional Courses</div>
+                            </div>
+                            <div className="text-center group">
+                                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-400/20 to-pink-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                                    <i className="fas fa-chart-line text-2xl text-pink-400"></i>
+                                </div>
+                                <div className="text-4xl font-black mb-2 text-pink-400">{categories.length}+</div>
+                                <div className="text-white/70 font-medium">Learning Categories</div>
+                            </div>
+                            <div className="text-center group">
+                                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 backdrop-blur-2xl rounded-2xl border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                                    <i className="fas fa-headset text-2xl text-emerald-400"></i>
+                                </div>
+                                <div className="text-4xl font-black mb-2 text-emerald-400">24/7</div>
+                                <div className="text-white/70 font-medium">Learning Support</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -234,40 +258,39 @@ function HomePage() {
                     </div>
                 </section>
 
-
-                {/* CTA Section */}
-                <section className="py-24 px-6">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 shadow-2xl relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-x"></div>
-                            <div className="relative z-10">
-                                <h2 className="text-5xl font-black mb-6">
-                                    <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                        Ready to Transform
-                                    </span>
-                                    <br />
-                                    <span className="text-white">Your Career?</span>
-                                </h2>
-                                <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                                    Join thousands of professionals who have accelerated their careers with MySkills Academy
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                                    <Link to="/signup" >
-
-                                        <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25" >
-                                            <span className="relative z-10">Start Your Journey</span>
-                                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        </button>
-                                    </Link>
-
+                {/* CTA Section (hide for logged-in users) */}
+                {!isLoggedIn && (
+                    <section className="py-24 px-6">
+                        <div className="max-w-4xl mx-auto text-center">
+                            <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 shadow-2xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-x"></div>
+                                <div className="relative z-10">
+                                    <h2 className="text-5xl font-black mb-6">
+                                        <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                            Ready to Transform
+                                        </span>
+                                        <br />
+                                        <span className="text-white">Your Career?</span>
+                                    </h2>
+                                    <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                                        Join thousands of professionals who have accelerated their careers with MySkills Academy
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                                        <Link to="/signup" >
+                                            <button className="group relative px-12 py-5 text-lg font-bold text-white overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:scale-105 transform transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25" >
+                                                <span className="relative z-10">Start Your Journey</span>
+                                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            </button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
             </div >
         </div >
     )
 }
 
-export default HomePage
+export default HomePage;
