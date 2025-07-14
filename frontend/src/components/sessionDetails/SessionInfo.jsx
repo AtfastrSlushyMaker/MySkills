@@ -1,5 +1,19 @@
 import React from 'react';
 
+// Helper functions for formatting
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    return d.toISOString().split('T')[0]; // YYYY-MM-DD
+}
+function formatTime(timeStr) {
+    if (!timeStr) return '';
+    // Handles HH:mm:ss or HH:mm
+    const parts = timeStr.split(':');
+    return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : timeStr;
+}
+
 const SessionInfo = ({ session }) => (
     <section className="mb-6 bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
@@ -23,12 +37,19 @@ const SessionInfo = ({ session }) => (
                 <div className="flex items-center gap-3 mb-2">
                     <i className="fas fa-calendar-alt text-cyan-300"></i>
                     <span className="font-semibold">Date:</span>
-                    <span>{session.date}</span>
+                    <span>{formatDate(session.date)}</span>
                 </div>
+                {session.end_date && (
+                    <div className="flex items-center gap-3 mb-2">
+                        <i className="fas fa-calendar-check text-cyan-400"></i>
+                        <span className="font-semibold">End Date:</span>
+                        <span>{formatDate(session.end_date)}</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-3 mb-2">
                     <i className="fas fa-clock text-purple-300"></i>
                     <span className="font-semibold">Time:</span>
-                    <span>{session.start_time} - {session.end_time}</span>
+                    <span>{formatTime(session.start_time)} - {formatTime(session.end_time)}</span>
                 </div>
                 <div className="flex items-center gap-3 mb-2">
                     <i className="fas fa-map-marker-alt text-green-300"></i>

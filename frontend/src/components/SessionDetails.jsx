@@ -189,32 +189,47 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 <SessionInfo session={session} />
                 {/* Enroll button for trainees only - moved below SessionInfo for clarity */}
                 {user && user.role === 'trainee' && (
-                    <div className="mt-2 flex flex-col items-start gap-2">
-                        <button
-                            className={`px-7 py-3 font-bold rounded-full shadow-lg backdrop-blur border transition-all duration-300 flex items-center gap-2 overflow-hidden relative disabled:opacity-60 disabled:cursor-not-allowed ${registrationStatus ? getStatusIconAndColor(registrationStatus).color : 'bg-transparent hover:bg-white/10 text-white border-white/30 hover:scale-105'}`}
-                            onClick={handleEnroll}
-                            disabled={enrolling || enrollSuccess || registrationStatus}
-                            style={{ minWidth: 180 }}
-                        >
-                            <span className="flex items-center gap-2 relative z-10">
-                                <i className={`fas ${registrationStatus ? getStatusIconAndColor(registrationStatus).icon : 'fa-user-plus'} text-lg`}></i>
-                                {enrolling
-                                    ? 'Enrolling...'
-                                    : registrationStatus
-                                        ? `Status: ${registrationStatus.charAt(0).toUpperCase() + registrationStatus.slice(1)}`
-                                        : enrollSuccess
-                                            ? 'Enrolled!'
-                                            : 'Enroll in this Session'}
-                            </span>
-                            <span className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-opacity-70 rounded-full"></span>
-                        </button>
-                        {enrollError && (
-                            <span className="text-red-400 text-sm mt-1">{enrollError}</span>
-                        )}
-                        {enrollSuccess && !registrationStatus && (
-                            <span className="text-green-400 text-sm mt-1">Successfully enrolled!</span>
-                        )}
-                    </div>
+                    (() => {
+                        // Check if session is finished
+                        let sessionFinished = false;
+                        if (session && session.date && session.start_time) {
+                            const now = new Date();
+                            const sessionDate = new Date(session.date);
+                            const [hour, minute, second] = session.start_time.split(':').map(Number);
+                            sessionDate.setHours(hour || 0, minute || 0, second || 0, 0);
+                            sessionFinished = sessionDate <= now;
+                        }
+                        return (
+                            <div className="mt-2 flex flex-col items-start gap-2">
+                                <button
+                                    className={`px-7 py-3 font-bold rounded-full shadow-lg backdrop-blur border transition-all duration-300 flex items-center gap-2 overflow-hidden relative disabled:opacity-60 disabled:cursor-not-allowed ${registrationStatus ? getStatusIconAndColor(registrationStatus).color : 'bg-transparent hover:bg-white/10 text-white border-white/30 hover:scale-105'}`}
+                                    onClick={handleEnroll}
+                                    disabled={enrolling || enrollSuccess || registrationStatus || sessionFinished}
+                                    style={{ minWidth: 180 }}
+                                >
+                                    <span className="flex items-center gap-2 relative z-10">
+                                        <i className={`fas ${sessionFinished ? 'fa-lock' : (registrationStatus ? getStatusIconAndColor(registrationStatus).icon : 'fa-user-plus')} text-lg`}></i>
+                                        {sessionFinished
+                                            ? 'Session Finished'
+                                            : enrolling
+                                                ? 'Enrolling...'
+                                                : registrationStatus
+                                                    ? `Status: ${registrationStatus.charAt(0).toUpperCase() + registrationStatus.slice(1)}`
+                                                    : enrollSuccess
+                                                        ? 'Enrolled!'
+                                                        : 'Enroll in this Session'}
+                                    </span>
+                                    <span className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-opacity-70 rounded-full"></span>
+                                </button>
+                                {enrollError && (
+                                    <span className="text-red-400 text-sm mt-1">{enrollError}</span>
+                                )}
+                                {enrollSuccess && !registrationStatus && (
+                                    <span className="text-green-400 text-sm mt-1">Successfully enrolled!</span>
+                                )}
+                            </div>
+                        );
+                    })()
                 )}
                 {/* Registered Trainees (only for coordinators and trainers) */}
                 {user && (user.role === 'coordinator' || user.role === 'trainer') && (
@@ -320,23 +335,30 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 {/* Comments/Feedback Section - now below courses, FeedbackForm inside CommentsList */}
                 <CommentsList feedbacks={feedbacks} loading={feedbackLoading} error={feedbackError}>
                     {user && user.role === 'trainee' && userRegistration && (
-                        <FeedbackForm
-                            sessionId={sessionId}
-                            onSubmit={async (data) => {
-                                // Compose feedback payload
-                                const payload = {
-                                    registration_id: userRegistration.id,
-                                    rating: data.rating,
-                                    comment: data.comment,
-                                };
-                                await feedbackApi.submitFeedback(payload);
-                                // Refetch feedbacks
-                                setFeedbackLoading(true);
-                                feedbackApi.getFeedbackBySession(sessionId)
-                                    .then(res => setFeedbacks(res.data))
-                                    .finally(() => setFeedbackLoading(false));
-                            }}
-                        />
+                        registrationStatus === 'confirmed' ? (
+                            <FeedbackForm
+                                sessionId={sessionId}
+                                onSubmit={async (data) => {
+                                    // Compose feedback payload
+                                    const payload = {
+                                        registration_id: userRegistration.id,
+                                        rating: data.rating,
+                                        comment: data.comment,
+                                    };
+                                    await feedbackApi.submitFeedback(payload);
+                                    // Refetch feedbacks
+                                    setFeedbackLoading(true);
+                                    feedbackApi.getFeedbackBySession(sessionId)
+                                        .then(res => setFeedbacks(res.data))
+                                        .finally(() => setFeedbackLoading(false));
+                                }}
+                            />
+                        ) : (
+                            <div className="text-white/60 italic mb-4 flex items-center gap-2">
+                                <i className="fas fa-lock text-rose-300"></i>
+                                Only confirmed trainees can submit feedback.
+                            </div>
+                        )
                     )}
                 </CommentsList>
 

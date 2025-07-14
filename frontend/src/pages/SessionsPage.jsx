@@ -7,6 +7,7 @@ function SessionsPage() {
     const [loading, setLoading] = useState(true)
     const [activeFilter, setActiveFilter] = useState('All Sessions')
     const [categories, setCategories] = useState([])
+    const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' or 'past'
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -41,29 +42,46 @@ function SessionsPage() {
     const CATEGORY_LIMIT = 10
     const visibleFilters = showAllCategories ? filters : filters.slice(0, CATEGORY_LIMIT)
 
-    // Filter sessions by category name and only show sessions that haven't started yet (today with future time or any future date)
+    // Split sessions into upcoming and past
     const now = new Date();
-    const filteredSessions = (activeFilter === 'All Sessions'
-        ? sessions
-        : sessions.filter(s => s.category?.name === activeFilter)
-    ).filter(s => {
+    const isSessionPast = (s) => {
         if (!s.date) return false;
         const sessionDate = new Date(s.date);
-        // If session is in the future, show it
-        if (sessionDate > now) return true;
-        // If session is today, check start_time
+        if (sessionDate < now) return true;
         const isToday = sessionDate.getFullYear() === now.getFullYear() &&
             sessionDate.getMonth() === now.getMonth() &&
             sessionDate.getDate() === now.getDate();
         if (isToday && s.start_time) {
-            // Parse start_time as HH:mm or HH:mm:ss
+            const [hour, minute, second] = s.start_time.split(':').map(Number);
+            const sessionStart = new Date(sessionDate);
+            sessionStart.setHours(hour || 0, minute || 0, second || 0, 0);
+            return sessionStart <= now;
+        }
+        return false;
+    };
+    const isSessionUpcoming = (s) => {
+        if (!s.date) return false;
+        const sessionDate = new Date(s.date);
+        if (sessionDate > now) return true;
+        const isToday = sessionDate.getFullYear() === now.getFullYear() &&
+            sessionDate.getMonth() === now.getMonth() &&
+            sessionDate.getDate() === now.getDate();
+        if (isToday && s.start_time) {
             const [hour, minute, second] = s.start_time.split(':').map(Number);
             const sessionStart = new Date(sessionDate);
             sessionStart.setHours(hour || 0, minute || 0, second || 0, 0);
             return sessionStart > now;
         }
         return false;
-    });
+    };
+    const filteredUpcomingSessions = (activeFilter === 'All Sessions'
+        ? sessions
+        : sessions.filter(s => s.category?.name === activeFilter)
+    ).filter(isSessionUpcoming);
+    const filteredPastSessions = (activeFilter === 'All Sessions'
+        ? sessions
+        : sessions.filter(s => s.category?.name === activeFilter)
+    ).filter(isSessionPast);
 
     // Helper: assign an icon and gradient color to each category (fallbacks for unknown)
     const categoryIconMap = {
@@ -145,6 +163,22 @@ function SessionsPage() {
                     </p>
                 </div>
 
+                {/* Tabs for Upcoming/Past */}
+                <div className="mb-8 flex justify-center gap-6">
+                    <button
+                        className={`px-8 py-3 rounded-full font-bold text-lg transition-all duration-300 shadow-lg border border-white/20 backdrop-blur-xl ${activeTab === 'upcoming' ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white scale-105 border-white/40' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                        onClick={() => setActiveTab('upcoming')}
+                    >
+                        Upcoming Sessions
+                    </button>
+                    <button
+                        className={`px-8 py-3 rounded-full font-bold text-lg transition-all duration-300 shadow-lg border border-white/20 backdrop-blur-xl ${activeTab === 'past' ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white scale-105 border-white/40' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                        onClick={() => setActiveTab('past')}
+                    >
+                        Past Sessions
+                    </button>
+                </div>
+
                 {/* Filter Section */}
                 <div className="mb-16">
                     <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
@@ -165,8 +199,7 @@ function SessionsPage() {
                                     className={`w-full max-w-2xl px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg text-lg
                                         ${showAllCategories
                                             ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-none hover:from-pink-600 hover:to-purple-600 scale-105'
-                                            : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-none hover:from-cyan-600 hover:to-blue-600 scale-105'}
-                                    `}
+                                            : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-none hover:from-cyan-600 hover:to-blue-600 scale-105'}`}
                                     onClick={() => setShowAllCategories(v => !v)}
                                 >
                                     {showAllCategories ? (
@@ -191,7 +224,7 @@ function SessionsPage() {
                             <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4"></div>
                             <p className="text-white/70">Loading sessions...</p>
                         </div>
-                    ) : filteredSessions.length === 0 ? (
+                    ) : (activeTab === 'upcoming' ? filteredUpcomingSessions : filteredPastSessions).length === 0 ? (
                         <div className="col-span-3 text-center py-12">
                             <div className="w-20 h-20 bg-gradient-to-br from-cyan-400/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i className="fas fa-calendar-times text-4xl text-cyan-400"></i>
@@ -200,7 +233,7 @@ function SessionsPage() {
                             <p className="text-white/70">Try a different filter or check back later.</p>
                         </div>
                     ) : (
-                        filteredSessions.map((session, index) => {
+                        (activeTab === 'upcoming' ? filteredUpcomingSessions : filteredPastSessions).map((session, index) => {
                             const cat = session.category?.name || 'General';
                             const icon = categoryIconMap[cat] || 'fas fa-chalkboard-teacher';
                             const gradient = cardGradients[index % cardGradients.length];
@@ -294,28 +327,15 @@ function SessionsPage() {
                                                     <i className="fas fa-map-marker-alt mr-2 text-cyan-400"></i>{session.location}
                                                 </div>
                                                 {/* Registration Status Button (SessionDetails logic) */}
-                                                {isPast ? (
-                                                    <button
-                                                        className="relative px-6 py-3 bg-gray-500/80 text-white font-semibold rounded-xl shadow-lg border border-white/20 cursor-not-allowed group backdrop-blur-xl"
-                                                        disabled
-                                                    >
-                                                        <span className="flex items-center gap-2 relative z-10">
-                                                            <i className="fas fa-lock"></i>
-                                                            Closed
-                                                        </span>
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className="relative px-6 py-3 bg-transparent hover:bg-white/5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg border border-white/20 overflow-hidden group backdrop-blur-xl"
-                                                        onClick={() => navigate(`/sessions/${session.id}`)}
-                                                    >
-                                                        <span className="flex items-center gap-2 relative z-10">
-                                                            <i className="fas fa-sign-in-alt"></i>
-                                                            Enroll
-                                                        </span>
-                                                        <span className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r ${gradient} bg-opacity-70 rounded-xl`}></span>
-                                                    </button>
-                                                )}
+                                                <button
+                                                    className="px-6 py-3 bg-transparent hover:bg-white/10 text-white font-semibold rounded-xl shadow-lg border border-white/20 backdrop-blur-xl hover:scale-105 transition-all duration-300"
+                                                    onClick={e => { e.stopPropagation(); navigate(`/sessions/${session.id}`); }}
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <i className="fas fa-eye"></i>
+                                                        View Details
+                                                    </span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -326,7 +346,7 @@ function SessionsPage() {
                 </div>
 
                 {/* Load More Section */}
-                {filteredSessions.length > 6 && (
+                {(activeTab === 'upcoming' ? filteredUpcomingSessions : filteredPastSessions).length > 6 && (
                     <div className="text-center mt-16">
                         <button className="px-12 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-2xl border border-white/20 hover:border-white/40 rounded-2xl text-white font-semibold transition-all duration-300 hover:scale-105 shadow-xl flex items-center justify-center gap-3">
                             <i className="fas fa-arrow-down animate-bounce"></i>
