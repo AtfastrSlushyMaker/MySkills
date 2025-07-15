@@ -4,7 +4,32 @@ import { useAuth } from '../contexts/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
 function Navigation() {
-    const location = useLocation()
+    const location = useLocation();
+
+    // Theme state from localStorage
+    const getInitialTheme = () => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('theme');
+            if (stored === 'light' || stored === 'dark') return stored;
+        }
+        return 'dark';
+    };
+    const [theme, setTheme] = useState(getInitialTheme);
+    const isLight = theme === 'light';
+    const handleToggleTheme = () => {
+        const next = isLight ? 'dark' : 'light';
+        setTheme(next);
+        if (typeof window !== 'undefined') localStorage.setItem('theme', next);
+    };
+    useEffect(() => {
+        const onStorage = (e) => {
+            if (e.key === 'theme' && (e.newValue === 'light' || e.newValue === 'dark')) {
+                setTheme(e.newValue);
+            }
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, [])
 
     // Hide navigation on admin routes
     if (location.pathname.startsWith('/admin')) return null;
@@ -71,10 +96,17 @@ function Navigation() {
     }
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl">
+        <nav className={
+            (isLight
+                ? "fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-blue-200 shadow-2xl"
+                : "fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-2xl"
+            )
+        }>
             {/* Glassmorphism overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 backdrop-blur-2xl"></div>
-
+            <div className={isLight
+                ? "absolute inset-0 bg-gradient-to-r from-blue-100/40 via-blue-200/30 to-blue-100/40 backdrop-blur-2xl"
+                : "absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-indigo-500/20 backdrop-blur-2xl"
+            }></div>
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-18 py-2">
                     {/* Logo Section - Enhanced Glassmorphism */}
@@ -146,6 +178,20 @@ function Navigation() {
                                 )}
                             </Link>
                         ))}
+
+                        {/* Theme Toggle Button */}
+                        <button
+                            className={
+                                "ml-4 px-4 py-2 rounded-full font-semibold shadow-lg transition-all duration-300 flex items-center gap-2 " +
+                                (isLight
+                                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200"
+                                    : "bg-slate-800 text-cyan-200 hover:bg-slate-700 border border-cyan-400/20")
+                            }
+                            style={{ boxShadow: isLight ? '0 2px 16px 0 #b6d0ff40' : undefined }}
+                            onClick={handleToggleTheme}
+                        >
+                            {isLight ? <><span role="img" aria-label="moon">🌙</span> Dark Mode</> : <><span role="img" aria-label="sun">☀️</span> Light Mode</>}
+                        </button>
 
                         {/* User Profile Section - Enhanced Glassmorphism */}
                         {loading ? (

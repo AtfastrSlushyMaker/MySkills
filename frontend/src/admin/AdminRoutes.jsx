@@ -7,10 +7,10 @@ import CoursesPage from "./pages/CoursesPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 
-function AdminLayout({ children }) {
+function AdminLayout({ children, isLight, onToggleTheme, theme }) {
     return (
-        <div className="fixed inset-0 flex min-h-screen w-screen bg-gradient-to-br from-[#181f2a] to-[#0d1117]">
-            <AdminSidebar />
+        <div className="fixed inset-0 flex min-h-screen w-screen bg-transparent">
+            <AdminSidebar isLight={isLight} onToggleTheme={onToggleTheme} theme={theme} />
             <main className="flex-1 min-h-screen overflow-x-auto overflow-y-auto">
                 {children}
             </main>
@@ -19,45 +19,70 @@ function AdminLayout({ children }) {
 }
 
 function AdminRoutes() {
+    // Use localStorage for theme persistence
+    const getInitialTheme = () => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('theme');
+            if (stored === 'light' || stored === 'dark') return stored;
+        }
+        return 'dark';
+    };
+    const [theme, setTheme] = React.useState(getInitialTheme);
+    const isLight = theme === 'light';
+    const handleToggleTheme = () => {
+        const next = isLight ? 'dark' : 'light';
+        setTheme(next);
+        if (typeof window !== 'undefined') localStorage.setItem('theme', next);
+    };
+    // Sync theme with localStorage changes (for cross-tab)
+    React.useEffect(() => {
+        const onStorage = (e) => {
+            if (e.key === 'theme' && (e.newValue === 'light' || e.newValue === 'dark')) {
+                setTheme(e.newValue);
+            }
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
     return (
         <Routes>
             <Route
                 path=""
                 element={
-                    <AdminLayout>
-                        <AdminDashboard />
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <AdminDashboard theme={theme} />
                     </AdminLayout>
                 }
             />
             <Route
                 path="users"
                 element={
-                    <AdminLayout>
-                        <UsersPage />
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <UsersPage theme={theme} />
                     </AdminLayout>
                 }
             />
             <Route
                 path="courses"
                 element={
-                    <AdminLayout>
-                        <CoursesPage />
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <CoursesPage theme={theme} />
                     </AdminLayout>
                 }
             />
             <Route
                 path="categories"
                 element={
-                    <AdminLayout>
-                        <CategoriesPage />
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <CategoriesPage theme={theme} />
                     </AdminLayout>
                 }
             />
             <Route
                 path="analytics"
                 element={
-                    <AdminLayout>
-                        <AnalyticsPage />
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <AnalyticsPage theme={theme} />
                     </AdminLayout>
                 }
             />

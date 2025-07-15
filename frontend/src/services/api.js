@@ -57,6 +57,7 @@ export const userApi = {
     deleteUserCourse: (id) => api.delete(`/courses/${id}`),
     getAllTrainers: () => api.get('/users/trainers'),
     getUserCount: () => api.get('/users/count'),
+    getUsers: () => api.get('/users'),
 };
 
 export const registrationApi = {
