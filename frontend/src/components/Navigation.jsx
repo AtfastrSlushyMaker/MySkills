@@ -5,6 +5,10 @@ import LoadingSpinner from './LoadingSpinner'
 
 function Navigation() {
     const location = useLocation()
+
+    // Hide navigation on admin routes
+    if (location.pathname.startsWith('/admin')) return null;
+
     const { user, logout, loading } = useAuth()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
@@ -40,22 +44,20 @@ function Navigation() {
         // Authenticated user items
         const authenticatedItems = [
             ...publicItems,
-            { path: '/dashboard', label: 'Dashboard', icon: 'fas fa-chart-pie' },
-            { path: '/sessions', label: 'Sessions', icon: 'fas fa-graduation-cap' },
+            { path: '/categories', label: 'Categories', icon: 'fas fa-th-list' },
+
+
         ]
 
-        // Add role-specific items
         if (user.role === 'admin' || user.role === 'super_admin') {
-            authenticatedItems.push(
-                { path: '/admin', label: 'Admin Panel', icon: 'fas fa-cogs' },
-                { path: '/users', label: 'Users', icon: 'fas fa-users' }
-            )
-        }
-
-        if (user.role === 'instructor' || user.role === 'admin' || user.role === 'super_admin') {
-            authenticatedItems.push(
-                { path: '/instructor', label: 'Instructor', icon: 'fas fa-chalkboard-teacher' }
-            )
+            authenticatedItems.push({
+                path: '/admin',
+                label: 'Back Office',
+                icon: 'fas fa-briefcase',
+                onClick: () => {
+                    localStorage.removeItem('adminFrontOffice');
+                }
+            });
         }
 
         return authenticatedItems
@@ -121,6 +123,7 @@ function Navigation() {
                             <Link
                                 key={item.path}
                                 to={item.path}
+                                onClick={item.onClick}
                                 className={`relative px-5 py-3 rounded-2xl text-sm font-medium transition-all duration-500 flex items-center space-x-2 group overflow-hidden ${location.pathname === item.path
                                     ? 'bg-white/20 text-white shadow-2xl backdrop-blur-md border border-white/30'
                                     : 'text-white/90 hover:bg-white/10 hover:text-white hover:backdrop-blur-md hover:border-white/20 border border-transparent'

@@ -9,6 +9,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('registrations/{registration}/reject', [App\Http\Controllers\RegistrationController::class, 'reject']);
     Route::get('registrations/dashboard/stats', [App\Http\Controllers\RegistrationController::class, 'stats']);
     Route::get('registrations/session/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'bySession']);
+    Route::get('registrations/status/confirmed', [App\Http\Controllers\RegistrationController::class, 'getConfirmedRegistrationsLoggedInUser']);
     Route::apiResource('registrations', App\Http\Controllers\RegistrationController::class);
     Route::get('registrations/status/{sessionId}', [App\Http\Controllers\RegistrationController::class, 'getStatusByUserAndSession']);
 });

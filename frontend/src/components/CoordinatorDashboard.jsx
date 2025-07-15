@@ -241,19 +241,7 @@ function CoordinatorDashboard() {
                     <SessionDetails sessionId={selectedSessionId} onBack={() => setSelectedSessionId(null)} />
                 ) : activeView === 'dashboard' ? (
                     <>
-                        {/* Quick Actions */}
-                        <div className="mb-10">
-                            <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl flex items-center gap-6">
-                                <button
-                                    className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-2xl shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-3"
-                                    onClick={() => setShowCreateModal(true)}
-                                >
-                                    <i className="fas fa-plus text-xl"></i>
-                                    Create Session
-                                </button>
-                                {/* Add more quick actions here in the future */}
-                            </div>
-                        </div>
+
                         {/* Registration Stats Overview */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                             {[
@@ -324,9 +312,34 @@ function CoordinatorDashboard() {
                                         </div>
                                     ) : (
                                         <div className="space-y-4 max-h-96 overflow-y-auto">
-                                            {pendingRegistrations.map((registration) => {
-                                                // ...existing code...
-                                            })}
+                                            {pendingRegistrations.map((registration) => (
+                                                <div key={registration.id} className="bg-white/5 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border border-white/10 hover:border-cyan-400/40 transition-all duration-300 shadow">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-400/30 to-yellow-600/20 rounded-full flex items-center justify-center">
+                                                            <i className="fas fa-user-clock text-2xl text-yellow-400"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-lg font-bold text-white">{registration.user?.first_name} {registration.user.last_name}</div>
+                                                            <div className="text-white/70 text-sm">{registration.training_session?.skill_name}</div>
+                                                            <div className="text-white/50 text-xs mt-1">Requested on {registration.created_at ? new Date(registration.created_at).toLocaleDateString() : 'N/A'}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 mt-4 md:mt-0">
+                                                        <button
+                                                            className="px-4 py-2 bg-green-500/90 hover:bg-green-600 text-white rounded-lg font-semibold shadow transition-all duration-200"
+                                                            onClick={() => handleApproval(registration.id)}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            className="px-4 py-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg font-semibold shadow transition-all duration-200"
+                                                            onClick={() => handleRejection(registration.id)}
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
                                 </div>

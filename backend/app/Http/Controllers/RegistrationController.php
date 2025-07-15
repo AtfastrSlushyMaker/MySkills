@@ -199,4 +199,23 @@ class RegistrationController extends Controller
 
         return response()->json(['status' => $registration->status], 200);
     }
+
+    public function getConfirmedRegistrationsLoggedInUser()
+    {
+        $userid=auth()->id();
+        if (!$userid) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $registrations = Registration::with(['user', 'trainingSession'])
+            ->where('user_id', $userid)
+            ->where('status', RegistrationStatus::CONFIRMED)
+            ->get();
+
+        return response()->json([
+            'message' => 'Confirmed registrations retrieved successfully',
+            'registrations' => $registrations,
+            'count' => $registrations->count()
+        ], 200);
+    }
 }

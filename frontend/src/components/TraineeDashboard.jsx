@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { trainingSessionApi, registrationApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 function TraineeDashboard() {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [activeView, setActiveView] = useState('dashboard')
     const [stats, setStats] = useState({
         total: 0,
@@ -14,6 +16,7 @@ function TraineeDashboard() {
     const [upcomingSessions, setUpcomingSessions] = useState([])
     const [recentActivity, setRecentActivity] = useState([])
     const [loading, setLoading] = useState(true)
+    const [allMySessions, setAllMySessions] = useState([])
 
     useEffect(() => {
         fetchDashboardData()
@@ -21,21 +24,28 @@ function TraineeDashboard() {
 
     const fetchDashboardData = async () => {
         try {
-            // Fetch trainee's registrations and sessions
+            // Fetch only confirmed registrations for the logged-in user
             const [registrationsRes, sessionsRes] = await Promise.all([
-                registrationApi.getRegistrationDetails(user?.id), // Get all registrations for this user
-                trainingSessionApi.getAllSessions() // Get all sessions (filter below)
+                registrationApi.getConfirmedRegistrationsLoggedInUser(),// Only confirmed registrations
+                trainingSessionApi.getAllSessions()
             ])
 
-            // Filter sessions for those the trainee is registered for
-            const myRegistrations = Array.isArray(registrationsRes.data) ? registrationsRes.data : [];
-            const mySessionIds = myRegistrations.map(r => r.training_session_id);
+            // Filter sessions for those the trainee is registered and confirmed for
+            const myRegistrations = Array.isArray(registrationsRes.data.registrations) ? registrationsRes.data.registrations : [];
+            const mySessionIds = myRegistrations.map(r => String(r.training_session_id));
             const allSessions = Array.isArray(sessionsRes.data) ? sessionsRes.data : [];
-            const mySessions = allSessions.filter(s => mySessionIds.includes(s.id));
+            const mySessions = allSessions.filter(s => mySessionIds.includes(String(s.id)));
+            setAllMySessions(mySessions);
 
             // Stats
             const now = new Date();
-            const upcoming = mySessions.filter(s => new Date(s.date) >= now && (!s.status || s.status === 'active'));
+            // Adjust upcoming filter to include sessions happening today
+            const isUpcoming = (sessionDate) => {
+                const now = new Date();
+                const session = new Date(sessionDate);
+                return session.setHours(0, 0, 0, 0) >= now.setHours(0, 0, 0, 0);
+            };
+            const upcoming = mySessions.filter(s => isUpcoming(s.date) && (!s.status || s.status === 'active'));
             const completed = mySessions.filter(s => s.status === 'completed');
             const cancelled = mySessions.filter(s => s.status === 'cancelled');
             setStats({
@@ -225,8 +235,11 @@ function TraineeDashboard() {
                                         </div>
                                     ) : (
                                         <div className="space-y-4 max-h-96 overflow-y-auto">
-                                            {upcomingSessions.map((session) => (
-                                                <div key={session.id} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300">
+                                            {(activeView === 'dashboard' ? upcomingSessions : allMySessions).map((session) => (
+                                                <div
+                                                    key={session.id}
+                                                    className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300 shadow-xl mb-2"
+                                                >
                                                     <div className="flex items-start justify-between mb-4">
                                                         <div className="flex-1">
                                                             <h3 className="text-xl font-bold text-white mb-1">
@@ -234,7 +247,7 @@ function TraineeDashboard() {
                                                             </h3>
                                                             <div className="flex items-center text-white/60 text-sm mb-2">
                                                                 <i className="fas fa-calendar mr-2"></i>
-                                                                <span>{session.date} at {session.time}</span>
+                                                                <span>{session.date?.slice(0, 10)} at {session.start_time}</span>
                                                             </div>
                                                             <div className="flex items-center text-white/60 text-sm mb-2">
                                                                 <i className="fas fa-map-marker-alt mr-2"></i>
@@ -242,11 +255,14 @@ function TraineeDashboard() {
                                                             </div>
                                                             <div className="flex items-center text-white/60 text-sm">
                                                                 <i className="fas fa-chalkboard-teacher mr-2"></i>
-                                                                <span>{session.trainer}</span>
+                                                                <span>{session.trainer ? session.trainer.first_name + ' ' + session.trainer.last_name : ''}</span>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center space-x-3">
-                                                            <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 flex items-center">
+                                                            <button
+                                                                className="px-4 py-2 bg-transparent border border-white/30 hover:bg-white/10 text-white font-semibold rounded-xl transition-all duration-200 flex items-center"
+                                                                onClick={() => navigate(`/sessions/${session.id}`)}
+                                                            >
                                                                 <i className="fas fa-eye mr-2"></i>
                                                                 View Details
                                                             </button>
@@ -335,7 +351,44 @@ function TraineeDashboard() {
                             <i className="fas fa-calendar-alt text-blue-400 mr-3"></i>
                             My Sessions
                         </h2>
-                        <p className="text-white/70">List and manage your registered sessions here.</p>
+                        {allMySessions.length === 0 ? (
+                            <p className="text-white/70">List and manage your registered sessions here.</p>
+                        ) : (
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                                {allMySessions.map((session) => (
+                                    <div key={session.id} className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-bold text-white mb-1">
+                                                    {session.skill_name}
+                                                </h3>
+                                                <div className="flex items-center text-white/60 text-sm mb-2">
+                                                    <i className="fas fa-calendar mr-2"></i>
+                                                    <span>{session.date} at {session.start_time}</span>
+                                                </div>
+                                                <div className="flex items-center text-white/60 text-sm mb-2">
+                                                    <i className="fas fa-map-marker-alt mr-2"></i>
+                                                    <span>{session.location}</span>
+                                                </div>
+                                                <div className="flex items-center text-white/60 text-sm">
+                                                    <i className="fas fa-chalkboard-teacher mr-2"></i>
+                                                    <span>{session.trainer ? session.trainer.first_name + ' ' + session.trainer.last_name : ''}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <button
+                                                    className="px-4 py-2 bg-transparent border border-white/30 hover:bg-white/10 text-white font-semibold rounded-xl transition-all duration-200 flex items-center"
+                                                    onClick={() => navigate(`/sessions/${session.id}`)}
+                                                >
+                                                    <i className="fas fa-eye mr-2"></i>
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

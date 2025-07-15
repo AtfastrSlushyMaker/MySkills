@@ -56,6 +56,7 @@ export const userApi = {
     updateUserCourse: (id, data) => api.put(`/courses/${id}`, data),
     deleteUserCourse: (id) => api.delete(`/courses/${id}`),
     getAllTrainers: () => api.get('/users/trainers'),
+    getUserCount: () => api.get('/users/count'),
 };
 
 export const registrationApi = {
@@ -67,7 +68,7 @@ export const registrationApi = {
     createRegistration: (data) => api.post('/registrations', data),
     updateRegistration: (id, data) => api.put(`/registrations/${id}`, data),
     deleteRegistration: (id) => api.delete(`/registrations/${id}`),
-
+    getConfirmedRegistrationsLoggedInUser: () => api.get('/registrations/status/confirmed'),
     getStatusByUserAndSession: (sessionId) => api.get(`/registrations/status/${sessionId}`),
 };
 

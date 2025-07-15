@@ -6,7 +6,9 @@ const AuthContext = createContext()
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [token, setToken] = useState(localStorage.getItem('auth_token'))
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || null;
+    })
 
     // Set auth token in API service whenever token changes
     useEffect(() => {
@@ -47,7 +49,7 @@ export function AuthProvider({ children }) {
         }
     }
 
-    const login = async (email, password) => {
+    const login = async (email, password, rememberMe = false) => {
         try {
             const response = await fetch('http://localhost:8000/api/login', {
                 method: 'POST',
@@ -57,14 +59,17 @@ export function AuthProvider({ children }) {
                 },
                 body: JSON.stringify({ email, password })
             })
-
             const data = await response.json()
-
             if (response.ok) {
-                // Store token and user data
                 setToken(data.token)
                 setUser(data.user)
-                localStorage.setItem('auth_token', data.token)
+                if (rememberMe) {
+                    localStorage.setItem('auth_token', data.token)
+                    sessionStorage.removeItem('auth_token')
+                } else {
+                    sessionStorage.setItem('auth_token', data.token)
+                    localStorage.removeItem('auth_token')
+                }
                 return { success: true, user: data.user }
             } else {
                 return { success: false, message: data.message || 'Login failed' }
@@ -86,14 +91,12 @@ export function AuthProvider({ children }) {
                 },
                 body: JSON.stringify(userData)
             })
-
             const data = await response.json()
-
             if (response.ok) {
-                // Auto-login after successful registration
                 setToken(data.token)
                 setUser(data.user)
                 localStorage.setItem('auth_token', data.token)
+                sessionStorage.removeItem('auth_token')
                 return { success: true, user: data.user }
             } else {
                 return { success: false, message: data.message || 'Registration failed', errors: data.errors }
@@ -118,10 +121,10 @@ export function AuthProvider({ children }) {
         } catch (error) {
             console.error('Logout error:', error)
         } finally {
-            // Clear local state regardless of API call success
             setUser(null)
             setToken(null)
             localStorage.removeItem('auth_token')
+            sessionStorage.removeItem('auth_token')
         }
     }
 

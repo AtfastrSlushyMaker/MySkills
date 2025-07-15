@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { categoryApi, trainingCourseApi } from '../services/api';
+import { categoryApi, trainingCourseApi, userApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 function HomePage() {
@@ -39,9 +39,8 @@ function HomePage() {
     // Fetch stats for users and courses
     const fetchStats = async () => {
         try {
-            // Users
-            // You may want to replace this with a real user count endpoint
-            setUserCount('N/A');
+            const userCount = await userApi.getUserCount();
+            setUserCount(userCount.data?.count || 'N/A');
             // Courses
             const courseRes = await trainingCourseApi.getAllCourses();
             setCourseCount(courseRes.data?.length || 'N/A');
@@ -136,18 +135,6 @@ function HomePage() {
                             </div>
                             <div className="bg-white/10 backdrop-blur-2xl px-6 py-3 rounded-full border border-white/20 text-white/90">
                                 <i className="fas fa-rocket text-pink-400 mr-2"></i> Career Advancement
-                            </div>
-                        </div>
-
-                        {/* Trust Indicators */}
-                        <div className="mt-16 pt-8 border-t border-white/20">
-                            <p className="text-white/60 text-sm mb-6">Trusted by professionals at</p>
-                            <div className="flex flex-wrap justify-center items-center gap-8">
-                                {['Microsoft', 'Google', 'Amazon', 'IBM', 'Oracle', 'Salesforce'].map((company) => (
-                                    <div key={company} className="bg-white/5 backdrop-blur-xl px-6 py-3 rounded-xl border border-white/10 text-white/70 hover:text-white/90 hover:bg-white/10 transition-all duration-300">
-                                        {company}
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     </div>

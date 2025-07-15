@@ -14,6 +14,7 @@ function LoginPage() {
     const [errors, setErrors] = useState({})
     const [isLoading, setIsLoading] = useState(false)
     const [apiError, setApiError] = useState('')
+    const [rememberMe, setRememberMe] = useState(false)
 
     // Handle input changes - this updates state when user types
     const handleChange = (e) => {
@@ -29,6 +30,10 @@ function LoginPage() {
                 [name]: ''
             }))
         }
+    }
+
+    const handleCheckboxChange = (e) => {
+        setRememberMe(e.target.checked)
     }
 
     // Form validation - check if inputs are valid
@@ -61,7 +66,7 @@ function LoginPage() {
         setApiError('')
 
         // Use the auth context to login
-        const result = await login(formData.email, formData.password)
+        const result = await login(formData.email, formData.password, rememberMe)
 
         if (result.success) {
             // Redirect to dashboard on successful login
@@ -117,8 +122,8 @@ function LoginPage() {
                                         onChange={handleChange}
                                         placeholder="Enter your educational email"
                                         className={`w-full bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 text-white placeholder-white/60 border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/20 ${errors.email
-                                                ? 'border-red-300/50 focus:border-red-300/70'
-                                                : 'border-white/20 focus:border-white/40'
+                                            ? 'border-red-300/50 focus:border-red-300/70'
+                                            : 'border-white/20 focus:border-white/40'
                                             }`}
                                         required
                                     />
@@ -149,8 +154,8 @@ function LoginPage() {
                                         onChange={handleChange}
                                         placeholder="Enter your secure password"
                                         className={`w-full bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 text-white placeholder-white/60 border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/20 ${errors.password
-                                                ? 'border-red-300/50 focus:border-red-300/70'
-                                                : 'border-white/20 focus:border-white/40'
+                                            ? 'border-red-300/50 focus:border-red-300/70'
+                                            : 'border-white/20 focus:border-white/40'
                                             }`}
                                         required
                                     />
@@ -173,6 +178,8 @@ function LoginPage() {
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4 bg-white/10 border border-white/30 rounded text-purple-400 focus:ring-purple-400 focus:ring-2"
+                                        checked={rememberMe}
+                                        onChange={handleCheckboxChange}
                                     />
                                     <span className="ml-2 text-white/80 text-sm">Remember me</span>
                                 </label>

@@ -171,4 +171,10 @@ class UserController extends Controller
         return response()->json($trainers, 200);
     }
 
+public function getUserCount()
+{
+    $count = User::count();
+    return response()->json(['count' => $count], 200);
+
+}
 }

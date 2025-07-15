@@ -181,7 +181,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 {/* Back Button */}
                 <div className="flex items-center gap-4 mb-6">
                     <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-200 font-semibold rounded-xl shadow-lg backdrop-blur border border-white/20 transition">
-                        <i className="fas fa-arrow-left text-lg"></i> Back to Sessions
+                        <i className="fas fa-arrow-left text-lg"></i> Back
                     </button>
                 </div>
                 {/* Session Header Card */}
