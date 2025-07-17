@@ -179,4 +179,27 @@ public function getUserCount()
     return response()->json(['count' => $count], 200);
 
 }
+
+public function getUsersStatistics()
+{
+    $totalUsers = User::count();
+    $activeUsers = User::where('status', UserStatus::ACTIVE)->count();
+    $inactiveUsers = User::where('status', UserStatus::INACTIVE)->count();
+    $bannedUsers = User::where('status', UserStatus::BANNED)->count();
+
+    $roles = [];
+    foreach (UserRole::values() as $role) {
+        $roles[$role] = User::where('role', $role)->count();
+    }
+
+    $stats = [
+        'total_users' => $totalUsers,
+        'active_users' => $activeUsers,
+        'inactive_users' => $inactiveUsers,
+        'banned_users' => $bannedUsers,
+        'roles' => $roles,
+    ];
+
+    return response()->json($stats, 200);
+}
 }

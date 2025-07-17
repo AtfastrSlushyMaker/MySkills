@@ -8,6 +8,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('users/profile', [App\Http\Controllers\UserController::class, 'updateProfile']);
     Route::post('users/change-password', [App\Http\Controllers\UserController::class, 'changePassword']);
 });
+Route::get('users/statistics', [App\Http\Controllers\UserController::class, 'getUsersStatistics']);
 Route::get('users/count', [App\Http\Controllers\UserController::class, 'getUserCount']);
 // Specific user routes - MUST come before resource routes to avoid conflicts
 Route::get('users/trainers', [App\Http\Controllers\UserController::class, 'getAllTrainers']);
@@ -18,7 +19,5 @@ Route::post('users/{user}/deactivate', [App\Http\Controllers\UserController::cla
 
 Route::apiResource('users', App\Http\Controllers\UserController::class);
 
-// Deactivate a category (soft delete)
-Route::post('categories/{category}/deactivate', [App\Http\Controllers\CategoryController::class, 'deactivate']);
 
 

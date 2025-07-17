@@ -68,6 +68,8 @@ export const userApi = {
     getAllTrainers: () => api.get('/users/trainers'),
     getUserCount: () => api.get('/users/count'),
     getUsers: () => api.get('/users'),
+
+    getUserStatistics: () => api.get('/users/statistics'),
 };
 
 export const registrationApi = {

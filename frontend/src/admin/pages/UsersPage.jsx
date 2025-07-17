@@ -28,6 +28,11 @@ const fetchUsers = async () => {
 
 function UsersPage({ theme = 'light' }) {
     const [data, setData] = useState([]);
+    const [userStats, setUserStats] = useState({
+        total_users: 0,
+        active_users: 0,
+        roles: { admin: 0, coordinator: 0, trainer: 0, trainee: 0 }
+    });
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -76,7 +81,24 @@ function UsersPage({ theme = 'light' }) {
             setData(usersWithKey);
             setLoading(false);
         };
+        const loadStats = async () => {
+            try {
+                const res = await userApi.getUserStatistics();
+                setUserStats(res.data || {
+                    total_users: 0,
+                    active_users: 0,
+                    roles: { admin: 0, coordinator: 0, trainer: 0, trainee: 0 }
+                });
+            } catch (err) {
+                setUserStats({
+                    total_users: 0,
+                    active_users: 0,
+                    roles: { admin: 0, coordinator: 0, trainer: 0, trainee: 0 }
+                });
+            }
+        };
         loadData();
+        loadStats();
     }, []);
 
 
@@ -273,19 +295,25 @@ function UsersPage({ theme = 'light' }) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                <div className="flex flex-wrap justify-center items-stretch gap-6 mb-8">
+                    <Card
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
                                 <UserOutlined className="text-blue-600" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Total Users</Text>
-                                <div className="text-2xl font-bold text-gray-900">{data.length}</div>
+                                <div className="text-2xl font-bold text-gray-900">{userStats.total_users}</div>
                             </div>
                         </div>
                     </Card>
-                    <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                    <Card
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
                                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -293,12 +321,16 @@ function UsersPage({ theme = 'light' }) {
                             <div>
                                 <Text className="text-sm text-gray-600">Active</Text>
                                 <div className="text-2xl font-bold text-gray-900">
-                                    {data.filter(u => u.status === 'active').length}
+                                    {userStats.active_users}
                                 </div>
                             </div>
                         </div>
                     </Card>
-                    <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                    {/* Administrators */}
+                    <Card
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-red-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
                                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -306,20 +338,58 @@ function UsersPage({ theme = 'light' }) {
                             <div>
                                 <Text className="text-sm text-gray-600">Admins</Text>
                                 <div className="text-2xl font-bold text-gray-900">
-                                    {data.filter(u => u.role === 'Admin').length}
+                                    {(userStats.roles && userStats.roles.admin !== undefined) ? userStats.roles.admin : 0}
                                 </div>
                             </div>
                         </div>
                     </Card>
-                    <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                    {/* Coordinators */}
+                    <Card
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-yellow-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div className="w-10 h-10 bg-purple-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                             </div>
                             <div>
-                                <Text className="text-sm text-gray-600">Moderators</Text>
+                                <Text className="text-sm text-gray-600">Coordinators</Text>
                                 <div className="text-2xl font-bold text-gray-900">
-                                    {data.filter(u => u.role === 'Moderator').length}
+                                    {(userStats.roles && userStats.roles.coordinator !== undefined) ? userStats.roles.coordinator : 0}
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                    {/* Trainers */}
+                    <Card
+                        className="flex-1 min-w-[180px] max-w-[220px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                            </div>
+                            <div>
+                                <Text className="text-sm text-gray-600">Trainers</Text>
+                                <div className="text-2xl font-bold text-gray-900">
+                                    {(userStats.roles && userStats.roles.trainer !== undefined) ? userStats.roles.trainer : 0}
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                    {/* Trainees */}
+                    <Card
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-teal-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                            </div>
+                            <div>
+                                <Text className="text-sm text-gray-600">Trainees</Text>
+                                <div className="text-2xl font-bold text-gray-900">
+                                    {(userStats.roles && userStats.roles.trainee !== undefined) ? userStats.roles.trainee : 0}
                                 </div>
                             </div>
                         </div>
