@@ -17,4 +17,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // Public or less sensitive endpoints
 Route::get('registrations/status/pending/{coordinatorId}', [App\Http\Controllers\RegistrationController::class, 'pending']);
 
+Route::get('registrations/user/{user}', [App\Http\Controllers\RegistrationController::class, 'getRegistrationsByUser']);
+
 

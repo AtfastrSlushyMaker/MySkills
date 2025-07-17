@@ -14,11 +14,78 @@ Route::get('/test', function () {
 });
 
 // Health check
-Route::get('/health', function () {
+
+// Store server boot time if not already set
+if (!\Cache::has('server_boot_time')) {
+    \Cache::forever('server_boot_time', now()->toDateTimeString());
+}
+
+// System Health endpoint
+Route::get('/system-health', function () {
+    // Server status: check if PHP process is running
+    $serverStatus = 'Unavailable';
+    if (function_exists('posix_getpid')) {
+        $serverStatus = posix_getpid() ? 'online' : 'offline';
+    } else {
+        $serverStatus = 'online'; // fallback for Windows
+    }
+
+    // Server uptime: calculate from boot time in cache
+    $serverUptime = 'Unavailable';
+    $bootTime = \Cache::get('server_boot_time');
+    if ($bootTime) {
+        $bootTimestamp = strtotime($bootTime);
+        $nowTimestamp = strtotime(now()->toDateTimeString());
+        $uptimeSeconds = $nowTimestamp - $bootTimestamp;
+        if ($uptimeSeconds > 0) {
+            $hours = floor($uptimeSeconds / 3600);
+            $minutes = floor(($uptimeSeconds % 3600) / 60);
+            $serverUptime = $hours . 'h ' . $minutes . 'm';
+        }
+    }
+
+    // Database status
+    try {
+        \DB::connection()->getPdo();
+        $databaseStatus = 'connected';
+    } catch (Exception $e) {
+        $databaseStatus = 'Unavailable';
+    }
+
+    // API response time (real)
+    $apiResponseTime = 'Unavailable';
+    $startTime = microtime(true);
+    try {
+        \DB::select('SELECT 1');
+        $endTime = microtime(true);
+        $apiResponseTime = round(($endTime - $startTime) * 1000, 2) . ' ms';
+    } catch (Exception $e) {
+        $apiResponseTime = 'Unavailable';
+    }
+
+    // Storage usage
+    $diskTotal = @disk_total_space(base_path());
+    $diskFree = @disk_free_space(base_path());
+    $diskUsed = ($diskTotal !== false && $diskFree !== false) ? $diskTotal - $diskFree : null;
+    $storagePercent = ($diskTotal > 0 && $diskUsed !== null) ? round(($diskUsed / $diskTotal) * 100, 1) : 'Unavailable';
+
     return response()->json([
-        'status' => 'healthy',
-        'database' => 'connected',
-        'app' => config('app.name')
+        'server' => [
+            'status' => $serverStatus,
+            'uptime' => $serverUptime,
+        ],
+        'database' => [
+            'status' => $databaseStatus,
+        ],
+        'api' => [
+            'response_time' => $apiResponseTime,
+        ],
+        'storage' => [
+            'used_percent' => $storagePercent,
+            'total' => $diskTotal,
+            'free' => $diskFree,
+        ],
+        'timestamp' => now(),
     ]);
 });
 

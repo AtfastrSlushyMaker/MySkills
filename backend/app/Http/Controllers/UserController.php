@@ -29,6 +29,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'phone' => 'nullable|string|max:20',
             'status' => 'required|in:'.implode(',', UserStatus::values()),
             'role' => 'required|in:'.implode(',', UserRole::values()),
         ]);
@@ -54,6 +55,7 @@ class UserController extends Controller
             'last_name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
             'password' => 'sometimes|required|string|min:8',
+            'phone' => 'nullable|string|max:20',
             'status' => 'sometimes|required|in:'.implode(',', UserStatus::values()),
             'role' => 'sometimes|required|in:'.implode(',', UserRole::values()),
         ]);

@@ -1,8 +1,13 @@
+import UserDetailsModal from "../components/users/UserDetailsModal";
 import React, { useState, useEffect } from "react";
 
-import { Table, Button, Input, Space, Tag, Avatar, Typography, Card, Badge } from "antd";
+import { Table, Button, Input, Space, Tag, Avatar, Typography, Card, Badge, message } from "antd";
 import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined } from "@ant-design/icons";
 import { userApi } from '../../services/api';
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+
+import UserUpdateModal from "../components/users/UserUpdateModal";
+import UserCreateModal from "../components/users/UserCreateModal";
 
 
 const { Title, Text } = Typography;
@@ -25,16 +30,49 @@ function UsersPage({ theme = 'light' }) {
     const [data, setData] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
+    const [createModalVisible, setCreateModalVisible] = useState(false);
+    const [updateModalVisible, setUpdateModalVisible] = useState(false);
+    const [modalLoading, setModalLoading] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [testModalVisible, setTestModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+    const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+    const [userToView, setUserToView] = useState(null);
+    const handleDeleteUser = async () => {
+        if (!userToDelete) return;
+        setModalLoading(true);
+        try {
+            await userApi.deleteUser(userToDelete.id || userToDelete._id);
+            setData(prev => prev.filter(u => {
+                return !((u.id && userToDelete.id && u.id === userToDelete.id) ||
+                    (u._id && userToDelete._id && u._id === userToDelete._id) ||
+                    (u.key && userToDelete.key && u.key === userToDelete.key));
+            }));
+            message.success("User deleted successfully");
+        } catch (error) {
+            message.error("Failed to delete user");
+        }
+        setModalLoading(false);
+        setDeleteModalVisible(false);
+        setUserToDelete(null);
+    };
 
     React.useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             const users = await fetchUsers();
             // Ensure each user has a unique key prop for Ant Design Table
-            const usersWithKey = users.map((user, idx) => ({
-                ...user,
-                key: user.id || user._id || idx // Prefer id/_id, fallback to index
-            }));
+            const seenKeys = new Set();
+            const usersWithKey = users.map((user, idx) => {
+                let key = user.id || user._id || idx;
+                // If key is not unique, append a suffix
+                while (seenKeys.has(key)) {
+                    key = `${key}_${idx}`;
+                }
+                seenKeys.add(key);
+                return { ...user, key };
+            });
             setData(usersWithKey);
             setLoading(false);
         };
@@ -55,6 +93,60 @@ function UsersPage({ theme = 'light' }) {
         return status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200';
     };
 
+    const handleCreateUser = async (values) => {
+        setModalLoading(true);
+        try {
+            // Replace with actual API call
+            const response = await userApi.createUser(values);
+            // Ensure unique key for new user
+            const newUser = response.data;
+            let key = newUser.id || newUser._id || Date.now();
+            // If key already exists, append a timestamp
+            if (data.some(u => u.key === key)) {
+                key = `${key}_${Date.now()}`;
+            }
+            setData(prev => [{ ...newUser, key }, ...prev]);
+            message.success("User created successfully");
+            setCreateModalVisible(false);
+        } catch (error) {
+            message.error("Failed to create user");
+        }
+        setModalLoading(false);
+    };
+
+    const handleUpdateUser = async (user) => {
+        setModalLoading(true);
+        try {
+            // Replace with actual API call
+            const response = await userApi.updateUser(user.id || user._id, user);
+            const updatedUser = response.data;
+            setData(prev => {
+                // Replace only the user with matching id, _id, or key
+                const newData = prev.map(u => {
+                    const match = (u.id && updatedUser.id && u.id === updatedUser.id)
+                        || (u._id && updatedUser._id && u._id === updatedUser._id)
+                        || (u.key && updatedUser.key && u.key === updatedUser.key);
+                    return match ? { ...updatedUser } : u;
+                });
+                // Regenerate unique keys for all users
+                const seenKeys = new Set();
+                return newData.map((userObj, idx) => {
+                    let key = userObj.id || userObj._id || idx;
+                    while (seenKeys.has(key)) {
+                        key = `${key}_${idx}`;
+                    }
+                    seenKeys.add(key);
+                    return { ...userObj, key };
+                });
+            });
+            message.success("User updated successfully");
+            setUpdateModalVisible(false);
+        } catch (error) {
+            message.error("Failed to update user");
+        }
+        setModalLoading(false);
+    };
+
     const columns = [
         {
             title: 'User',
@@ -68,12 +160,24 @@ function UsersPage({ theme = 'light' }) {
                         className="bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0"
                     />
                     <div className="min-w-0">
-                        <div className="font-semibold text-gray-900 truncate">{text}</div>
+                        <div className="font-semibold text-gray-900 truncate">
+                            {record.first_name} {record.last_name}
+                        </div>
                         <div className="text-sm text-gray-500 truncate">{record.email}</div>
+                        <div className="text-sm text-gray-500 truncate">{record.phone}</div>
                     </div>
                 </div>
             ),
         },
+        {
+            title: 'Phone Number',
+            dataIndex: 'phone',
+            key: 'phone',
+            render: (text) => (
+                <Text className="text-sm text-gray-600">{text || 'N/A'}</Text>
+            ),
+        },
+
         {
             title: 'Role',
             dataIndex: 'role',
@@ -115,18 +219,21 @@ function UsersPage({ theme = 'light' }) {
                         icon={<EyeOutlined />}
                         className="hover:bg-blue-50 hover:text-blue-600 border-0 text-gray-600"
                         size="small"
+                        onClick={() => { setUserToView(record); setDetailsModalVisible(true); }}
                     />
                     <Button
                         type="text"
                         icon={<EditOutlined />}
                         className="hover:bg-green-50 hover:text-green-600 border-0 text-gray-600"
                         size="small"
+                        onClick={() => { setSelectedUser(record); setUpdateModalVisible(true); }}
                     />
                     <Button
                         type="text"
                         icon={<DeleteOutlined />}
                         className="hover:bg-red-50 hover:text-red-600 border-0 text-gray-600"
                         size="small"
+                        onClick={() => { setUserToDelete(record); setDeleteModalVisible(true); }}
                     />
                 </Space>
             ),
@@ -235,6 +342,7 @@ function UsersPage({ theme = 'light' }) {
                             icon={<PlusOutlined />}
                             size="large"
                             className="bg-gradient-to-r from-blue-600/90 to-indigo-600/90 hover:from-blue-700/90 hover:to-indigo-700/90 border-0 shadow-lg backdrop-blur-sm"
+                            onClick={() => setCreateModalVisible(true)}
                         >
                             Add User
                         </Button>
@@ -259,37 +367,38 @@ function UsersPage({ theme = 'light' }) {
                 </Card>
             </div>
 
+            <UserCreateModal
+                visible={createModalVisible}
+                onCreate={handleCreateUser}
+                onCancel={() => setCreateModalVisible(false)}
+                loading={modalLoading}
+            />
+            <UserUpdateModal
+                visible={updateModalVisible}
+                user={selectedUser}
+                onUpdate={handleUpdateUser}
+                onCancel={() => setUpdateModalVisible(false)}
+                loading={modalLoading}
+            />
+            <DeleteConfirmationModal
+                visible={deleteModalVisible}
+                loading={modalLoading}
+                onConfirm={handleDeleteUser}
+                onCancel={() => { setDeleteModalVisible(false); setUserToDelete(null); }}
+                itemName={userToDelete ? `${userToDelete.first_name} ${userToDelete.last_name}` : "user"}
+            />
+            <UserDetailsModal
+                open={detailsModalVisible}
+                user={userToView}
+                onClose={() => { setDetailsModalVisible(false); setUserToView(null); }}
+            />
             <style>{`
-                .ant-table-thead > tr > th {
-                    background: transparent !important;
-                    border-bottom: 1px solid #e5e7eb !important;
-                    color: #374151 !important;
-                    font-weight: 600 !important;
+                .animate-fade-in-up {
+                    animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .ant-table-tbody > tr > td {
-                    border-bottom: 1px solid #f3f4f6 !important;
-                }
-                .ant-table-tbody > tr:last-child > td {
-                    border-bottom: none !important;
-                }
-                .ant-pagination-item-active {
-                    background: linear-gradient(45deg, #3b82f6, #6366f1) !important;
-                    border-color: #3b82f6 !important;
-                }
-                .ant-pagination-item-active a {
-                    color: white !important;
-                }
-                .ant-input-affix-wrapper {
-                    border-radius: 8px !important;
-                }
-                .ant-btn {
-                    border-radius: 8px !important;
-                }
-                .ant-card {
-                    border-radius: 12px !important;
-                }
-                .ant-table {
-                    border-radius: 8px !important;
+                @keyframes fadeInUp {
+                    0% { opacity: 0; transform: translateY(40px); }
+                    100% { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
         </div>

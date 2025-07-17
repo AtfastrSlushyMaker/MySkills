@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     DashboardOutlined,
     UserOutlined,
@@ -13,15 +15,11 @@ import { Avatar, Typography, Divider, Badge } from 'antd';
 
 const { Text } = Typography;
 
-function AdminSidebar({ isLight, onToggleTheme, theme }) {
-    // Mock current location for demonstration
-    const currentPath = '/admin/users';
 
-    // Mock user data
-    const user = {
-        first_name: 'John',
-        role: 'Administrator'
-    };
+function AdminSidebar({ isLight, onToggleTheme, theme }) {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const currentPath = window.location.pathname;
 
     const navLinks = [
         { to: '/admin', label: 'Dashboard', icon: DashboardOutlined },
@@ -32,25 +30,21 @@ function AdminSidebar({ isLight, onToggleTheme, theme }) {
     ];
 
     const handleLogout = async () => {
-        console.log('Logout clicked');
-        // await logout();
-        // window.location.href = '/login';
+        await logout();
+        navigate('/login');
     };
 
     const handleFrontOffice = () => {
-        console.log('Front Office clicked');
-        // localStorage.setItem('adminFrontOffice', 'true');
-        // window.location.href = '/';
+        localStorage.setItem('adminFrontOffice', 'true');
+        navigate('/');
     };
 
     const handleNavClick = (path) => {
-        console.log('Navigate to:', path);
-        // In real app, this would use react-router navigation
+        navigate(path);
     };
 
     return (
         <aside className="w-64 min-h-screen h-full flex flex-col z-20 relative">
-            {/* Background with glassmorphism */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/90 to-indigo-900/95 backdrop-blur-xl border-r border-white/10"></div>
 
             {/* Content */}

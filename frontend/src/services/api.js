@@ -19,11 +19,21 @@ export const setAuthToken = (token) => {
     }
 }
 
+export const systemHealthApi = {
+    getHealthStats: () => api.get('/system-health'),
+}
+
 export const userApi = {
     // Authentication
     login: (data) => api.post('/login', data),
     register: (data) => api.post('/register', data),
     logout: () => api.post('/logout'),
+
+    createUser: (date) => api.post('/users', date),
+    updateUser: (id, data) => api.put(`/users/${id}`, data),
+    deleteUser: (id) => api.delete(`/users/${id}`),
+    getUser: (id) => api.get(`/users/${id}`),
+
 
     // Profile Management
     getProfile: () => api.get('/me'),
@@ -71,6 +81,7 @@ export const registrationApi = {
     deleteRegistration: (id) => api.delete(`/registrations/${id}`),
     getConfirmedRegistrationsLoggedInUser: () => api.get('/registrations/status/confirmed'),
     getStatusByUserAndSession: (sessionId) => api.get(`/registrations/status/${sessionId}`),
+    getRegistrationsByUser: (userId) => api.get(`/registrations/user/${userId}`),
 };
 
 export const trainingSessionApi = {

@@ -6,6 +6,7 @@ use App\Models\Registration;
 use App\Enums\RegistrationStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Models\User;
 
 class RegistrationController extends Controller
 {
@@ -218,4 +219,18 @@ class RegistrationController extends Controller
             'count' => $registrations->count()
         ], 200);
     }
+
+    public function getRegistrationsByUser(User $user)
+    {
+        $registrations = Registration::with(['trainingSession'])
+            ->where('user_id', $user->id)
+            ->get();
+
+        return response()->json([
+            'message' => 'User registrations retrieved successfully',
+            'registrations' => $registrations,
+            'count' => $registrations->count()
+        ], 200);
+    }
+
 }

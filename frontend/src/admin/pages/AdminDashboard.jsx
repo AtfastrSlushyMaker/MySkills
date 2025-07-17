@@ -1,6 +1,21 @@
 import React from "react";
+import { Card, Typography, Badge, Button, Space } from "antd";
+import {
+    UserOutlined,
+    BookOutlined,
+    AppstoreOutlined,
+    BarChartOutlined,
+    PlusCircleOutlined,
+    SettingOutlined,
+    LineChartOutlined,
+    UsergroupAddOutlined,
+    RocketOutlined,
+    CheckCircleOutlined
+} from "@ant-design/icons";
 import { userApi, categoryApi, trainingCourseApi, trainingSessionApi } from "../../services/api";
+import { systemHealthApi } from "../../services/api";
 
+const { Title, Text } = Typography;
 
 const fetchData = async () => {
     try {
@@ -19,191 +34,339 @@ const fetchData = async () => {
     }
     catch (error) {
         console.error("Error fetching data:", error);
+        return {
+            totalUsers: 0,
+            totalCategories: 0,
+            totalCourses: 0,
+            totalSessions: 0
+        };
     }
 }
 
+function StatCard({ title, value, icon: IconComponent, trend = "+12%", color = "blue" }) {
+    const colorMap = {
+        blue: "from-blue-600/90 to-indigo-600/90",
+        green: "from-green-600/90 to-emerald-600/90",
+        purple: "from-purple-600/90 to-violet-600/90",
+        orange: "from-orange-600/90 to-red-600/90"
+    };
 
-function StatCard({ title, value, icon, trend = "+12%", isLight }) {
+    const bgColorMap = {
+        blue: "bg-blue-100/50",
+        green: "bg-green-100/50",
+        purple: "bg-purple-100/50",
+        orange: "bg-orange-100/50"
+    };
+
+    const textColorMap = {
+        blue: "text-blue-600",
+        green: "text-green-600",
+        purple: "text-purple-600",
+        orange: "text-orange-600"
+    };
+
     return (
-        <div className={
-            `group relative overflow-hidden rounded-3xl border shadow-2xl transition-all duration-500 hover:scale-105 ` +
-            (isLight
-                ? "bg-white/90 border-blue-100 hover:border-blue-300 hover:shadow-blue-200/40"
-                : "bg-white/5 backdrop-blur-xl border-white/10 hover:border-cyan-400/30 hover:shadow-cyan-500/10")
-        }>
-            <div className={isLight
-                ? "absolute inset-0 bg-gradient-to-br from-blue-200/10 to-blue-400/10 opacity-100"
-                : "absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-            }></div>
-            <div className="relative flex items-center gap-5 p-7">
-                <div className={isLight
-                    ? "flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-200/40 to-blue-400/30 border border-blue-200 text-blue-400"
-                    : "flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-blue-500/20 backdrop-blur-sm border border-cyan-400/30"
-                }>
-                    <i className={`${icon} text-2xl ${isLight ? "text-blue-400" : "text-cyan-300 group-hover:text-cyan-200 transition-colors duration-300"}`}></i>
+        <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 ${bgColorMap[color]} backdrop-blur-sm rounded-xl flex items-center justify-center`}>
+                    <IconComponent className={`text-xl ${textColorMap[color]}`} />
                 </div>
                 <div className="flex-1">
-                    <div className={isLight ? "text-sm font-medium text-blue-500 mb-1" : "text-sm font-medium text-slate-400 mb-1"}>{title}</div>
-                    <div className={isLight ? "text-3xl font-bold text-blue-700 drop-shadow-lg" : "text-3xl font-bold text-white drop-shadow-lg"}>{value}</div>
+                    <Text className="text-sm text-gray-600 block">{title}</Text>
+                    <div className="text-2xl font-bold text-gray-900">{value}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-green-600 font-medium">{trend}</span>
+                        <span className="text-xs text-gray-500">from last month</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Card>
     );
 }
 
-function QuickAction({ title, description, icon, color = "cyan", isLight }) {
-    // Fix: always provide a valid color key
+function QuickAction({ title, description, icon: IconComponent, color = "blue", onClick }) {
     const colorMap = {
-        cyan: isLight ? "from-blue-100 to-blue-200 border-blue-200 text-blue-500" : "from-cyan-400/20 to-cyan-600/20 border-cyan-400/30 text-cyan-300",
-        purple: isLight ? "from-purple-100 to-purple-200 border-purple-200 text-purple-500" : "from-purple-400/20 to-purple-600/20 border-purple-400/30 text-purple-300",
-        emerald: isLight ? "from-emerald-100 to-emerald-200 border-emerald-200 text-emerald-500" : "from-emerald-400/20 to-emerald-600/20 border-emerald-400/30 text-emerald-300",
-        amber: isLight ? "from-amber-100 to-amber-200 border-amber-200 text-amber-500" : "from-amber-400/20 to-amber-600/20 border-amber-400/30 text-amber-300"
+        blue: "from-blue-600/90 to-indigo-600/90",
+        green: "from-green-600/90 to-emerald-600/90",
+        purple: "from-purple-600/90 to-violet-600/90",
+        orange: "from-orange-600/90 to-red-600/90"
     };
-    const colorClasses = colorMap[color] || colorMap['cyan'];
-    const textColor = colorClasses.split(' ').find(cls => cls.startsWith('text-')) || (isLight ? 'text-blue-500' : 'text-cyan-300');
+
+    const bgColorMap = {
+        blue: "bg-blue-100/50",
+        green: "bg-green-100/50",
+        purple: "bg-purple-100/50",
+        orange: "bg-orange-100/50"
+    };
+
+    const textColorMap = {
+        blue: "text-blue-600",
+        green: "text-green-600",
+        purple: "text-purple-600",
+        orange: "text-orange-600"
+    };
+
     return (
-        <div className={
-            `group cursor-pointer rounded-2xl border p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl ` +
-            (isLight ? "bg-white/90 hover:border-blue-300 shadow-blue-200/40" : "bg-white/5 backdrop-blur-xl border-white/10 hover:border-white/20")
-        }>
-            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses} border mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                <i className={`${icon} text-lg ${textColor}`}></i>
+        <Card
+            className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition-all duration-300 hover:scale-105 cursor-pointer"
+            onClick={onClick}
+        >
+            <div className="text-center">
+                <div className={`w-12 h-12 ${bgColorMap[color]} backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4`}>
+                    <IconComponent className={`text-xl ${textColorMap[color]}`} />
+                </div>
+                <Title level={5} className="!text-gray-900 !mb-2">{title}</Title>
+                <Text className="text-sm text-gray-600">{description}</Text>
             </div>
-            <h3 className={isLight ? "text-lg font-semibold text-blue-700 mb-2" : "text-lg font-semibold text-white mb-2"}>{title}</h3>
-            <p className={isLight ? "text-sm text-blue-400" : "text-sm text-slate-400"}>{description}</p>
-        </div>
+        </Card>
     );
 }
 
-function AdminDashboard({ theme }) {
+function AdminDashboard() {
     const [data, setData] = React.useState(null);
+    const [systemHealth, setSystemHealth] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
-    const isLight = theme === 'light';
+    const [healthLoading, setHealthLoading] = React.useState(true);
 
     React.useEffect(() => {
         fetchData().then((result) => {
             setData(result);
             setLoading(false);
         });
+        systemHealthApi.getHealthStats()
+            .then((res) => {
+                setSystemHealth(res.data);
+                setHealthLoading(false);
+            })
+            .catch(() => setHealthLoading(false));
     }, []);
 
-    if (loading) {
+    if (loading || healthLoading) {
         return (
-            <div className={isLight ? "min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-100 to-white" : "min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"}>
-                <div className="flex flex-col items-center gap-4">
-                    <div className={isLight ? "w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin" : "w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"}></div>
-                    <span className={isLight ? "text-blue-600 text-xl font-semibold" : "text-cyan-200 text-xl font-semibold"}>Loading dashboard...</span>
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-blue-100/30 to-indigo-100/20 backdrop-blur-sm"></div>
+                <div className="min-h-screen flex items-center justify-center relative z-10">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-blue-600 text-xl font-semibold">Loading dashboard...</span>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={isLight ? "min-h-screen bg-gradient-to-br from-white via-blue-100 to-white relative overflow-hidden" : "min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden"}>
-            {/* Animated background elements */}
-            {isLight ? (
-                <>
-                    <div className="absolute inset-0 bg-gradient-radial from-blue-200/30 via-transparent to-transparent opacity-40"></div>
-                    <div className="absolute inset-0 bg-gradient-radial from-emerald-200/20 via-transparent to-transparent opacity-20"></div>
-                    <div className="absolute inset-0 bg-gradient-radial from-purple-200/20 via-transparent to-transparent opacity-10"></div>
-                </>
-            ) : (
-                <>
-                    <div className="absolute inset-0 bg-gradient-radial from-blue-600/10 via-transparent to-transparent opacity-30"></div>
-                    <div className="absolute inset-0 bg-gradient-radial from-emerald-600/10 via-transparent to-transparent opacity-20"></div>
-                    <div className="absolute inset-0 bg-gradient-radial from-purple-600/10 via-transparent to-transparent opacity-15"></div>
-                </>
-            )}
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
+            {/* Background overlay for glassmorphism effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-blue-100/30 to-indigo-100/20 backdrop-blur-sm"></div>
 
-            <div className="relative z-10 flex flex-col gap-8 p-8">
+            <div className="max-w-7xl mx-auto p-6 relative z-10">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className={isLight ? "text-4xl font-bold bg-gradient-to-r from-blue-700 via-blue-400 to-blue-600 bg-clip-text text-transparent mb-2" : "text-4xl font-bold bg-gradient-to-r from-white via-cyan-100 to-blue-200 bg-clip-text text-transparent mb-2"}>
-                            Admin Dashboard
-                        </h1>
-                        <p className={isLight ? "text-blue-700 text-lg" : "text-slate-400 text-lg"}>Welcome back, manage your learning platform</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className={isLight ? "px-4 py-2 rounded-full bg-gradient-to-r from-emerald-200/40 to-emerald-400/20 backdrop-blur-sm border border-emerald-200/60" : "px-4 py-2 rounded-full bg-gradient-to-r from-emerald-400/20 to-emerald-600/20 backdrop-blur-sm border border-emerald-400/30"}>
-                            <span className={isLight ? "text-sm font-medium text-emerald-700" : "text-sm font-medium text-emerald-300"}>System Online</span>
+                <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <Title level={1} className="!text-gray-900 !mb-2">
+                                Admin Dashboard
+                            </Title>
+                            <Text className="text-gray-600 text-base">
+                                Welcome back, manage your learning platform
+                            </Text>
                         </div>
-
+                        <div className="flex items-center gap-4">
+                            <Badge count="Online" color="#10b981" className="mr-4">
+                                <div className="bg-white/30 backdrop-blur-md px-4 py-2 rounded-lg shadow-sm border border-white/20">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircleOutlined className="text-green-600" />
+                                        <Text className="text-sm font-medium text-gray-700">System Status</Text>
+                                    </div>
+                                </div>
+                            </Badge>
+                        </div>
                     </div>
                 </div>
+
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard title="Total Users" value={data ? data.totalUsers : "..."} icon="fas fa-users" isLight={isLight} />
-                    <StatCard title="Active Courses" value={data ? data.totalCourses : "..."} icon="fas fa-graduation-cap" isLight={isLight} />
-                    <StatCard title="Categories" value={data ? data.totalCategories : "..."} icon="fas fa-th-list" isLight={isLight} />
-                    <StatCard title="Training Sessions" value={data ? data.totalSessions : "..."} icon="fas fa-chart-bar" isLight={isLight} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <StatCard
+                        title="Total Users"
+                        value={data ? data.totalUsers : "0"}
+                        icon={UserOutlined}
+                        color="blue"
+                        trend="+12%"
+                    />
+                    <StatCard
+                        title="Active Courses"
+                        value={data ? data.totalCourses : "0"}
+                        icon={BookOutlined}
+                        color="green"
+                        trend="+8%"
+                    />
+                    <StatCard
+                        title="Categories"
+                        value={data ? data.totalCategories : "0"}
+                        icon={AppstoreOutlined}
+                        color="purple"
+                        trend="+5%"
+                    />
+                    <StatCard
+                        title="Training Sessions"
+                        value={data ? data.totalSessions : "0"}
+                        icon={BarChartOutlined}
+                        color="orange"
+                        trend="+15%"
+                    />
                 </div>
 
                 {/* Quick Actions */}
-                <div className="mt-8">
-                    <h2 className={isLight ? "text-2xl font-semibold text-blue-700 mb-6 flex items-center gap-3" : "text-2xl font-semibold text-white mb-6 flex items-center gap-3"}>
-                        <div className={isLight ? "w-1 h-8 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" : "w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full"}></div>
-                        Quick Actions
-                    </h2>
+                <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-1 h-8 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full"></div>
+                        <Title level={2} className="!text-gray-900 !mb-0">Quick Actions</Title>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <QuickAction
                             title="Add Course"
                             description="Create new learning content"
-                            icon="fas fa-plus-circle"
-                            color={isLight ? "cyan-light" : "cyan"}
-                            isLight={isLight}
+                            icon={PlusCircleOutlined}
+                            color="blue"
+                            onClick={() => console.log('Add course clicked')}
                         />
                         <QuickAction
                             title="Manage Users"
                             description="View and edit user profiles"
-                            icon="fas fa-users-cog"
-                            color={isLight ? "purple-light" : "purple"}
-                            isLight={isLight}
+                            icon={UsergroupAddOutlined}
+                            color="green"
+                            onClick={() => console.log('Manage users clicked')}
                         />
                         <QuickAction
                             title="Analytics"
                             description="View detailed reports"
-                            icon="fas fa-chart-line"
-                            color={isLight ? "emerald-light" : "emerald"}
-                            isLight={isLight}
+                            icon={LineChartOutlined}
+                            color="purple"
+                            onClick={() => console.log('Analytics clicked')}
                         />
                         <QuickAction
                             title="Settings"
                             description="Configure system settings"
-                            icon="fas fa-cog"
-                            color={isLight ? "amber-light" : "amber"}
-                            isLight={isLight}
+                            icon={SettingOutlined}
+                            color="orange"
+                            onClick={() => console.log('Settings clicked')}
                         />
                     </div>
                 </div>
 
                 {/* Welcome Panel */}
-                <div className={isLight ? "mt-8 relative overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-blue-200/40 shadow-2xl" : "mt-8 relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl"}>
-                    <div className={isLight ? "absolute inset-0 bg-gradient-to-r from-blue-200/20 to-blue-400/10 opacity-60" : "absolute inset-0 bg-gradient-to-r from-cyan-400/5 to-blue-600/5 opacity-50"}></div>
-                    <div className="relative p-8">
-                        <div className="flex items-start gap-6">
-                            <div className={isLight ? "flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-200/40 to-blue-400/30 border border-blue-300 flex items-center justify-center" : "flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-blue-500/20 backdrop-blur-sm border border-cyan-400/30 flex items-center justify-center"}>
-                                <i className={isLight ? "fas fa-rocket text-2xl text-blue-600" : "fas fa-rocket text-2xl text-cyan-300"}></i>
-                            </div>
-                            <div className="flex-1">
-                                <h2 className={isLight ? "text-2xl font-bold text-blue-700 mb-3" : "text-2xl font-bold text-white mb-3"}>Welcome to the Admin Panel</h2>
-                                <p className={isLight ? "text-blue-700 text-lg leading-relaxed mb-6" : "text-slate-300 text-lg leading-relaxed mb-6"}>
-                                    Manage your learning platform with confidence. Monitor user engagement,
-                                    create compelling courses, and track success metrics with our intuitive dashboard.
-                                </p>
-                                <div className="flex flex-wrap gap-3">
-                                    <div className={isLight ? "px-4 py-2 rounded-full bg-gradient-to-r from-blue-200/40 to-blue-400/20 border border-blue-200/60" : "px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400/20 to-cyan-600/20 backdrop-blur-sm border border-cyan-400/30"}>
-                                        <span className={isLight ? "text-sm font-medium text-blue-700" : "text-sm font-medium text-cyan-300"}>Latest Updates</span>
+                <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                    <div className="flex items-start gap-6">
+                        <div className="flex-shrink-0 w-16 h-16 bg-blue-100/50 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                            <RocketOutlined className="text-2xl text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                            <Title level={3} className="!text-gray-900 !mb-3">Welcome to the Admin Panel</Title>
+                            <Text className="text-gray-600 text-base leading-relaxed block mb-6">
+                                Manage your learning platform with confidence. Monitor user engagement,
+                                create compelling courses, and track success metrics with our intuitive dashboard.
+                            </Text>
+                            <Space wrap>
+                                <Button
+                                    type="primary"
+                                    className="bg-gradient-to-r from-blue-600/90 to-indigo-600/90 hover:from-blue-700/90 hover:to-indigo-700/90 border-0 shadow-lg backdrop-blur-sm"
+                                    icon={<BookOutlined />}
+                                >
+                                    View Courses
+                                </Button>
+                                <Button
+                                    className="bg-white/30 backdrop-blur-md border border-white/30 hover:bg-white/40 text-gray-700"
+                                    icon={<LineChartOutlined />}
+                                >
+                                    View Reports
+                                </Button>
+                            </Space>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Recent Activity */}
+                <div className="mt-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-1 h-8 bg-gradient-to-b from-purple-600 to-violet-600 rounded-full"></div>
+                        <Title level={2} className="!text-gray-900 !mb-0">Recent Activity</Title>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                            <Title level={4} className="!text-gray-900 !mb-4">Latest Updates</Title>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 p-3 bg-white/20 rounded-lg">
+                                    <div className="w-8 h-8 bg-green-100/50 rounded-full flex items-center justify-center">
+                                        <UserOutlined className="text-green-600 text-sm" />
                                     </div>
-                                    <div className={isLight ? "px-4 py-2 rounded-full bg-gradient-to-r from-purple-200/40 to-purple-400/20 border border-purple-200/60" : "px-4 py-2 rounded-full bg-gradient-to-r from-purple-400/20 to-purple-600/20 backdrop-blur-sm border border-purple-400/30"}>
-                                        <span className={isLight ? "text-sm font-medium text-purple-700" : "text-sm font-medium text-purple-300"}>New Features</span>
+                                    <div>
+                                        <Text className="text-sm font-medium text-gray-900 block">New user registered</Text>
+                                        <Text className="text-xs text-gray-600">2 minutes ago</Text>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 bg-white/20 rounded-lg">
+                                    <div className="w-8 h-8 bg-blue-100/50 rounded-full flex items-center justify-center">
+                                        <BookOutlined className="text-blue-600 text-sm" />
+                                    </div>
+                                    <div>
+                                        <Text className="text-sm font-medium text-gray-900 block">Course "React Basics" updated</Text>
+                                        <Text className="text-xs text-gray-600">1 hour ago</Text>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 bg-white/20 rounded-lg">
+                                    <div className="w-8 h-8 bg-purple-100/50 rounded-full flex items-center justify-center">
+                                        <BarChartOutlined className="text-purple-600 text-sm" />
+                                    </div>
+                                    <div>
+                                        <Text className="text-sm font-medium text-gray-900 block">Training session completed</Text>
+                                        <Text className="text-xs text-gray-600">3 hours ago</Text>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
+
+                        <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
+                            <Title level={4} className="!text-gray-900 !mb-4">System Health</Title>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <Text className="text-sm text-gray-700">Server Status</Text>
+                                    <Badge status={systemHealth?.server?.status === 'online' ? 'success' : 'error'} text={systemHealth?.server?.status || 'Unknown'} />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Text className="text-sm text-gray-700">Server Uptime</Text>
+                                    <Text className="text-xs text-gray-600">{systemHealth?.server?.uptime || '-'}</Text>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Text className="text-sm text-gray-700">Database</Text>
+                                    <Badge status={systemHealth?.database?.status === 'connected' ? 'success' : 'error'} text={systemHealth?.database?.status || 'Unknown'} />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Text className="text-sm text-gray-700">API Response Time</Text>
+                                    <Text className="text-xs text-gray-600">{systemHealth?.api?.response_time || '-'}</Text>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Text className="text-sm text-gray-700">Storage</Text>
+                                    <Badge status={systemHealth?.storage?.used_percent < 80 ? 'success' : 'warning'} text={`${systemHealth?.storage?.used_percent || 0}% Used`} />
+                                </div>
+                            </div>
+                        </Card>
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                .ant-card {
+                    border-radius: 12px !important;
+                }
+                .ant-btn {
+                    border-radius: 8px !important;
+                }
+                .ant-badge-status-dot {
+                    width: 8px;
+                    height: 8px;
+                }
+            `}</style>
         </div>
     );
 }
