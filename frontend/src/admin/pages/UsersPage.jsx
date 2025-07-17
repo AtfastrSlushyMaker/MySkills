@@ -2,7 +2,7 @@ import UserDetailsModal from "../components/users/UserDetailsModal";
 import React, { useState, useEffect } from "react";
 
 import { Table, Button, Input, Space, Tag, Avatar, Typography, Card, Badge, message } from "antd";
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined } from "@ant-design/icons";
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined, UsergroupAddOutlined, CheckCircleOutlined, CrownOutlined, TeamOutlined, SolutionOutlined, SmileOutlined } from "@ant-design/icons";
 import { userApi } from '../../services/api';
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
@@ -191,14 +191,6 @@ function UsersPage({ theme = 'light' }) {
                 </div>
             ),
         },
-        {
-            title: 'Phone Number',
-            dataIndex: 'phone',
-            key: 'phone',
-            render: (text) => (
-                <Text className="text-sm text-gray-600">{text || 'N/A'}</Text>
-            ),
-        },
 
         {
             title: 'Role',
@@ -297,12 +289,12 @@ function UsersPage({ theme = 'light' }) {
                 {/* Stats Cards */}
                 <div className="flex flex-wrap justify-center items-stretch gap-6 mb-8">
                     <Card
-                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <UserOutlined className="text-blue-600" />
+                                <UsergroupAddOutlined className="text-blue-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Total Users</Text>
@@ -311,12 +303,12 @@ function UsersPage({ theme = 'light' }) {
                         </div>
                     </Card>
                     <Card
-                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <CheckCircleOutlined className="text-green-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Active</Text>
@@ -328,12 +320,12 @@ function UsersPage({ theme = 'light' }) {
                     </Card>
                     {/* Administrators */}
                     <Card
-                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-red-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <CrownOutlined className="text-red-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Admins</Text>
@@ -345,12 +337,12 @@ function UsersPage({ theme = 'light' }) {
                     </Card>
                     {/* Coordinators */}
                     <Card
-                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                <TeamOutlined className="text-purple-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Coordinators</Text>
@@ -362,12 +354,12 @@ function UsersPage({ theme = 'light' }) {
                     </Card>
                     {/* Trainers */}
                     <Card
-                        className="flex-1 min-w-[180px] max-w-[220px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-orange-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                <SolutionOutlined className="text-orange-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Trainers</Text>
@@ -379,12 +371,12 @@ function UsersPage({ theme = 'light' }) {
                     </Card>
                     {/* Trainees */}
                     <Card
-                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch"
+                        className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
                         bodyStyle={{ padding: '20px 24px' }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-teal-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                                <SmileOutlined className="text-teal-600 text-2xl" />
                             </div>
                             <div>
                                 <Text className="text-sm text-gray-600">Trainees</Text>
