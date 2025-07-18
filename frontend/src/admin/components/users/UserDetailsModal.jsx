@@ -183,7 +183,7 @@ function UserDetailsModal({ open, user, onClose }) {
             title={null}
             closeIcon={<CloseOutlined className="close-x" />}
         >
-            <div className="relative bg-gradient-to-br from-white/60 via-blue-100/40 to-indigo-100/30 backdrop-blur-md rounded-3xl border border-white/30 shadow-2xl">
+            <div className="relative bg-white rounded-3xl border border-gray-200 shadow-2xl">
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
                         <Spin size="large" />
@@ -244,7 +244,7 @@ function UserDetailsModal({ open, user, onClose }) {
 
                         {/* Enhanced Details Section */}
                         <div className="px-8 pb-6">
-                            <div className="bg-white/40 backdrop-blur-sm rounded-3xl shadow-sm p-6 border border-white/30">
+                            <div className="bg-gray-50 rounded-3xl shadow-sm p-6 border border-gray-200">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div className="space-y-1">
                                         <Text className="text-xs text-gray-500 uppercase tracking-wider font-medium">Full Name</Text>
@@ -309,7 +309,7 @@ function UserDetailsModal({ open, user, onClose }) {
                                             </div>
                                         ),
                                         children: (
-                                            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-4 border border-white/30">
+                                            <div className="bg-gray-50 rounded-3xl p-4 border border-gray-200">
                                                 <Table
                                                     dataSource={sessions}
                                                     columns={sessionColumns}
@@ -335,7 +335,7 @@ function UserDetailsModal({ open, user, onClose }) {
                                             </div>
                                         ),
                                         children: (
-                                            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-4 border border-white/30">
+                                            <div className="bg-gray-50 rounded-3xl p-4 border border-gray-200">
                                                 <Table
                                                     dataSource={attendance}
                                                     columns={attendanceColumns}
@@ -478,28 +478,27 @@ function UserDetailsModal({ open, user, onClose }) {
                 }
                 
                 .user-details-tabs .ant-tabs-nav {
-                    background: rgba(255, 255, 255, 0.3);
-                    backdrop-filter: blur(10px);
+                    background: #f3f4f6;
                     border-radius: 24px;
                     padding: 8px;
                     margin-bottom: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border: 1px solid #e5e7eb;
                 }
-                
+
                 .user-details-tabs .ant-tabs-tab {
                     border: none;
-                    background: transparent;
+                    background: #f3f4f6;
                     border-radius: 16px;
                     transition: all 0.3s ease;
                 }
-                
+
                 .user-details-tabs .ant-tabs-tab:hover {
-                    background: rgba(255, 255, 255, 0.4);
+                    background: #e5e7eb;
                 }
-                
+
                 .user-details-tabs .ant-tabs-tab-active {
-                    background: rgba(255, 255, 255, 0.6) !important;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    background: #fff !important;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                 }
                 
                 .user-details-tabs .ant-tabs-ink-bar {
@@ -515,19 +514,19 @@ function UserDetailsModal({ open, user, onClose }) {
                 }
                 
                 .custom-table .ant-table-thead > tr > th {
-                    background: rgba(255, 255, 255, 0.4);
+                    background: #f3f4f6;
                     border: none;
                     color: #374151;
                     font-weight: 600;
                 }
-                
+
                 .custom-table .ant-table-tbody > tr > td {
                     border: none;
-                    background: transparent;
+                    background: #fff;
                 }
-                
+
                 .custom-table .ant-table-tbody > tr:hover > td {
-                    background: rgba(255, 255, 255, 0.3) !important;
+                    background: #f3f4f6 !important;
                 }
                 
                 .custom-table .ant-pagination {
@@ -535,9 +534,8 @@ function UserDetailsModal({ open, user, onClose }) {
                 }
                 
                 .custom-table .ant-pagination .ant-pagination-item {
-                    background: rgba(255, 255, 255, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    backdrop-filter: blur(4px);
+                    background: #f3f4f6;
+                    border: 1px solid #e5e7eb;
                 }
                 
                 .custom-table .ant-pagination .ant-pagination-item-active {

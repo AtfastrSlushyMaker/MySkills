@@ -211,7 +211,7 @@ function CategoriesPage() {
                                 Categories Management
                             </Title>
                             <Text className="text-gray-600 text-base">
-                                Manage your course categories and organize your content
+                                Manage your session categories and organize your content
                             </Text>
                         </div>
                         <Badge count={data.length} showZero color="#3b82f6" className="mr-4">

@@ -1,7 +1,7 @@
 // CategoryDetailsModal.js
 import React from "react";
 import { Modal, Typography, Divider } from "antd";
-import { AppstoreOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, CalendarOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -15,57 +15,105 @@ function CategoryDetailsModal({ open, category, onClose }) {
             footer={null}
             title={null}
             centered
-            className="glass-modal"
-            closeIcon={<span className="text-gray-500 text-lg">✕</span>}
+            width={600}
+            className="category-details-modal"
+            closeIcon={
+                <div className="w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm hover:bg-white/50 flex items-center justify-center transition-all duration-200">
+                    <span className="text-gray-600 text-lg">✕</span>
+                </div>
+            }
+            styles={{
+                body: { padding: 0 },
+                content: {
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    background: '#fff',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                }
+            }}
         >
-            <div className="relative bg-gradient-to-br from-white/60 via-blue-100/40 to-indigo-100/30 backdrop-blur-md rounded-3xl border border-white/30 shadow-2xl p-8">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                        <AppstoreOutlined className="text-white text-2xl" />
+            {/* Header Section */}
+            <div className="relative p-6 bg-white border-b border-white/20">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 backdrop-blur-sm flex items-center justify-center shadow-sm border border-white/30">
+                        <AppstoreOutlined className="text-blue-600 text-2xl" />
                     </div>
-                    <Title level={3} className="!mb-0 text-gray-800">{category.name}</Title>
+                    <div>
+                        <Title level={3} className="!mb-1 !text-gray-800 font-semibold">
+                            {category.name}
+                        </Title>
+                        <Text className="text-gray-600 text-sm">
+                            Category Details
+                        </Text>
+                    </div>
                 </div>
 
-                <Divider className="bg-white/40 my-4" />
+                {/* Status Badge */}
+                <div className="flex items-center gap-2">
+                    {category.is_active ? (
+                        <CheckCircleOutlined className="text-green-600" />
+                    ) : (
+                        <CloseCircleOutlined className="text-red-500" />
+                    )}
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm ${category.is_active
+                        ? 'bg-green-100/70 text-green-800 border border-green-200/50'
+                        : 'bg-red-100/70 text-red-800 border border-red-200/50'
+                        }`}>
+                        {category.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <Text className="text-xs text-gray-500 uppercase tracking-wider font-medium block mb-1">
-                            Description
-                        </Text>
-                        <Text className="text-base text-gray-800">
+            {/* Content Section */}
+            <div className="p-6 bg-white">
+                <div className="space-y-5">
+                    {/* Description */}
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <Text className="text-xs text-gray-700 uppercase tracking-wider font-medium">
+                                Description
+                            </Text>
+                        </div>
+                        <Text className="text-gray-800 text-sm leading-relaxed">
                             {category.description || 'No description provided'}
                         </Text>
                     </div>
 
-                    <div>
-                        <Text className="text-xs text-gray-500 uppercase tracking-wider font-medium block mb-1">
-                            Status
-                        </Text>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${category.is_active
-                                ? 'bg-green-100 text-green-800 border border-green-200'
-                                : 'bg-gray-100 text-gray-600 border border-gray-200'
-                            }`}>
-                            {category.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                                <CalendarOutlined className="text-blue-600 text-sm" />
+                                <Text className="text-xs text-gray-700 uppercase tracking-wider font-medium">
+                                    Created At
+                                </Text>
+                            </div>
+                            <Text className="text-gray-800 text-sm font-medium">
+                                {category.created_at ? new Date(category.created_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                }) : 'N/A'}
+                            </Text>
+                        </div>
 
-                    <div>
-                        <Text className="text-xs text-gray-500 uppercase tracking-wider font-medium block mb-1">
-                            Created At
-                        </Text>
-                        <Text className="text-base text-gray-800">
-                            {category.created_at ? new Date(category.created_at).toLocaleString() : 'N/A'}
-                        </Text>
-                    </div>
-
-                    <div>
-                        <Text className="text-xs text-gray-500 uppercase tracking-wider font-medium block mb-1">
-                            Last Updated
-                        </Text>
-                        <Text className="text-base text-gray-800">
-                            {category.updated_at ? new Date(category.updated_at).toLocaleString() : 'N/A'}
-                        </Text>
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="flex items-center gap-2 mb-2">
+                                <CalendarOutlined className="text-purple-600 text-sm" />
+                                <Text className="text-xs text-gray-700 uppercase tracking-wider font-medium">
+                                    Last Updated
+                                </Text>
+                            </div>
+                            <Text className="text-gray-800 text-sm font-medium">
+                                {category.updated_at ? new Date(category.updated_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                }) : 'N/A'}
+                            </Text>
+                        </div>
                     </div>
                 </div>
             </div>
