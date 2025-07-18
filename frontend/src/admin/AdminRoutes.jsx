@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminDashboard from "./pages/AdminDashboard";
 import UsersPage from "./pages/UsersPage";
-import CoursesPage from "./pages/CoursesPage";
+import CoursesPage from "./pages/SessionsPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 

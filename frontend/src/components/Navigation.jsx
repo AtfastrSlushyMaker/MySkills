@@ -179,20 +179,6 @@ function Navigation() {
                             </Link>
                         ))}
 
-                        {/* Theme Toggle Button */}
-                        <button
-                            className={
-                                "ml-4 px-4 py-2 rounded-full font-semibold shadow-lg transition-all duration-300 flex items-center gap-2 " +
-                                (isLight
-                                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200"
-                                    : "bg-slate-800 text-cyan-200 hover:bg-slate-700 border border-cyan-400/20")
-                            }
-                            style={{ boxShadow: isLight ? '0 2px 16px 0 #b6d0ff40' : undefined }}
-                            onClick={handleToggleTheme}
-                        >
-                            {isLight ? <><span role="img" aria-label="moon">🌙</span> Dark Mode</> : <><span role="img" aria-label="sun">☀️</span> Light Mode</>}
-                        </button>
-
                         {/* User Profile Section - Enhanced Glassmorphism */}
                         {loading ? (
                             <div className="ml-6 flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">

@@ -28,6 +28,11 @@ const fetchUsers = async () => {
 
 function UsersPage({ theme = 'light' }) {
     const [data, setData] = useState([]);
+    // Pagination state for Table
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+    });
     const [userStats, setUserStats] = useState({
         total_users: 0,
         active_users: 0,
@@ -103,16 +108,41 @@ function UsersPage({ theme = 'light' }) {
 
 
     const getRoleColor = (role) => {
-        switch (role) {
-            case 'Admin': return 'bg-red-100 text-red-800 border-red-200';
-            case 'Moderator': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'User': return 'bg-blue-100 text-blue-800 border-blue-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+        switch (role?.toLowerCase()) {
+            case 'admin':
+                return 'bg-red-100 text-red-800 border-red-200';
+            case 'moderator':
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'user':
+                return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'coordinator':
+                return 'bg-purple-100 text-purple-800 border-purple-200';
+            case 'trainer':
+                return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'trainee':
+                return 'bg-teal-100 text-teal-800 border-teal-200';
+            case 'guest':
+                return 'bg-gray-100 text-gray-600 border-gray-200';
+            default:
+                return 'bg-gray-100 text-gray-800 border-gray-200';
         }
     };
 
     const getStatusColor = (status) => {
-        return status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200';
+        switch (status?.toLowerCase()) {
+            case 'active':
+                return 'bg-green-100 text-green-800 border-green-200';
+            case 'inactive':
+                return 'bg-gray-100 text-gray-600 border-gray-200';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'banned':
+                return 'bg-red-100 text-red-800 border-red-200';
+            case 'suspended':
+                return 'bg-orange-100 text-orange-800 border-orange-200';
+            default:
+                return 'bg-gray-100 text-gray-800 border-gray-200';
+        }
     };
 
     const handleCreateUser = async (values) => {
@@ -206,14 +236,36 @@ function UsersPage({ theme = 'light' }) {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            render: (status) => (
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
-                        {status}
-                    </span>
-                </div>
-            ),
+            render: (status) => {
+                let dotColor = '';
+                switch (status?.toLowerCase()) {
+                    case 'active':
+                        dotColor = 'bg-green-500';
+                        break;
+                    case 'inactive':
+                        dotColor = 'bg-gray-400';
+                        break;
+                    case 'pending':
+                        dotColor = 'bg-yellow-400';
+                        break;
+                    case 'banned':
+                        dotColor = 'bg-red-500';
+                        break;
+                    case 'suspended':
+                        dotColor = 'bg-orange-400';
+                        break;
+                    default:
+                        dotColor = 'bg-gray-400';
+                }
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${dotColor}`} />
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
+                            {status}
+                        </span>
+                    </div>
+                );
+            },
         },
         {
             title: 'Last Active',
@@ -415,14 +467,15 @@ function UsersPage({ theme = 'light' }) {
                         columns={columns}
                         loading={loading}
                         pagination={{
-                            pageSize: 10,
+                            current: pagination.current,
+                            pageSize: pagination.pageSize,
                             showSizeChanger: true,
                             showQuickJumper: true,
-                            showTotal: (total, range) =>
-                                `${range[0]}-${range[1]} of ${total} users`,
-                            className: "!mt-6"
+                            pageSizeOptions: ['10', '20', '50', '100'],
+                            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users`,
+                            onChange: (page, pageSize) => setPagination({ current: page, pageSize })
                         }}
-                        className="overflow-hidden bg-white/30 backdrop-blur-sm"
+                        className="overflow-hidden bg-white/30 backdrop-blur-sm !mt-6"
                         rowClassName="hover:bg-white/20 transition-colors duration-200"
                         scroll={{ x: 800 }}
                     />
