@@ -342,7 +342,7 @@ function UsersPage({ theme = 'light' }) {
                 <div className="flex flex-wrap justify-center items-stretch gap-6 mb-8">
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -356,7 +356,7 @@ function UsersPage({ theme = 'light' }) {
                     </Card>
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -373,7 +373,7 @@ function UsersPage({ theme = 'light' }) {
                     {/* Administrators */}
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-red-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -390,7 +390,7 @@ function UsersPage({ theme = 'light' }) {
                     {/* Coordinators */}
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -407,7 +407,7 @@ function UsersPage({ theme = 'light' }) {
                     {/* Trainers */}
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-orange-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -424,7 +424,7 @@ function UsersPage({ theme = 'light' }) {
                     {/* Trainees */}
                     <Card
                         className="flex-1 max-w-[220px] min-w-[180px] border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30 flex flex-col justify-center items-stretch transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/40"
-                        bodyStyle={{ padding: '20px 24px' }}
+                        styles={{ body: { padding: '20px 24px' } }}
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-teal-100/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
