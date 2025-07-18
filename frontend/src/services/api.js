@@ -66,6 +66,8 @@ export const userApi = {
     updateUserCourse: (id, data) => api.put(`/courses/${id}`, data),
     deleteUserCourse: (id) => api.delete(`/courses/${id}`),
     getAllTrainers: () => api.get('/users/trainers'),
+    getAllCoordinators: () => api.get('/users/coordinators'),
+
     getUserCount: () => api.get('/users/count'),
     getUsers: () => api.get('/users'),
 

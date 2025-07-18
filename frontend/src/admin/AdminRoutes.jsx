@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import AdminSidebar from "./components/AdminSidebar";
 import AdminDashboard from "./pages/AdminDashboard";
 import UsersPage from "./pages/UsersPage";
-import CoursesPage from "./pages/SessionsPage";
+import SessionsPage from "./pages/SessionsPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 
@@ -63,10 +63,10 @@ function AdminRoutes() {
                 }
             />
             <Route
-                path="courses"
+                path="sessions"
                 element={
                     <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
-                        <CoursesPage theme={theme} />
+                        <SessionsPage theme={theme} />
                     </AdminLayout>
                 }
             />

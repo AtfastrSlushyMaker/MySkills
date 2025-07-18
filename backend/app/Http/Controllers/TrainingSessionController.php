@@ -14,7 +14,7 @@ class TrainingSessionController extends Controller
      */
     public function index()
     {
-        $sessions = TrainingSession::with(['category', 'trainer', 'coordinator', 'trainingCourses'])
+        $sessions = TrainingSession::with(['category', 'trainer', 'coordinator', 'trainingCourses', 'registrations.user'])
                                     ->get();
         return response()->json($sessions, 200);
     }

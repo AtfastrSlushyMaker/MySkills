@@ -12,6 +12,7 @@ Route::get('users/statistics', [App\Http\Controllers\UserController::class, 'get
 Route::get('users/count', [App\Http\Controllers\UserController::class, 'getUserCount']);
 // Specific user routes - MUST come before resource routes to avoid conflicts
 Route::get('users/trainers', [App\Http\Controllers\UserController::class, 'getAllTrainers']);
+Route::get('users/coordinators', [App\Http\Controllers\UserController::class, 'getAllCoordinators']);
 
 // Ban and deactivate a user account
 Route::post('users/{user}/ban', [App\Http\Controllers\UserController::class, 'ban']);

@@ -173,6 +173,15 @@ class UserController extends Controller
         return response()->json($trainers, 200);
     }
 
+    public function getAllCoordinators()
+    {
+        $coordinators = User::where('role', UserRole::COORDINATOR)
+                           ->where('status', UserStatus::ACTIVE)
+                           ->get();
+
+        return response()->json($coordinators, 200);
+    }
+
 public function getUserCount()
 {
     $count = User::count();

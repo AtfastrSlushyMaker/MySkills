@@ -22,7 +22,7 @@ function AdminSidebar() {
     const navLinks = [
         { to: '/admin', label: 'Dashboard', icon: DashboardOutlined },
         { to: '/admin/users', label: 'Users', icon: UserOutlined },
-        { to: '/admin/courses', label: 'Courses', icon: BookOutlined },
+        { to: '/admin/sessions', label: 'Sessions', icon: BookOutlined },
         { to: '/admin/categories', label: 'Categories', icon: AppstoreOutlined },
         { to: '/admin/analytics', label: 'Analytics', icon: BarChartOutlined },
     ];
