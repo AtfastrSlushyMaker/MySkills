@@ -1,47 +1,61 @@
+# MySkills - Training Management Platform
+
 <p align="center">
   <img src="frontend/public/logos/myskills-logo-icon.png" alt="MySkills Logo" width="120" />
 </p>
-
-# MySkills - Training Management Platform
 
 [![Laravel](https://img.shields.io/badge/Laravel-11-red)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18.3-blue)](https://react.dev)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://mysql.com)
 
+---
+
 ## 📋 Overview
 
-MySkills is a web-based training management platform developed for **SMART SKILLS**. The platform digitalizes the training process from course creation to attendance tracking.
+MySkills is a web-based training management platform for **SMART SKILLS**. It streamlines the training lifecycle, from course creation to attendance and feedback, with a modern UI and robust backend.
 
 **Duration**: 6 weeks (June 26 - August 6, 2025)  
+**Status**: 🔧 In Development (Esprit Summer Internship Project 2025)
+
+---
 
 ## 🎯 Key Features
 
-- **Course Management**: Create and organize training courses
-- **Session Planning**: Schedule sessions and assign trainers  
-- **User Registration**: Handle trainee enrollments
-- **Attendance Tracking**: Monitor participation
-- **Role-based Access**: Admin, Coordinator, Trainer, Trainee roles
+| Feature                | Backend | Frontend |
+|------------------------|---------|----------|
+| Course Management      |   ✔     |    ✔     |
+| Session Planning       |   ✔     |    ✔     |
+| User Registration      |   ✔     |    ✔     |
+| Attendance Tracking    |   ✔     |    ✔     |
+| Role-based Access      |   ✔     |    ✔     |
+| Feedback System        |   ✔     |    ✔     |
+| Notifications          |   ✔     |    ✔     |
+| Glassmorphism UI       |         |    ✔     |
+
+---
 
 ## 🛠️ Tech Stack
 
 - **Backend**: Laravel 11 (PHP 8.1+)
-- **Frontend**: React.js 18.3
-- **Database**: MySQL 8.0
-- **Styling**: Tailwind CSS
+- **Frontend**: React.js 18.3, Ant Design, Tailwind CSS
+- **Database**: MySQL 8.0 (default: SQLite for dev)
+- **Build Tools**: Vite, Composer, npm
 - **Version Control**: Git + GitHub
 
-## 👥 User Roles
+---
 
-- **Admin**: Platform management, user administration
-- **Coordinator**: Course creation, session planning, registration management
-- **Trainer**: Session delivery, attendance management, schedule consultation
-- **Trainee**: Course browsing, registration, feedback submission
+## 👥 User Roles & Permissions
 
-## 📊 Project Status
+| Role        | Permissions |
+|-------------|-------------|
+| Admin       | Full access, user management, platform settings |
+| Coordinator | Create/edit courses/sessions, manage registrations, view attendance/feedback |
+| Trainer     | View assigned sessions, mark attendance, view feedback |
+| Trainee     | Browse courses/sessions, register, submit feedback, view attendance |
 
-🔧 **In Development** - Esprit Summer Internship Project 2025
+---
 
-### Timeline
+## 📊 Project Status & Timeline
 
 - [x] Analysis & Design (1 week)
 - [ ] Backend Development (2 weeks)
@@ -49,9 +63,11 @@ MySkills is a web-based training management platform developed for **SMART SKILL
 - [ ] Testing & Integration (0.5 week)
 - [ ] Documentation (0.5 week)
 
+---
+
 ## 📁 Project Structure
 
-```
+```text
 MySkills/
 ├── docs/                # Documentation, diagrams, specifications
 │   ├── Glassmorphism_Navigation_Features.md
@@ -81,6 +97,8 @@ MySkills/
 └── README.md
 ```
 
+---
+
 ## 🚀 Getting Started
 
 ### Backend (Laravel)
@@ -100,6 +118,8 @@ MySkills/
 3. `npm install`
 4. `npm run dev` (App runs on <http://localhost:5173>)
 
+---
+
 ## 🔗 API Endpoints
 
 See `backend/routes/` for full REST API:
@@ -115,14 +135,74 @@ See `backend/routes/` for full REST API:
 - `/api/notifications` (CRUD, unread, broadcast)
 - `/api/system-health` (server, DB, storage status)
 
-## 🖥️ Frontend Features
+---
 
-- **Glassmorphism UI**: Modern navigation, profile cards, responsive design
-- **Admin Panel**: Dashboard, Sessions, Users, Categories
-- **Session Management**: Create, update, view, delete sessions; assign trainers/coordinators; manage participants and courses
-- **User Management**: Role-based access, profile, authentication
-- **Attendance & Feedback**: Track attendance, submit feedback, view completion/certificates
-- **Notifications**: Real-time updates, unread tracking
+## 📦 Example API Request/Response
+
+**Create a new session (POST /api/training-sessions):**
+
+```json
+{
+  "category_id": 1,
+  "trainer_id": 2,
+  "coordinator_id": 3,
+  "date": "2025-07-20",
+  "start_time": "09:00",
+  "end_time": "12:00",
+  "location": "Room 101",
+  "max_participants": 20,
+  "skill_name": "Excel Basics",
+  "skill_description": "Intro to Excel for business."
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 5,
+  "category_id": 1,
+  "trainer_id": 2,
+  "coordinator_id": 3,
+  "date": "2025-07-20",
+  "start_time": "09:00",
+  "end_time": "12:00",
+  "location": "Room 101",
+  "max_participants": 20,
+  "skill_name": "Excel Basics",
+  "skill_description": "Intro to Excel for business.",
+  "created_at": "2025-07-18T10:00:00Z",
+  "updated_at": "2025-07-18T10:00:00Z"
+}
+```
+
+---
+
+## ⚙️ Environment Variables
+
+### Backend (.env)
+
+- `DB_CONNECTION=sqlite` (or `mysql`)
+- `DB_DATABASE=...`
+- `DB_USERNAME=...`
+- `DB_PASSWORD=...`
+- `APP_KEY=...`
+- `APP_URL=http://localhost:8000`
+
+### Frontend
+
+- No custom .env required for local dev (uses Vite defaults)
+
+---
+
+## 🧑‍💻 Development & Contribution
+
+- Clone the repo and follow the setup steps above.
+- Run backend tests: `cd backend && php artisan test`
+- Run frontend lint: `cd frontend && npm run lint`
+- Pull requests and issues welcome!
+
+---
 
 ## 📚 Documentation
 
@@ -130,10 +210,15 @@ See `backend/routes/` for full REST API:
 - `docs/Navigation_Transformation.md`: Navigation system evolution
 - `docs/specifications/`: Project requirements and analysis
 
-## 🧪 Testing
+---
 
-- Backend: PHPUnit (`phpunit.xml`, `tests/Feature`, `tests/Unit`)
-- Frontend: ESLint, manual testing
+
+
+## 🚧 Limitations & TODO
+
+- No email sending or password reset yet
+
+---
 
 ## 📝 License
 
