@@ -12,25 +12,22 @@
 
 ## 📋 Overview
 
-MySkills is a web-based training management platform for **SMART SKILLS**. It streamlines the training lifecycle, from course creation to attendance and feedback, with a modern UI and robust backend.
+MySkills is a web-based training management platform for **SMART SKILLS**. It streamlines the training lifecycle, from session creation to attendance and feedback, with a modern UI and robust backend.
 
 **Duration**: 6 weeks (June 26 - August 6, 2025)  
 **Status**: 🔧 In Development (Esprit Summer Internship Project 2025)
 
 ---
 
-## 🎯 Key Features
+## 🎯 Key Features & Workflow
 
-| Feature                | Backend | Frontend |
-|------------------------|---------|----------|
-| Course Management      |   ✔     |    ✔     |
-| Session Planning       |   ✔     |    ✔     |
-| User Registration      |   ✔     |    ✔     |
-| Attendance Tracking    |   ✔     |    ✔     |
-| Role-based Access      |   ✔     |    ✔     |
-| Feedback System        |   ✔     |    ✔     |
-| Notifications          |   ✔     |    ✔     |
-| Glassmorphism UI       |         |    ✔     |
+- **Session Management**: Coordinators create training sessions with dates, assign trainers, and set capacity/location.
+- **Course Creation**: Trainers create and manage courses within assigned sessions.
+- **User Registration**: Trainees enroll in sessions; coordinators review and accept/reject registrations.
+- **Attendance Tracking**: Trainers mark attendance for each course/session.
+- **Role-based Access**: Admin, Coordinator, Trainer, Trainee roles with tailored permissions.
+- **Feedback System**: Trainees submit feedback for sessions/courses.
+- **Glassmorphism UI**: Modern, responsive design with animated navigation and profile cards.
 
 ---
 
@@ -49,9 +46,9 @@ MySkills is a web-based training management platform for **SMART SKILLS**. It st
 | Role        | Permissions |
 |-------------|-------------|
 | Admin       | Full access, user management, platform settings |
-| Coordinator | Create/edit courses/sessions, manage registrations, view attendance/feedback |
-| Trainer     | View assigned sessions, mark attendance, view feedback |
-| Trainee     | Browse courses/sessions, register, submit feedback, view attendance |
+| Coordinator | Create sessions, assign trainers, accept/reject trainee registrations, view attendance/feedback |
+| Trainer     | Create/manage courses within sessions, mark attendance, view feedback |
+| Trainee     | Enroll in sessions, attend courses, submit feedback |
 
 ---
 
@@ -132,7 +129,7 @@ See `backend/routes/` for full REST API:
 - `/api/attendances` (CRUD)
 - `/api/feedbacks` (CRUD, by session/user)
 - `/api/session-completions` (CRUD, mark completed, certificates)
-- `/api/notifications` (CRUD, unread, broadcast)
+- `/api/notifications` (planned)
 - `/api/system-health` (server, DB, storage status)
 
 ---
@@ -212,11 +209,10 @@ See `backend/routes/` for full REST API:
 
 ---
 
-
-
 ## 🚧 Limitations & TODO
 
 - No email sending or password reset yet
+- Notifications not yet implemented
 
 ---
 
