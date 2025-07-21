@@ -3,46 +3,72 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class NotificationController extends Controller
 {
     /**
-     * Get all notifications for the authenticated user.
+     * List all notifications (admin only).
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
-        $notifications = $user->notifications()
-            ->notExpired()
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        return response()->json([
-            'notifications' => $notifications,
-            'unread_count' => $user->unreadNotifications()->count()
-        ]);
+        if (!$user) {
+            return response()->json([
+                'error' => 'Unauthenticated',
+                'debug' => 'No user found',
+                'token' => $request->bearerToken(),
+            ], 401);
+        }
+        if (!$user->isAdmin()) {
+            return response()->json([
+                'error' => 'Forbidden',
+                'debug' => $user->toArray(),
+                'token' => $request->bearerToken(),
+            ], 403);
+        }
+        $notifications = Notification::with('user')->orderByDesc('created_at')->get();
+        return response()->json(['notifications' => $notifications], 200);
     }
 
     /**
-     * Get only unread notifications for the authenticated user.
+     * Show a specific notification (admin:any, user:own).
      */
-    public function unread(Request $request): JsonResponse
+    public function show(Request $request, Notification $notification): JsonResponse
     {
         $user = $request->user();
-        
-        $notifications = $user->unreadNotifications()
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
-
-        return response()->json([
-            'notifications' => $notifications,
-            'count' => $notifications->count()
-        ]);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        if ($user->role !== UserRole::ADMIN->value && $notification->user_id !== $user->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+        $notification->load('user');
+        return response()->json(['notification' => $notification], 200);
     }
+
+    /**
+     * Get all notifications for the authenticated user (not admin).
+     */
+    public function userNotifications(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+        if ($user->role === UserRole::ADMIN->value) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+        $notifications = Notification::with('user')
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
+        return response()->json(['notifications' => $notifications], 200);
+    }
+
+    // ...existing code for unread, markAsRead, markAllAsRead, destroy, store, broadcast, stats...
 
     /**
      * Mark a specific notification as read.
@@ -68,7 +94,7 @@ class NotificationController extends Controller
     public function markAllAsRead(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $updated = $user->unreadNotifications()->update([
             'is_read' => true,
             'read_at' => now()

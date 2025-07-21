@@ -8,6 +8,7 @@ import CategoriesPage from "./pages/CategoriesPage";
 import RegistrationsPage from "./pages/RegistrationsPage";
 import AttendancePage from "./pages/AttendancePage";
 import FeedbackPage from "./pages/FeedbackPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 function AdminLayout({ children, isLight, onToggleTheme, theme }) {
     return (
@@ -53,6 +54,14 @@ function AdminRoutes() {
                 element={
                     <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
                         <AdminDashboard theme={theme} />
+                    </AdminLayout>
+                }
+            />
+            <Route
+                path="notifications"
+                element={
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <NotificationsPage theme={theme} />
                     </AdminLayout>
                 }
             />
@@ -104,6 +113,7 @@ function AdminRoutes() {
                     </AdminLayout>
                 }
             />
+            
         </Routes>
     );
 }

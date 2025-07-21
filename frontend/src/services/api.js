@@ -34,7 +34,6 @@ export const userApi = {
     deleteUser: (id) => api.delete(`/users/${id}`),
     getUser: (id) => api.get(`/users/${id}`),
 
-
     // Profile Management
     getProfile: () => api.get('/me'),
     updateProfile: (data) => api.put('/users/profile', data),
@@ -46,13 +45,6 @@ export const userApi = {
     // Email Verification
     verifyEmail: (data) => api.post('/email/verify', data),
     resendVerification: () => api.post('/email/resend'),
-
-    // Notifications
-    getNotifications: () => api.get('/notifications'),
-    markNotificationAsRead: (id) => api.post(`/notifications/${id}/read`),
-    markAllNotificationsAsRead: () => api.post('/notifications/read-all'),
-    deleteNotification: (id) => api.delete(`/notifications/${id}`),
-    deleteAllNotifications: () => api.delete('/notifications'),
 
     // Skills Management (future feature)
     getUserSkills: () => api.get('/skills'),
@@ -72,6 +64,19 @@ export const userApi = {
     getUsers: () => api.get('/users'),
 
     getUserStatistics: () => api.get('/users/statistics'),
+};
+
+export const notificationApi = {
+    getNotifications: () => api.get('/notifications'), // admin only
+    getUserNotifications: () => api.get('/user/notifications'), // for regular users
+    getNotification: (id) => api.get(`/notifications/${id}`),
+    getUnreadNotifications: () => api.get('/notifications/unread'),
+    markNotificationAsRead: (id) => api.post(`/notifications/${id}/read`),
+    markAllNotificationsAsRead: () => api.post('/notifications/read-all'),
+    deleteNotification: (id) => api.delete(`/notifications/${id}`),
+    deleteAllNotifications: () => api.delete('/notifications'),
+    broadcastNotification: (data) => api.post('/notifications/broadcast', data),
+    getNotificationStats: () => api.get('/notifications/stats'),
 };
 
 export const registrationApi = {
@@ -96,14 +101,10 @@ export const trainingSessionApi = {
     updateSession: (id, data) => api.put(`/training-sessions/${id}`, data),
     deleteSession: (id) => api.delete(`/training-sessions/${id}`),
     archiveSession: (id) => api.post(`/training-sessions/${id}/archive`),
-
     getSessionsByTrainer: (trainerId) => api.get(`/training-sessions/trainer/${trainerId}`),
     getSessionsByCoordinator: (coordinatorId) => api.get(`/training-sessions/coordinator/${coordinatorId}`),
     getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
     getRecentActivityByCoordinator: (coordinatorId) => api.get(`/training-sessions/recent-activity/coordinator/${coordinatorId}`),
-    getSessionsByCategory: (categoryId) => api.get(`/training-sessions/category/${categoryId}`),
-
-
 };
 
 export const trainingCourseApi = {

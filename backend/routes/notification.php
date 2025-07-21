@@ -3,19 +3,12 @@
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-// Notification routes - requires authentication
-Route::middleware(['auth:sanctum'])->group(function () {
-    // User notification routes
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::get('/notifications/unread', [NotificationController::class, 'unread']);
-    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-    Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
-    
-    // Admin notification routes
-    Route::middleware(['admin'])->group(function () {
-        Route::post('/notifications', [NotificationController::class, 'store']);
-        Route::post('/notifications/broadcast', [NotificationController::class, 'broadcast']);
-        Route::get('/notifications/stats', [NotificationController::class, 'stats']);
-    });
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('notifications', App\Http\Controllers\NotificationController::class);
+    Route::get('notifications/unread', [App\Http\Controllers\NotificationController::class, 'unread']);
+    Route::get('user/notifications', [App\Http\Controllers\NotificationController::class, 'userNotifications']);
+    Route::post('notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::post('notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+    Route::post('notifications/broadcast', [App\Http\Controllers\NotificationController::class, 'broadcast']);
+    Route::get('notifications/stats', [App\Http\Controllers\NotificationController::class, 'stats']);
 });

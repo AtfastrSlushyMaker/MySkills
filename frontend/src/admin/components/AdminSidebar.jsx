@@ -12,7 +12,8 @@ import {
     MessageOutlined, // Feedback
     GlobalOutlined,
     LogoutOutlined,
-    SettingOutlined
+    SettingOutlined,
+    BellOutlined
 } from '@ant-design/icons';
 import { Avatar, Badge } from 'antd';
 
@@ -29,7 +30,11 @@ function AdminSidebar() {
         { to: '/admin/registrations', label: 'Registrations', icon: SolutionOutlined },
         { to: '/admin/attendance', label: 'Attendance', icon: CheckCircleOutlined },
         { to: '/admin/feedback', label: 'Feedback', icon: MessageOutlined },
+        { to: '/admin/notifications', label: 'Notifications', icon: BellOutlined },
     ];
+
+    // Import BellOutlined icon
+    // (add to import list at the top if not already present)
 
     const handleLogout = async () => {
         await logout();
