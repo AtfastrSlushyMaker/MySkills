@@ -7,13 +7,25 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [token, setToken] = useState(() => {
-        return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || null;
+        const storedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || null;
+        if (storedToken) {
+            setAuthToken(storedToken);
+        }
+        return storedToken;
     })
 
     // Set auth token in API service whenever token changes
     useEffect(() => {
         setAuthToken(token)
     }, [token])
+
+    // On mount, always set the token in Axios from storage if it exists
+    useEffect(() => {
+        const storedToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || null;
+        if (storedToken) {
+            setAuthToken(storedToken);
+        }
+    }, [])
 
     // Check if user is authenticated on app start
     useEffect(() => {
@@ -63,6 +75,7 @@ export function AuthProvider({ children }) {
             if (response.ok) {
                 setToken(data.token)
                 setUser(data.user)
+                setAuthToken(data.token) // <-- Ensure Axios always has the token after login
                 if (rememberMe) {
                     localStorage.setItem('auth_token', data.token)
                     sessionStorage.removeItem('auth_token')

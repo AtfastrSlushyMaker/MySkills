@@ -70,6 +70,7 @@ export const notificationApi = {
     getNotifications: () => api.get('/notifications'), // admin only
     getUserNotifications: () => api.get('/user/notifications'), // for regular users
     getNotification: (id) => api.get(`/notifications/${id}`),
+    sendNotification: (data) => api.post('/notifications', data),
     getUnreadNotifications: () => api.get('/notifications/unread'),
     markNotificationAsRead: (id) => api.post(`/notifications/${id}/read`),
     markAllNotificationsAsRead: () => api.post('/notifications/read-all'),

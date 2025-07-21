@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Table, Tag, Button, Input, Select, Typography, message, Tooltip, Space, DatePicker, Card, Avatar, Badge } from 'antd';
-import { BellOutlined, SearchOutlined, ReloadOutlined, UserOutlined, ClockCircleOutlined, ExclamationCircleOutlined, CheckCircleOutlined, InfoCircleOutlined, WarningOutlined, EyeOutlined } from '@ant-design/icons';
+import { BellOutlined, SearchOutlined, ReloadOutlined, UserOutlined, ClockCircleOutlined, ExclamationCircleOutlined, CheckCircleOutlined, InfoCircleOutlined, WarningOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { notificationApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import dayjs from 'dayjs';
+import NotificationCreateModal from '../components/notifications/NotificationCreateModal';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -26,6 +28,31 @@ function NotificationsPage() {
         low: 0
     });
     const [pagination, setPagination] = React.useState({ current: 1, pageSize: 12 });
+
+    // Modal state
+    const [createModalVisible, setCreateModalVisible] = React.useState(false);
+    const [createLoading, setCreateLoading] = React.useState(false);
+    // Send notification handler
+    const handleSendNotification = async (values) => {
+        setCreateLoading(true);
+        try {
+            let payload = { ...values };
+            // Only send user_id, never user_ids, and remove empty fields
+            if ('user_ids' in payload) delete payload.user_ids;
+            Object.keys(payload).forEach(key => {
+                if (payload[key] === undefined || payload[key] === null || payload[key] === '') {
+                    delete payload[key];
+                }
+            });
+            await notificationApi.sendNotification(payload);
+            message.success('Notification sent successfully');
+            setCreateModalVisible(false);
+            fetchNotifications();
+        } catch (e) {
+            message.error('Failed to send notification');
+        }
+        setCreateLoading(false);
+    };
 
     const fetchNotifications = async () => {
         setLoading(true);
@@ -288,6 +315,15 @@ function NotificationsPage() {
                             </Text>
                         </div>
                         <div className="flex items-center gap-4">
+                            <Button
+                                icon={<PlusOutlined />}
+                                type="primary"
+                                size="large"
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg backdrop-blur-sm text-white"
+                                onClick={() => setCreateModalVisible(true)}
+                            >
+                                Send Notification
+                            </Button>
                             <Badge count={notificationStats.unread} showZero color="#ef4444" className="mr-2">
                                 <div className="bg-white/30 backdrop-blur-md px-4 py-2 rounded-lg shadow-sm border border-white/20">
                                     <Text className="text-sm font-medium text-gray-700">Unread</Text>
@@ -430,6 +466,14 @@ function NotificationsPage() {
                     />
                 </Card>
             </div>
+
+            {/* Notification Create Modal */}
+            <NotificationCreateModal
+                visible={createModalVisible}
+                onCreate={handleSendNotification}
+                onCancel={() => setCreateModalVisible(false)}
+                loading={createLoading}
+            />
 
             <style>{`
                 .animate-fade-in-up {
