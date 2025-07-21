@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Protect coordinator actions with auth:sanctum
 Route::middleware('auth:sanctum')->group(function () {
+Route::get('registrations/session/{sessionId}/confirmed-users', [App\Http\Controllers\RegistrationController::class, 'confirmedUsersBySession']);
     Route::post('registrations/{registration}/approve', [App\Http\Controllers\RegistrationController::class, 'approve']);
     Route::post('registrations/{registration}/reject', [App\Http\Controllers\RegistrationController::class, 'reject']);
     Route::get('registrations/dashboard/stats', [App\Http\Controllers\RegistrationController::class, 'stats']);

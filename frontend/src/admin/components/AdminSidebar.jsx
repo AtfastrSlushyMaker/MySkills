@@ -7,7 +7,9 @@ import {
     UserOutlined,
     BookOutlined,
     AppstoreOutlined,
-    BarChartOutlined,
+    SolutionOutlined, // Registrations
+    CheckCircleOutlined, // Attendance
+    MessageOutlined, // Feedback
     GlobalOutlined,
     LogoutOutlined,
     SettingOutlined
@@ -24,7 +26,9 @@ function AdminSidebar() {
         { to: '/admin/users', label: 'Users', icon: UserOutlined },
         { to: '/admin/sessions', label: 'Sessions', icon: BookOutlined },
         { to: '/admin/categories', label: 'Categories', icon: AppstoreOutlined },
-        { to: '/admin/analytics', label: 'Analytics', icon: BarChartOutlined },
+        { to: '/admin/registrations', label: 'Registrations', icon: SolutionOutlined },
+        { to: '/admin/attendance', label: 'Attendance', icon: CheckCircleOutlined },
+        { to: '/admin/feedback', label: 'Feedback', icon: MessageOutlined },
     ];
 
     const handleLogout = async () => {

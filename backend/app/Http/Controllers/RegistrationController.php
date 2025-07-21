@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Registration;
@@ -232,5 +231,29 @@ class RegistrationController extends Controller
             'count' => $registrations->count()
         ], 200);
     }
+    /**
+     * Get confirmed users for a specific training session
+     */
+    public function confirmedUsersBySession($sessionId)
+    {
+        $registrations = Registration::with('user')
+            ->where('training_session_id', $sessionId)
+            ->where('status', RegistrationStatus::CONFIRMED)
+            ->get();
 
+        $users = $registrations->map(function($registration) {
+            $user = $registration->user;
+            if ($user) {
+                $userArr = $user->toArray();
+                $userArr['registration_id'] = $registration->id;
+                return $userArr;
+            }
+            return null;
+        })->filter()->values();
+
+        return response()->json([
+            'users' => $users,
+            'count' => $users->count()
+        ], 200);
+    }
 }

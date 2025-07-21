@@ -84,6 +84,7 @@ export const registrationApi = {
     updateRegistration: (id, data) => api.put(`/registrations/${id}`, data),
     deleteRegistration: (id) => api.delete(`/registrations/${id}`),
     getConfirmedRegistrationsLoggedInUser: () => api.get('/registrations/status/confirmed'),
+    getConfirmedUsersBySession: (sessionId) => api.get(`/registrations/session/${sessionId}/confirmed-users`),
     getStatusByUserAndSession: (sessionId) => api.get(`/registrations/status/${sessionId}`),
     getRegistrationsByUser: (userId) => api.get(`/registrations/user/${userId}`),
 };
@@ -123,6 +124,8 @@ export const categoryApi = {
 };
 
 export const feedbackApi = {
+    // Get all feedback
+    getAllFeedback: () => api.get('/feedbacks'),
     // Get all feedback for a session
     getFeedbackBySession: (sessionId) => api.get(`/feedbacks/session/${sessionId}`),
     // Get all feedback for a user
@@ -134,6 +137,20 @@ export const feedbackApi = {
     // Delete feedback
     deleteFeedback: (id) => api.delete(`/feedbacks/${id}`),
 };
+
+export const attendanceApi = {
+    // Get attendance for a session
+    getAttendanceBySession: (sessionId) => api.get(`/attendance/session/${sessionId}`),
+    // Mark attendance for a user in a session
+    markAttendance: (data) => api.post('/attendance', data),
+    // Get attendance stats for a user
+    getUserAttendanceStats: (userId) => api.get(`/attendance/user/${userId}`),
+    // Get attendance stats for a session
+    getSessionAttendanceStats: (sessionId) => api.get(`/attendance/session-stats/${sessionId}`),
+};
+
+
+
 
 
 // Add this function for toggling course active status

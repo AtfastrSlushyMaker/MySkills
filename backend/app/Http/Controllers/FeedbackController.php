@@ -13,20 +13,9 @@ class FeedbackController extends Controller
      */
     public function index()
     {
-        $feedbacks = Feedback::with('registration.user')->get();
-        $result = $feedbacks->map(function($fb) {
-            $user = $fb->user;
-            return [
-                'id' => $fb->id,
-                'comment' => $fb->comment,
-                'rating' => $fb->rating,
-                'user' => $user ? [
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name
-                ] : null
-            ];
-        });
-        return response()->json($result, 200);
+        $feedbacks = Feedback::with('registration.user','registration.trainingSession')->get();
+
+        return response()->json($feedbacks, 200);
     }
 
     /**
@@ -48,18 +37,8 @@ class FeedbackController extends Controller
      */
     public function show(Feedback $feedback)
     {
-        $feedback->load('registration.user');
-        $user = $feedback->user;
-        $result = [
-            'id' => $feedback->id,
-            'comment' => $feedback->comment,
-            'rating' => $feedback->rating,
-            'user' => $user ? [
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name
-            ] : null
-        ];
-        return response()->json($result, 200);
+        $feedback->load('registration.user', 'registration.trainingSession');
+        return response()->json($feedback, 200);
     }
 
     /**
@@ -92,20 +71,8 @@ class FeedbackController extends Controller
     {
         $feedbacks = Feedback::whereHas('registration', function ($query) use ($sessionId) {
             $query->where('training_session_id', $sessionId);
-        })->with('registration.user')->get();
-        $result = $feedbacks->map(function($fb) {
-            $user = $fb->user;
-            return [
-                'id' => $fb->id,
-                'comment' => $fb->comment,
-                'rating' => $fb->rating,
-                'user' => $user ? [
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name
-                ] : null
-            ];
-        });
-        return response()->json($result, 200);
+        })->with('registration.user', 'registration.trainingSession')->get();
+        return response()->json($feedbacks, 200);
     }
     /**
      * Get feedback by user

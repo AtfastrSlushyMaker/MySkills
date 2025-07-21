@@ -33,15 +33,22 @@ function SessionUpdateModal({ visible, session, onUpdate, onCancel, loading }) {
     };
 
     const handleOk = (values) => {
+        // Only send fields that are editable and expected by backend
         const formattedValues = {
-            ...values,
+            category_id: values.category_id,
+            coordinator_id: values.coordinator_id,
+            trainer_id: values.trainer_id,
+            location: values.location,
+            max_participants: values.max_participants,
             date: values.date ? values.date.format('YYYY-MM-DD') : null,
             end_date: values.end_date ? values.end_date.format('YYYY-MM-DD') : null,
             start_time: values.start_time ? values.start_time.format('HH:mm') : null,
-            end_time: values.end_time ? values.end_time.format('HH:mm') : null
+            end_time: values.end_time ? values.end_time.format('HH:mm') : null,
+            status: values.status,
+            skill_name: values.skill_name,
+            skill_description: values.skill_description,
         };
-
-        onUpdate({ ...session, ...formattedValues });
+        onUpdate({ id: session.id, ...formattedValues });
     };
 
     return (

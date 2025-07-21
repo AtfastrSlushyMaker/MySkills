@@ -5,7 +5,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UsersPage from "./pages/UsersPage";
 import SessionsPage from "./pages/SessionsPage";
 import CategoriesPage from "./pages/CategoriesPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
+import RegistrationsPage from "./pages/RegistrationsPage";
+import AttendancePage from "./pages/AttendancePage";
+import FeedbackPage from "./pages/FeedbackPage";
 
 function AdminLayout({ children, isLight, onToggleTheme, theme }) {
     return (
@@ -79,10 +81,26 @@ function AdminRoutes() {
                 }
             />
             <Route
-                path="analytics"
+                path="registrations"
                 element={
                     <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
-                        <AnalyticsPage theme={theme} />
+                        <RegistrationsPage theme={theme} />
+                    </AdminLayout>
+                }
+            />
+            <Route
+                path="attendance"
+                element={
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <AttendancePage theme={theme} />
+                    </AdminLayout>
+                }
+            />
+            <Route
+                path="feedback"
+                element={
+                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
+                        <FeedbackPage theme={theme} />
                     </AdminLayout>
                 }
             />
