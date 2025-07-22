@@ -37,9 +37,15 @@ class TrainingCourse extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function attendances()
+
+    public function contents()
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasMany(CourseContent::class, 'training_course_id');
+    }
+
+    public function completions()
+    {
+        return $this->hasMany(CourseCompletion::class, 'training_course_id');
     }
 
     // Helper methods

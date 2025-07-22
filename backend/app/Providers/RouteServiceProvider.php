@@ -43,9 +43,6 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/registration.php'));
             Route::middleware('api')
                 ->prefix('api')
-                ->group(base_path('routes/attendance.php'));
-            Route::middleware('api')
-                ->prefix('api')
                 ->group(base_path('routes/feedback.php'));
             Route::middleware('api')
                 ->prefix('api')
@@ -59,7 +56,15 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/notification.php'));
-
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/sessionCompletion.php'));
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/courseContent.php'));
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/courseCompletion.php'));
 
         });
     }

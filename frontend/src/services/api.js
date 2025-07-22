@@ -140,21 +140,25 @@ export const feedbackApi = {
     deleteFeedback: (id) => api.delete(`/feedbacks/${id}`),
 };
 
-export const attendanceApi = {
-    // Get attendance for a session
-    getAttendanceBySession: (sessionId) => api.get(`/attendance/session/${sessionId}`),
-    // Mark attendance for a user in a session
-    markAttendance: (data) => api.post('/attendance', data),
-    // Get attendance stats for a user
-    getUserAttendanceStats: (userId) => api.get(`/attendance/user/${userId}`),
-    // Get attendance stats for a session
-    getSessionAttendanceStats: (sessionId) => api.get(`/attendance/session-stats/${sessionId}`),
-};
-
-
-
-
 
 // Add this function for toggling course active status
 export const toggleCourseActiveApi = (courseId, isActive) =>
     api.patch(`/courses/${courseId}/toggle-active`, { is_active: isActive });
+
+export const courseContentApi = {
+    getAll: () => api.get('/course-contents'),
+    get: (id) => api.get(`/course-contents/${id}`),
+    create: (data) => api.post('/course-contents', data),
+    update: (id, data) => api.put(`/course-contents/${id}`, data),
+    delete: (id) => api.delete(`/course-contents/${id}`),
+};
+
+export const courseCompletionApi = {
+    getAll: () => api.get('/course-completions'),
+    get: (id) => api.get(`/course-completions/${id}`),
+    create: (data) => api.post('/course-completions', data),
+    update: (id, data) => api.put(`/course-completions/${id}`, data),
+    delete: (id) => api.delete(`/course-completions/${id}`),
+    markAsComplete: ({ user_id, training_course_id }) =>
+        api.put('/course-completions/mark-complete', { user_id, training_course_id, status: 'completed', completed_at: new Date().toISOString() }),
+};

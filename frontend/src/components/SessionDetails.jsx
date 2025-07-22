@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi } from '../services/api';
+import { trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from './modals/CreateSessionModal';
 import CreateCourseModal from './modals/CreateCourseModal';
@@ -9,6 +9,7 @@ import FeedbackForm from './sessionDetails/FeedbackForm';
 import CommentsList from './sessionDetails/CommentsList';
 
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
+    // Always prefer session.training_courses if present, else fallback to course, else empty array
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -25,6 +26,14 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [feedbacks, setFeedbacks] = useState([]);
     const [feedbackLoading, setFeedbackLoading] = useState(true);
     const [feedbackError, setFeedbackError] = useState(null);
+    const courses = Array.isArray(session?.training_courses)
+        ? session.training_courses
+        : session?.course
+            ? [session.course]
+            : [];
+    // Add state to track completed courses for the current user
+    const [completedCourses, setCompletedCourses] = useState([]);
+    const [markingComplete, setMarkingComplete] = useState({}); // { [courseId]: boolean }
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -53,17 +62,38 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             .finally(() => setFeedbackLoading(false));
     }, [sessionId]);
 
-    // Always prefer session.training_courses if present, else fallback to course, else empty array
-    const courses = session && (Array.isArray(session.training_courses)
-        ? session.training_courses
-        : session?.course
-            ? [session.course]
-            : []);
+    // Fetch completed courses for this user in this session
+    useEffect(() => {
+        if (user && user.role === 'trainee' && courses.length > 0) {
+            // Get all completions for this user
+            courseCompletionApi.getAll().then(res => {
+                const completions = Array.isArray(res.data) ? res.data : [];
+                const completed = completions
+                    .filter(cc => cc.user_id === user.id && cc.status === 'completed')
+                    .map(cc => cc.training_course_id);
+                setCompletedCourses(completed);
+            });
+        }
+    }, [user, courses]);
+
 
     // Find current user's registration for this session
     const userRegistration = session && session.registrations && user
         ? session.registrations.find(r => r.user_id === user.id)
         : null;
+
+    // Helper: is session finished? Use end_date and end_time if available, else fallback to date and start_time
+    const isSessionFinished = (() => {
+        if (!session) return false;
+        // Prefer end_date and end_time if available
+        let endDateStr = session.end_date || session.date;
+        let endTimeStr = session.end_time || session.start_time || '23:59:59';
+        if (!endDateStr) return false;
+        const [hour, minute, second] = (endTimeStr || '23:59:59').split(':').map(Number);
+        const endDate = new Date(endDateStr);
+        endDate.setHours(hour || 0, minute || 0, second || 0, 0);
+        return endDate <= new Date();
+    })();
 
     // Registration status for current user
     const [registrationStatus, setRegistrationStatus] = useState(null);
@@ -170,6 +200,17 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             setEnrolling(false);
         }
     }
+    const handleMarkAsComplete = async (courseId) => {
+        setMarkingComplete(prev => ({ ...prev, [courseId]: true }));
+        try {
+            await courseCompletionApi.markAsComplete({ user_id: user.id, training_course_id: courseId });
+            setCompletedCourses(prev => [...prev, courseId]);
+        } catch (e) {
+            // Optionally show error
+        } finally {
+            setMarkingComplete(prev => ({ ...prev, [courseId]: false }));
+        }
+    }
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -190,26 +231,17 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 {/* Enroll button for trainees only - moved below SessionInfo for clarity */}
                 {user && user.role === 'trainee' && (
                     (() => {
-                        // Check if session is finished
-                        let sessionFinished = false;
-                        if (session && session.date && session.start_time) {
-                            const now = new Date();
-                            const sessionDate = new Date(session.date);
-                            const [hour, minute, second] = session.start_time.split(':').map(Number);
-                            sessionDate.setHours(hour || 0, minute || 0, second || 0, 0);
-                            sessionFinished = sessionDate <= now;
-                        }
                         return (
                             <div className="mt-2 flex flex-col items-start gap-2">
                                 <button
                                     className={`px-7 py-3 font-bold rounded-full shadow-lg backdrop-blur border transition-all duration-300 flex items-center gap-2 overflow-hidden relative disabled:opacity-60 disabled:cursor-not-allowed ${registrationStatus ? getStatusIconAndColor(registrationStatus).color : 'bg-transparent hover:bg-white/10 text-white border-white/30 hover:scale-105'}`}
                                     onClick={handleEnroll}
-                                    disabled={enrolling || enrollSuccess || registrationStatus || sessionFinished}
+                                    disabled={enrolling || enrollSuccess || registrationStatus || isSessionFinished}
                                     style={{ minWidth: 180 }}
                                 >
                                     <span className="flex items-center gap-2 relative z-10">
-                                        <i className={`fas ${sessionFinished ? 'fa-lock' : (registrationStatus ? getStatusIconAndColor(registrationStatus).icon : 'fa-user-plus')} text-lg`}></i>
-                                        {sessionFinished
+                                        <i className={`fas ${isSessionFinished ? 'fa-lock' : (registrationStatus ? getStatusIconAndColor(registrationStatus).icon : 'fa-user-plus')} text-lg`}></i>
+                                        {isSessionFinished
                                             ? 'Session Finished'
                                             : enrolling
                                                 ? 'Enrolling...'
@@ -313,6 +345,20 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                         {course.is_active ? 'Active' : 'Inactive'}
                                                     </button>
                                                 </div>
+                                            )}
+                                            {/* Mark as Complete button for trainees */}
+                                            {user && user.role === 'trainee' && registrationStatus === 'confirmed' && (
+                                                <button
+                                                    className={`mt-2 px-4 py-2 rounded bg-green-500/80 text-white font-semibold shadow hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed`}
+                                                    disabled={completedCourses.includes(course.id) || markingComplete[course.id]}
+                                                    onClick={() => handleMarkAsComplete(course.id)}
+                                                >
+                                                    {completedCourses.includes(course.id)
+                                                        ? 'Completed'
+                                                        : markingComplete[course.id]
+                                                            ? 'Marking...'
+                                                            : 'Mark as Complete'}
+                                                </button>
                                             )}
                                         </div>
                                     </div>

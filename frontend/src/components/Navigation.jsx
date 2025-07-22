@@ -69,13 +69,14 @@ function Navigation() {
     const getNavItems = () => {
         const publicItems = [
             { path: '/', label: 'Home', icon: 'fas fa-home' },
+            { path: '/categories', label: 'Categories', icon: 'fas fa-th-list' },
+
 
         ]
 
         if (!user) {
             return [
                 ...publicItems,
-                { path: '/categories', label: 'Categories', icon: 'fas fa-th-list' },
                 { path: '/login', label: 'Login', icon: 'fas fa-sign-in-alt' },
 
             ]
@@ -84,7 +85,9 @@ function Navigation() {
         // Authenticated user items
         const authenticatedItems = [
             ...publicItems,
-            { path: '/categories', label: 'Categories', icon: 'fas fa-th-list' },
+            { path: "/dashboard", label: "Dashboard", icon: "fas fa-tachometer-alt" },
+
+
 
 
         ]
@@ -337,7 +340,7 @@ function Navigation() {
                                 </div>
                             </div>
                         )}
-                        </div>
+                    </div>
 
                     {/* Mobile menu button - Glassmorphism Style */}
                     <button
