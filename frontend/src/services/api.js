@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -145,13 +146,6 @@ export const feedbackApi = {
 export const toggleCourseActiveApi = (courseId, isActive) =>
     api.patch(`/courses/${courseId}/toggle-active`, { is_active: isActive });
 
-export const courseContentApi = {
-    getAll: () => api.get('/course-contents'),
-    get: (id) => api.get(`/course-contents/${id}`),
-    create: (data) => api.post('/course-contents', data),
-    update: (id, data) => api.put(`/course-contents/${id}`, data),
-    delete: (id) => api.delete(`/course-contents/${id}`),
-};
 
 export const courseCompletionApi = {
     getAll: () => api.get('/course-completions'),
@@ -159,6 +153,34 @@ export const courseCompletionApi = {
     create: (data) => api.post('/course-completions', data),
     update: (id, data) => api.put(`/course-completions/${id}`, data),
     delete: (id) => api.delete(`/course-completions/${id}`),
-    markAsComplete: ({ user_id, training_course_id }) =>
-        api.put('/course-completions/mark-complete', { user_id, training_course_id, status: 'completed', completed_at: new Date().toISOString() }),
+    markAsComplete: async ({ user_id, training_course_id }) => {
+        // Find the course completion record for this user and course
+        const all = await api.get('/course-completions');
+        const found = Array.isArray(all.data)
+            ? all.data.find(cc => cc.user_id === user_id && cc.training_course_id === training_course_id)
+            : null;
+        if (found) {
+            // Update the status to completed
+            return api.put(`/course-completions/${found.id}`, {
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+            });
+        } else {
+            // Create a new completion record as completed
+            return api.post('/course-completions', {
+                user_id,
+                training_course_id,
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+            });
+        }
+    },
+};
+
+export const courseContentApi = {
+    getAll: () => api.get('/course-contents'),
+    get: (id) => api.get(`/course-contents/${id}`),
+    create: (data) => api.post('/course-contents', data),
+    update: (id, data) => api.put(`/course-contents/${id}`, data),
+    delete: (id) => api.delete(`/course-contents/${id}`),
 };

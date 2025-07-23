@@ -16,10 +16,8 @@ class CourseContentController extends Controller
     {
         $validated = $request->validate([
             'training_course_id' => 'required|exists:training_courses,id',
-            'title' => 'required|string',
             'content' => 'nullable|string',
             'type' => 'required|string',
-            'order' => 'nullable|integer',
         ]);
         return CourseContent::create($validated);
     }
@@ -32,10 +30,8 @@ class CourseContentController extends Controller
     public function update(Request $request, CourseContent $courseContent)
     {
         $validated = $request->validate([
-            'title' => 'sometimes|required|string',
             'content' => 'nullable|string',
             'type' => 'sometimes|required|string',
-            'order' => 'nullable|integer',
         ]);
         $courseContent->update($validated);
         return $courseContent;

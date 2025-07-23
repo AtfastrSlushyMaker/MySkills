@@ -33,7 +33,7 @@ const CommentsList = ({ feedbacks, children, loading, error }) => (
                         <li key={fb.id} className="bg-white/5 rounded-lg px-4 py-3 text-white/90 shadow flex flex-col gap-1">
                             <div className="flex items-center gap-2 font-semibold">
                                 <i className="fas fa-user-circle text-cyan-300"></i>
-                                {fb.user ? (fb.user.first_name ? fb.user.first_name + ' ' + fb.user.last_name : 'Unknown') : 'Unknown'}
+                                {fb.registration.user ? (fb.registration.user.first_name ? fb.registration.user.first_name + ' ' + fb.registration.user.last_name : 'Unknown') : 'Unknown'}
                             </div>
                             <div className="flex items-center gap-2">
                                 {[...Array(5)].map((_, i) => (

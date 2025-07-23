@@ -38,9 +38,9 @@ class TrainingCourse extends Model
     }
 
 
-    public function contents()
+    public function content()
     {
-        return $this->hasMany(CourseContent::class, 'training_course_id');
+        return $this->hasOne(CourseContent::class, 'training_course_id');
     }
 
     public function completions()

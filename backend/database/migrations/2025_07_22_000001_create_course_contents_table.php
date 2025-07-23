@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('course_contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('training_course_id')->constrained('training_courses')->onDelete('cascade');
-            $table->string('title');
+            $table->foreignId('training_course_id')->constrained('training_courses')->onDelete('cascade')->unique();
             $table->text('content')->nullable();
             $table->enum('type', ['video', 'text', 'file', 'quiz'])->default('text');
-            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }

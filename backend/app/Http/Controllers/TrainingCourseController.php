@@ -41,7 +41,7 @@ class TrainingCourseController extends Controller
      */
     public function show(TrainingCourse $trainingCourse)
     {
-        $trainingCourse->load(['trainingSession', 'creator', 'attendances']);
+        $trainingCourse->load(['trainingSession', 'creator', 'content']);
         return response()->json($trainingCourse, 200);
     }
 

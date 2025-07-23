@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from './modals/CreateSessionModal';
@@ -9,6 +10,7 @@ import FeedbackForm from './sessionDetails/FeedbackForm';
 import CommentsList from './sessionDetails/CommentsList';
 
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
+    const navigate = useNavigate();
     // Always prefer session.training_courses if present, else fallback to course, else empty array
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -282,7 +284,16 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {courses.map((course, idx) => (
-                                    <div key={course.id || idx} className="bg-white/5 hover:bg-white/10 backdrop-blur-2xl rounded-2xl p-6 border border-white/20 hover:border-purple-400 transition-all duration-300 shadow-2xl hover:scale-105 relative overflow-hidden group">
+                                    <div
+                                        key={course.id || idx}
+                                        className={`backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-300 shadow-2xl relative overflow-hidden group
+                                            ${completedCourses.includes(course.id)
+                                                ? 'bg-green-500/30 border-green-400/60 hover:bg-green-500/40 hover:border-green-500 scale-105'
+                                                : 'bg-white/5 hover:bg-white/10 border-white/20 hover:border-purple-400 hover:scale-105'}
+                                        `}
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => navigate(`/courses/${course.id}`)}
+                                    >
                                         {/* Glassy gradient orb overlays for extra depth */}
                                         <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-400/30 to-indigo-400/30 rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-all"></div>
                                         <div className="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-all"></div>
@@ -349,7 +360,11 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                             {/* Mark as Complete button for trainees */}
                                             {user && user.role === 'trainee' && registrationStatus === 'confirmed' && (
                                                 <button
-                                                    className={`mt-2 px-4 py-2 rounded bg-green-500/80 text-white font-semibold shadow hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed`}
+                                                    className={`mt-2 px-4 py-2 rounded font-semibold shadow transition disabled:opacity-60 disabled:cursor-not-allowed
+                                                        ${completedCourses.includes(course.id)
+                                                            ? 'bg-green-600 text-white cursor-default'
+                                                            : 'bg-green-500/80 text-white hover:bg-green-600'}
+                                                    `}
                                                     disabled={completedCourses.includes(course.id) || markingComplete[course.id]}
                                                     onClick={() => handleMarkAsComplete(course.id)}
                                                 >
@@ -409,17 +424,15 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 </CommentsList>
 
                 {/* Modal rendered at root level for proper overlay */}
+
                 <CreateCourseModal
                     isOpen={showCreateCourseModal}
                     onClose={() => setShowCreateCourseModal(false)}
                     session={session}
-                    onCourseCreated={(newCourse) => {
-                        // Refetch session to update course list
+                    onCourseCreated={() => {
+                        // Refresh session data after successful creation
                         trainingSessionApi.getSession(sessionId).then(res => setSession(res.data));
-                        setShowCreateCourseModal(false);
                     }}
-                    modalClassName="bg-white/80 backdrop-blur-3xl rounded-3xl p-6 border border-white/30 shadow-2xl max-w-lg w-full relative transform transition-all duration-300 ease-out"
-                    innerSectionClassName="bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25"
                 />
             </div>
             {/* Update Course Modal styled like CreateSessionModal */}

@@ -11,10 +11,8 @@ class CourseContent extends Model
 
     protected $fillable = [
         'training_course_id',
-        'title',
         'content',
         'type',
-        'order',
     ];
 
     public function trainingCourse()

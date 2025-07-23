@@ -13,6 +13,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import SessionDetailsPage from './pages/SessionDetailsPage'
 import CategoriesPage from './pages/CategoriesPage'
 import CategorySessionsPage from './pages/CategorySessionsPage'
+import CourseContent from './components/CourseContent';
 
 
 import Navigation from './components/Navigation'
@@ -55,6 +56,7 @@ function ProtectedRoutes() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
+          <Route path="/courses/:courseId" element={<CourseContent />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:categoryId" element={<CategorySessionsPage />} />
 
