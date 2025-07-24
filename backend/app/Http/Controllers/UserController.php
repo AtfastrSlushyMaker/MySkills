@@ -58,7 +58,41 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'status' => 'sometimes|required|in:'.implode(',', UserStatus::values()),
             'role' => 'sometimes|required|in:'.implode(',', UserRole::values()),
+            'profile_picture' => 'nullable', // Accepts string or file
         ]);
+
+        \Log::info('UserController update called', [
+            'hasFile' => $request->hasFile('profile_picture'),
+            'filled' => $request->filled('profile_picture'),
+            'file' => $request->file('profile_picture'),
+            'file_is_valid' => $request->hasFile('profile_picture') ? $request->file('profile_picture')->isValid() : null,
+            'file_type' => $request->hasFile('profile_picture') ? $request->file('profile_picture')->getMimeType() : null,
+            'file_size' => $request->hasFile('profile_picture') ? $request->file('profile_picture')->getSize() : null,
+            'file_name' => $request->hasFile('profile_picture') ? $request->file('profile_picture')->getClientOriginalName() : null,
+            'input_profile_picture' => $request->input('profile_picture'),
+            'all_inputs' => $request->all(),
+        ]);
+
+        // Handle profile picture upload or direct URL
+        if ($request->hasFile('profile_picture')) {
+            \Log::info('Profile picture file detected, calling ImageService', [
+                'file_path' => $request->file('profile_picture')->getPathname(),
+                'file_mime' => $request->file('profile_picture')->getMimeType(),
+                'file_size' => $request->file('profile_picture')->getSize(),
+            ]);
+            $imageService = app(\App\Services\ImageService::class);
+            $filePath = $request->file('profile_picture')->getPathname();
+            $imgbbUrl = $imageService->uploadToImgbb($filePath);
+            \Log::info('ImageService returned URL', ['imgbbUrl' => $imgbbUrl]);
+            $validated['profile_picture'] = $imgbbUrl;
+        } elseif ($request->filled('profile_picture')) {
+            \Log::info('Profile picture field filled, using direct URL', [
+                'profile_picture' => $request->input('profile_picture')
+            ]);
+            $validated['profile_picture'] = $request->input('profile_picture');
+        }
+
+        \Log::info('UserController update final validated', $validated);
         $user->update($validated);
         return response()->json($user, 200);
     }
@@ -125,15 +159,25 @@ class UserController extends Controller
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        $validated = $request->validate([
-            'first_name' => 'sometimes|required|string|max:255',
-            'last_name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
-            'phone' => 'sometimes|nullable|string|max:20',
+        // Extra debug: log headers and raw input
+        \Log::info('updateProfile request headers', [
+            'headers' => $request->headers->all(),
+            'content_type' => $request->header('Content-Type'),
+        ]);
+        \Log::info('updateProfile all request input', [
+            'all' => $request->all(),
+            'files' => $request->files->all(),
+        ]);
+        // Extra debug: log raw body and PHP superglobals
+        \Log::info('updateProfile raw body', [
+            'php_input' => file_get_contents('php://input'),
+            '_POST' => $_POST,
+            '_FILES' => $_FILES,
+            'getContent' => $request->getContent(),
         ]);
 
-        $user->update($validated);
-        return response()->json($user, 200);
+        // Call the update method for unified logic
+        return $this->update($request, $user);
     }
 
     /**

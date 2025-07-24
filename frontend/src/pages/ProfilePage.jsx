@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import GlassmorphismBackground from '../components/GlassmorphismBackground'
 
 function ProfilePage() {
+    const [previewImage, setPreviewImage] = useState('');
     const { user, updateUser } = useAuth()
     const [isEditing, setIsEditing] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -17,7 +18,8 @@ function ProfilePage() {
         first_name: '',
         last_name: '',
         email: '',
-        phone: ''
+        phone: '',
+        profile_picture: ''
     })
 
     const [passwordData, setPasswordData] = useState({
@@ -32,20 +34,42 @@ function ProfilePage() {
                 first_name: user.first_name || '',
                 last_name: user.last_name || '',
                 email: user.email || '',
-                phone: user.phone || ''
+                phone: user.phone || '',
+                profile_picture: user.profile_picture || ''
             })
         }
     }, [user])
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
+        const { name, value } = e.target;
+        if (name === 'profile_picture' && e.target.files) {
+            const file = e.target.files[0];
+            setFormData(prev => ({
+                ...prev,
+                profile_picture: file || null // If no file, set to null
+            }));
+            // Show preview
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreviewImage(reader.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setPreviewImage('');
+            }
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+            if (name === 'profile_picture') {
+                setPreviewImage(typeof value === 'string' ? value : '');
+            }
+        }
         // Clear messages when user starts typing
-        if (error) setError('')
-        if (success) setSuccess('')
+        if (error) setError('');
+        if (success) setSuccess('');
     }
 
     const handlePasswordChange = (e) => {
@@ -59,24 +83,60 @@ function ProfilePage() {
     }
 
     const handleSaveProfile = async (e) => {
-        e.preventDefault()
-        setSaving(true)
-        setError('')
-        setSuccess('')
+        e.preventDefault();
+        setSaving(true);
+        setError('');
+        setSuccess('');
 
         try {
-            const response = await userApi.updateProfile(formData)
-            setSuccess('Profile updated successfully!')
-            setIsEditing(false)
+            let payload;
+            // Debug log: show profile_picture type and value
+            console.log('DEBUG: profile_picture type:', typeof formData.profile_picture);
+            console.log('DEBUG: profile_picture instanceof File:', formData.profile_picture instanceof File);
+            console.log('DEBUG: profile_picture value:', formData.profile_picture);
+            // If profile_picture is a File, use FormData for upload
+            if (formData.profile_picture instanceof File) {
+                const fd = new FormData();
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (key === 'profile_picture' && value instanceof File) {
+                        fd.append('profile_picture', value);
+                    } else if (value !== undefined && value !== null) {
+                        fd.append(key, value);
+                    }
+                });
+                payload = fd;
+                // Debug log: show FormData keys and values
+                for (let pair of fd.entries()) {
+                    console.log('DEBUG: FormData', pair[0], pair[1]);
+                }
+            } else {
+                // If profile_picture is empty string, array, or not a valid string, set to null
+                const cleanData = { ...formData };
+                if (
+                    !cleanData.profile_picture ||
+                    Array.isArray(cleanData.profile_picture) ||
+                    (typeof cleanData.profile_picture !== 'string' && cleanData.profile_picture !== null)
+                ) {
+                    cleanData.profile_picture = null;
+                }
+                // Debug log: show cleanData
+                console.log('DEBUG: cleanData payload', cleanData);
+                payload = cleanData;
+            }
+            // Debug log: show final payload type
+            console.log('DEBUG: payload type', payload instanceof FormData ? 'FormData' : typeof payload);
+            const response = await userApi.updateProfile(payload);
+            setSuccess('Profile updated successfully!');
+            setIsEditing(false);
 
             // Update the user context with new data
             if (updateUser) {
-                updateUser(response.data)
+                updateUser(response.data);
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update profile')
+            setError(err.response?.data?.message || 'Failed to update profile');
         } finally {
-            setSaving(false)
+            setSaving(false);
         }
     }
 
@@ -128,7 +188,8 @@ function ProfilePage() {
                 first_name: user.first_name || '',
                 last_name: user.last_name || '',
                 email: user.email || '',
-                phone: user.phone || ''
+                phone: user.phone || '',
+                profile_picture: user.profile_picture || ''
             })
         }
 
@@ -170,16 +231,41 @@ function ProfilePage() {
                     {/* Profile Header */}
                     <div className="relative p-8 bg-gradient-to-br from-purple-500/25 via-blue-500/20 to-indigo-500/25 border-b border-white/20">
                         <div className="flex items-center space-x-6">
-                            {/* Avatar */}
-                            <div className="relative">
-                                <div className="h-24 w-24 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-2xl border-2 border-white/40">
-                                    {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
-                                </div>
+                            {/* Avatar/Profile Picture */}
+                            <div className="relative flex flex-col items-center">
+                                {(previewImage || user?.profile_picture) ? (
+                                    <img
+                                        src={previewImage || user?.profile_picture}
+                                        alt="Profile Preview"
+                                        className="h-24 w-24 object-cover rounded-3xl shadow-2xl border-2 border-white/40"
+                                    />
+                                ) : (
+                                    <div className="h-24 w-24 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-2xl border-2 border-white/40">
+                                        {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
+                                    </div>
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 to-blue-400/30 rounded-3xl blur-xl"></div>
                                 {/* Status indicator */}
                                 <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-green-400 rounded-full border-2 border-white/60 shadow-lg flex items-center justify-center">
                                     <i className="fas fa-check text-white text-sm"></i>
                                 </div>
+                                {/* Edit profile picture input */}
+                                {isEditing && (
+                                    <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 w-40 text-center flex flex-col items-center">
+                                        <label htmlFor="profile_picture_upload" className="cursor-pointer px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-semibold shadow-lg hover:scale-105 transition-all duration-200 border border-blue-400/30 mb-1">
+                                            <i className="fas fa-upload mr-2"></i>Upload Image
+                                        </label>
+                                        <input
+                                            id="profile_picture_upload"
+                                            type="file"
+                                            name="profile_picture"
+                                            accept="image/*"
+                                            onChange={handleInputChange}
+                                            className="hidden"
+                                        />
+                                        <span className="text-white/80 text-xs">Preview before saving</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* User Info */}

@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Profile management routes (authenticated user only) - MUST come before resource routes
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::put('users/profile', [App\Http\Controllers\UserController::class, 'updateProfile']);
+    Route::post('/users/profile', [App\Http\Controllers\UserController::class, 'updateProfile']);
     Route::post('users/change-password', [App\Http\Controllers\UserController::class, 'changePassword']);
 });
 Route::get('users/statistics', [App\Http\Controllers\UserController::class, 'getUsersStatistics']);

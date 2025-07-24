@@ -224,9 +224,17 @@ function Navigation() {
                                     >
                                         {/* User avatar with glassmorphism */}
                                         <div className="relative">
-                                            <div className="h-10 w-10 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-2xl border border-white/30 backdrop-blur-sm">
-                                                {user.name?.charAt(0).toUpperCase() || 'U'}
-                                            </div>
+                                            {user.profile_picture ? (
+                                                <img
+                                                    src={user.profile_picture}
+                                                    alt="Profile"
+                                                    className="h-10 w-10 rounded-2xl object-cover shadow-2xl border border-white/30 backdrop-blur-sm"
+                                                />
+                                            ) : (
+                                                <div className="h-10 w-10 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-2xl border border-white/30 backdrop-blur-sm">
+                                                    {user.name?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                            )}
                                             {/* Avatar glow */}
                                             <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 to-blue-400/40 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-all duration-500"></div>
                                         </div>
@@ -262,9 +270,17 @@ function Navigation() {
                                             <div className="relative p-6 bg-gradient-to-br from-indigo-700/40 via-blue-800/30 to-slate-900/30 border-b border-blue-300/40">
                                                 <div className="flex items-center space-x-5">
                                                     <div className="relative">
-                                                        <div className="h-20 w-20 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-2xl shadow-2xl border-2 border-white/40 backdrop-blur-sm">
-                                                            {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
-                                                        </div>
+                                                        {user.profile_picture ? (
+                                                            <img
+                                                                src={user.profile_picture}
+                                                                alt="Profile"
+                                                                className="h-20 w-20 rounded-3xl object-cover shadow-2xl border-2 border-white/40 backdrop-blur-sm"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-20 w-20 bg-gradient-to-br from-purple-400 via-blue-400 to-indigo-400 rounded-3xl flex items-center justify-center text-white font-bold text-2xl shadow-2xl border-2 border-white/40 backdrop-blur-sm">
+                                                                {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
+                                                            </div>
+                                                        )}
                                                         {/* Enhanced avatar glow with animation */}
                                                         <div className="absolute inset-0 bg-gradient-to-br from-purple-400/50 to-blue-400/50 rounded-3xl blur-xl animate-pulse"></div>
                                                         {/* Status indicator with enhanced animation */}

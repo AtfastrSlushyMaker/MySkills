@@ -28,7 +28,8 @@ class User extends Authenticatable
         'phone',
         'role',
         'is_active',
-        'status', // Add status to fillable
+        'status',
+        'profile_picture',
     ];
 
     /**

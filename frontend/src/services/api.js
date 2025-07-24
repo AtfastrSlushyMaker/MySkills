@@ -6,7 +6,6 @@ const API_BASE_URL = 'http://localhost:8000/api';
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
     withCredentials: true,
@@ -37,7 +36,11 @@ export const userApi = {
 
     // Profile Management
     getProfile: () => api.get('/me'),
-    updateProfile: (data) => api.put('/users/profile', data),
+    updateProfile: (data) => {
+        // Always use POST for profile updates (FormData or JSON)
+        const headers = {};
+        return api.post('/users/profile', data, { headers });
+    },
     changePassword: (data) => api.post('/users/change-password', data),
 
     // Password Reset

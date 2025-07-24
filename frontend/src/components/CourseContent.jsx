@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactPlayer from 'react-player';
 import { useAuth } from '../contexts/AuthContext';
 import { courseCompletionApi, trainingSessionApi, trainingCourseApi, courseContentApi } from '../services/api';
 import { useParams } from 'react-router-dom';
@@ -6,7 +7,38 @@ import ManageCourseContentModal from './modals/ManageCourseContentModal';
 import EditCourseContentModal from './modals/EditCourseContentModal';
 import DeleteCourseContentModal from './modals/DeleteCourseContentModal';
 
+// Unified video player using react-player
+function VideoPlayer({ url }) {
+
+    return (
+        <div className="flex justify-center items-center w-full py-12">
+            <div className="w-full max-w-4xl aspect-video bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-3xl border border-blue-400/30 relative flex items-center justify-center overflow-hidden min-h-[400px] shadow-2xl shadow-blue-500/40 backdrop-blur-xl" style={{
+                boxShadow: '0 16px 48px 0 rgba(31, 38, 135, 0.45), 0 1.5rem 3rem rgba(59,130,246,0.25)',
+                border: '1.5px solid rgba(59,130,246,0.18)',
+                background: 'rgba(30,41,59,0.7)',
+                transform: 'translateY(-24px)',
+                zIndex: 20,
+            }}>
+                <ReactPlayer
+                    src={url}
+                    width="100%"
+                    height="100%"
+                    controls
+                    className="w-full h-full rounded-2xl"
+                    style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', borderRadius: '1.5rem', background: 'rgba(0,0,0,0.4)' }}
+                />
+                {/* Floating glow effect */}
+                <div className="absolute -inset-8 pointer-events-none z-0">
+                    <div className="w-full h-full rounded-3xl bg-blue-400/10 blur-2xl"></div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
 const CourseContent = () => {
+
     const { courseId } = useParams();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -20,15 +52,12 @@ const CourseContent = () => {
 
     useEffect(() => {
         setLoading(true);
-        console.log('CourseContent Debug: useEffect', { courseId });
         trainingCourseApi.getCourse(courseId)
             .then(courseRes => {
-                console.log('CourseContent Debug: API response', { courseRes });
                 setCourse(courseRes.data);
                 setLoading(false);
             })
-            .catch(err => {
-                console.error('CourseContent Debug: API error', err);
+            .catch(() => {
                 setError('Failed to load course content');
                 setLoading(false);
             });
@@ -69,14 +98,7 @@ const CourseContent = () => {
     const isTrainer = user && session && user.id === session.trainer_id;
     const isCoordinator = user && session && user.id === session.coordinator_id;
     const canManage = !!(isTrainer || isCoordinator);
-    // Debugging logs
-    console.log('CourseContent Debug: permissions', {
-        user,
-        session,
-        isTrainer,
-        isCoordinator,
-        canManage
-    });
+    // ...existing code...
     return (
         <div className="min-h-screen relative overflow-hidden">
             <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
@@ -103,10 +125,7 @@ const CourseContent = () => {
                             <div className="font-medium text-white mb-2">Type: <span className="px-2 py-1 rounded bg-blue-400/20 text-blue-400 text-xs">{course.content.type}</span></div>
                             <div className="mt-2 text-white/80">
                                 {course.content.type === 'video' && course.content.content ? (
-                                    <video controls className="w-full max-h-96 rounded">
-                                        <source src={course.content.content} type="video/mp4" />
-                                        Your browser does not support the video tag.
-                                    </video>
+                                    <VideoPlayer url={course.content.content} />
                                 ) : course.content.type === 'image' && course.content.content ? (
                                     <img src={course.content.content} alt="Course" className="w-full max-h-96 rounded object-contain" />
                                 ) : course.content.type === 'file' && course.content.content ? (
