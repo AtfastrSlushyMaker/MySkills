@@ -90,10 +90,6 @@ function ProfilePage() {
 
         try {
             let payload;
-            // Debug log: show profile_picture type and value
-            console.log('DEBUG: profile_picture type:', typeof formData.profile_picture);
-            console.log('DEBUG: profile_picture instanceof File:', formData.profile_picture instanceof File);
-            console.log('DEBUG: profile_picture value:', formData.profile_picture);
             // If profile_picture is a File, use FormData for upload
             if (formData.profile_picture instanceof File) {
                 const fd = new FormData();
@@ -105,10 +101,6 @@ function ProfilePage() {
                     }
                 });
                 payload = fd;
-                // Debug log: show FormData keys and values
-                for (let pair of fd.entries()) {
-                    console.log('DEBUG: FormData', pair[0], pair[1]);
-                }
             } else {
                 // If profile_picture is empty string, array, or not a valid string, set to null
                 const cleanData = { ...formData };
@@ -119,12 +111,8 @@ function ProfilePage() {
                 ) {
                     cleanData.profile_picture = null;
                 }
-                // Debug log: show cleanData
-                console.log('DEBUG: cleanData payload', cleanData);
                 payload = cleanData;
             }
-            // Debug log: show final payload type
-            console.log('DEBUG: payload type', payload instanceof FormData ? 'FormData' : typeof payload);
             const response = await userApi.updateProfile(payload);
             setSuccess('Profile updated successfully!');
             setIsEditing(false);
