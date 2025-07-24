@@ -9,7 +9,15 @@ class CourseContentController extends Controller
 {
     public function index()
     {
-        return CourseContent::all();
+        return CourseContent::with(
+            'trainingCourse',
+            'trainingCourse.trainingSession.trainer',
+            'trainingCourse.trainingSession.coordinator'
+        )
+            ->when(request('training_course_id'), function ($query) {
+                $query->where('training_course_id', request('training_course_id'));
+            })
+            ->get();
     }
 
     public function store(Request $request)

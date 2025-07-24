@@ -7,34 +7,32 @@ import EditCourseContentModal from './modals/EditCourseContentModal';
 import DeleteCourseContentModal from './modals/DeleteCourseContentModal';
 
 const CourseContent = () => {
-    const { courseId, sessionId } = useParams();
+    const { courseId } = useParams();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user } = useAuth();
     const [markingComplete, setMarkingComplete] = useState(false);
     const [completed, setCompleted] = useState(false);
-    const [session, setSession] = useState(null);
     const [manageModalOpen, setManageModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([
-            trainingCourseApi.getCourse(courseId),
-            sessionId ? trainingSessionApi.getSession(sessionId) : Promise.resolve({ data: null })
-        ])
-            .then(([courseRes, sessionRes]) => {
+        console.log('CourseContent Debug: useEffect', { courseId });
+        trainingCourseApi.getCourse(courseId)
+            .then(courseRes => {
+                console.log('CourseContent Debug: API response', { courseRes });
                 setCourse(courseRes.data);
-                setSession(sessionRes.data);
                 setLoading(false);
             })
             .catch(err => {
+                console.error('CourseContent Debug: API error', err);
                 setError('Failed to load course content');
                 setLoading(false);
             });
-    }, [courseId, sessionId]);
+    }, [courseId]);
 
     useEffect(() => {
         if (user && course) {
@@ -63,11 +61,22 @@ const CourseContent = () => {
     if (error) return <div className="flex items-center justify-center h-64 text-lg text-red-500">{error}</div>;
     if (!course) return <div className="flex items-center justify-center h-64 text-lg text-gray-500">No course found.</div>;
 
-    // Determine if user can manage content (trainee, session coordinator, or assigned trainer only)
+    // Only session trainer and session coordinator can manage content
+    // Extract session from course object
+    const session = course && course.training_session ? course.training_session
+        : course && course.training_course && course.training_course.training_session ? course.training_course.training_session
+            : null;
+    const isTrainer = user && session && user.id === session.trainer_id;
     const isCoordinator = user && session && user.id === session.coordinator_id;
-    const isTrainer = user && session && session.trainer && user.id === session.trainer.id;
-    const canManage = user && (user.role === 'trainee' || isCoordinator || isTrainer);
-
+    const canManage = !!(isTrainer || isCoordinator);
+    // Debugging logs
+    console.log('CourseContent Debug: permissions', {
+        user,
+        session,
+        isTrainer,
+        isCoordinator,
+        canManage
+    });
     return (
         <div className="min-h-screen relative overflow-hidden">
             <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
@@ -174,8 +183,20 @@ const CourseContent = () => {
                 <DeleteCourseContentModal
                     open={deleteModalOpen}
                     onClose={() => setDeleteModalOpen(false)}
-                    onConfirm={() => {
-                        // TODO: Implement delete logic (API call)
+                    onConfirm={async () => {
+                        try {
+                            // Delete course content
+                            if (course.content && course.content.id) {
+                                await courseContentApi.delete(course.content.id);
+                            }
+                            // Delete associated course (one-to-one)
+                            if (course.id) {
+                                await trainingCourseApi.delete(course.id);
+                            }
+                            setCourse(null);
+                        } catch (err) {
+                            setError('Failed to delete course and content');
+                        }
                         setDeleteModalOpen(false);
                     }}
                 />
