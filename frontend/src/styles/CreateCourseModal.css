@@ -402,7 +402,7 @@
 }
 
 /* Buttons */
-.ant-btn {
+.create-course-modal .ant-btn {
     background: rgba(255, 255, 255, 0.1) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     color: rgba(255, 255, 255, 0.85) !important;
@@ -414,7 +414,7 @@
     gap: 8px;
 }
 
-.ant-btn:hover {
+.create-course-modal .ant-btn:hover {
     background: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
     color: white !important;
@@ -422,11 +422,11 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.ant-btn:active {
+.create-course-modal .ant-btn:active {
     transform: translateY(0);
 }
 
-.submit-btn {
+.create-course-modal .submit-btn {
     background: linear-gradient(135deg, #1E40AF, #3B82F6) !important;
     border: none !important;
     color: white !important;
@@ -437,7 +437,7 @@
     overflow: hidden;
 }
 
-.submit-btn::before {
+.create-course-modal .submit-btn::before {
     content: '';
     position: absolute;
     top: 0;
@@ -448,37 +448,37 @@
     transition: left 0.5s ease;
 }
 
-.submit-btn:hover::before {
+.create-course-modal .submit-btn:hover::before {
     left: 100%;
 }
 
-.submit-btn:hover {
+.create-course-modal .submit-btn:hover {
     background: linear-gradient(135deg, #1E40AF, #4F46E5) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 16px rgba(30, 64, 175, 0.35) !important;
 }
 
-.ant-btn-loading {
+.create-course-modal .ant-btn-loading {
     pointer-events: none;
 }
 
-.ant-btn .anticon {
+.create-course-modal .ant-btn .anticon {
     transition: transform 0.3s ease;
 }
 
-.ant-btn:hover .anticon {
+.create-course-modal .ant-btn:hover .anticon {
     transform: scale(1.1);
 }
 
 /* Close Button */
-.ant-modal-close {
+.create-course-modal .ant-modal-close {
     color: rgba(255, 255, 255, 0.7) !important;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     transition: all 0.3s ease;
 }
 
-.ant-modal-close:hover {
+.create-course-modal .ant-modal-close:hover {
     color: white !important;
     background: rgba(255, 255, 255, 0.1) !important;
     transform: scale(1.05);
