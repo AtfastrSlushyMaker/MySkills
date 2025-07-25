@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('training_course_id')->constrained('training_courses')->onDelete('cascade')->unique();
             $table->text('content')->nullable();
-            $table->enum('type', ['video', 'text', 'file', 'quiz'])->default('text');
+            $table->enum('type', ['video', 'text', 'file', 'image'])->default('text');
             $table->timestamps();
         });
     }

@@ -66,6 +66,10 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/courseCompletion.php'));
 
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/imageApi.php'));
+
         });
     }
 }

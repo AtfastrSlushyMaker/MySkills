@@ -103,6 +103,7 @@ require __DIR__.'/courseCompletion.php';
 require __DIR__.'/feedback.php';
 require __DIR__.'/sessionCompletion.php';
 require __DIR__.'/notification.php';
+require __DIR__.'/imageApi.php';
 
-// Registration status by user and session
+
 

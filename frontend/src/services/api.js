@@ -187,3 +187,11 @@ export const courseContentApi = {
     update: (id, data) => api.put(`/course-contents/${id}`, data),
     delete: (id) => api.delete(`/course-contents/${id}`),
 };
+
+export const imageApi = {
+    uploadImage: (formData) => api.post('/images/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }),
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Steps, Form, Input, Button, Select, notification } from 'antd';
-import { BookOutlined, FileTextOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Modal, Steps, Form, Input, Button, Select, notification, Upload } from 'antd';
+import { BookOutlined, FileTextOutlined, PlusOutlined, ArrowLeftOutlined, UploadOutlined, EyeOutlined } from '@ant-design/icons';
 import { trainingCourseApi, courseContentApi } from '../../services/api';
 import '../../styles/CreateCourseModal.css';
 
@@ -15,6 +15,10 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
     const contentFormInitialValues = { content: '', type: 'text' };
     const [loading, setLoading] = useState(false);
     const [createdCourseId, setCreatedCourseId] = useState(null);
+    const [selectedContentType, setSelectedContentType] = useState('text');
+    const [fileList, setFileList] = useState([]);
+    const [previewImage, setPreviewImage] = useState('');
+    const [previewVisible, setPreviewVisible] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -23,6 +27,10 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
             setCurrentStep(0);
             setCreatedCourseId(null);
             setLoading(false);
+            setSelectedContentType('text');
+            setFileList([]);
+            setPreviewImage('');
+            setPreviewVisible(false);
         }
     }, [isOpen]);
 
@@ -62,15 +70,33 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
     const handleContentSubmit = async () => {
         try {
             const values = await contentForm.validateFields();
-            console.log('DEBUG: contentForm values.content =', values.content);
             setLoading(true);
-            const payload = {
-                training_course_id: createdCourseId,
-                content: typeof values.content === 'string' ? values.content : '',
-                type: values.type || 'text',
-            };
-            console.log('Sending course content to backend:', payload);
-            await courseContentApi.create(payload);
+
+            let payload;
+
+            if (selectedContentType === 'image' && fileList.length > 0) {
+                // For image uploads, create FormData
+                const formData = new FormData();
+                formData.append('training_course_id', createdCourseId);
+                formData.append('type', 'image');
+                formData.append('content', fileList[0].originFileObj);
+
+                console.log('Sending image content to backend');
+                await courseContentApi.create(formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+            } else {
+                // For text, video, and file content
+                payload = {
+                    training_course_id: createdCourseId,
+                    content: typeof values.content === 'string' ? values.content : '',
+                    type: values.type || 'text',
+                };
+                console.log('Sending course content to backend:', payload);
+                await courseContentApi.create(payload);
+            }
 
             notification.success({
                 message: 'Content Added',
@@ -93,8 +119,75 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
     };
 
     const handleBack = () => currentStep === 0 ? onClose() : setCurrentStep(0);
-    const handleCancel = () => !loading && (onClose(), courseForm.resetFields(), contentForm.resetFields());
+    const handleCancel = () => {
+        if (!loading) {
+            onClose();
+            courseForm.resetFields();
+            contentForm.resetFields();
+            setFileList([]);
+            setPreviewImage('');
+            setPreviewVisible(false);
+        }
+    };
 
+    const handleContentTypeChange = (value) => {
+        setSelectedContentType(value);
+        if (value !== 'image') {
+            setFileList([]);
+            setPreviewImage('');
+            setPreviewVisible(false);
+        }
+    };
+
+    const handleFileChange = ({ fileList: newFileList }) => {
+        setFileList(newFileList);
+    };
+
+    const handlePreview = async (file) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj);
+        }
+        setPreviewImage(file.url || file.preview);
+        setPreviewVisible(true);
+    };
+
+    const getBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
+
+    const beforeUpload = (file) => {
+        const isImage = file.type.startsWith('image/');
+        if (!isImage) {
+            notification.error({
+                message: 'Invalid File Type',
+                description: 'You can only upload image files!',
+            });
+            return false;
+        }
+
+        const isLt5M = file.size / 1024 / 1024 < 5;
+        if (!isLt5M) {
+            notification.error({
+                message: 'File Too Large',
+                description: 'Image must be smaller than 5MB!',
+            });
+            return false;
+        }
+
+        return false; // Prevent automatic upload
+    };
+
+    const uploadButton = (
+        <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload Image</div>
+        </div>
+    );
 
     return (
         <Modal
@@ -130,7 +223,11 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
                         <Form.Item
                             name="title"
                             label="Course Title"
-                            rules={[{ required: true, message: 'Course title is required' }, { min: 3, message: 'Title must be at least 3 characters' }, { max: 100, message: 'Title cannot exceed 100 characters' }]}
+                            rules={[
+                                { required: true, message: 'Course title is required' },
+                                { min: 3, message: 'Title must be at least 3 characters' },
+                                { max: 100, message: 'Title cannot exceed 100 characters' }
+                            ]}
                         >
                             <Input
                                 placeholder="Enter a descriptive course title"
@@ -154,7 +251,18 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
                         <Form.Item
                             name="duration_hours"
                             label="Duration (Hours)"
-                            rules={[{ required: true, message: 'Duration is required' }, { validator: (_, value) => { const num = parseFloat(value); if (isNaN(num) || num < 0.5 || num > 100) { return Promise.reject('Must be between 0.5 and 100 hours'); } return Promise.resolve(); } }]}
+                            rules={[
+                                { required: true, message: 'Duration is required' },
+                                {
+                                    validator: (_, value) => {
+                                        const num = parseFloat(value);
+                                        if (isNaN(num) || num < 0.5 || num > 100) {
+                                            return Promise.reject('Must be between 0.5 and 100 hours');
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                }
+                            ]}
                         >
                             <Input
                                 type="number"
@@ -169,6 +277,7 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
                         </Form.Item>
                     </Form>
                 </div>
+
                 <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
                     <Form form={contentForm} layout="vertical" requiredMark={false}>
                         <div className="step-header">
@@ -183,25 +292,66 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
                             label="Content Type"
                             rules={[{ required: true, message: 'Please select content type' }]}
                         >
-                            <Select size="large" disabled={loading}>
+                            <Select
+                                size="large"
+                                disabled={loading}
+                                onChange={handleContentTypeChange}
+                                value={selectedContentType}
+                            >
                                 <Option value="text">📄 Text Content</Option>
                                 <Option value="video">🎥 Video</Option>
                                 <Option value="file">📎 File Attachment</Option>
-                                <Option value="quiz">❓ Quiz</Option>
+                                <Option value="image">🖼️ Image</Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item
-                            name="content"
-                            label="Content"
-                            rules={[{ required: true, message: 'Content is required' }, { min: 10, message: 'Content must be at least 10 characters' }]}
-                        >
-                            <TextArea
-                                placeholder="Detailed content for this section"
-                                rows={5}
-                                disabled={loading}
-                                showCount
-                            />
-                        </Form.Item>
+
+                        {selectedContentType === 'image' ? (
+                            <Form.Item
+                                label="Upload Image"
+                                rules={[{ required: true, message: 'Please upload an image' }]}
+                            >
+                                <Upload
+                                    listType="picture-card"
+                                    fileList={fileList}
+                                    onPreview={handlePreview}
+                                    onChange={handleFileChange}
+                                    beforeUpload={beforeUpload}
+                                    disabled={loading}
+                                    maxCount={1}
+                                >
+                                    {fileList.length >= 1 ? null : uploadButton}
+                                </Upload>
+                                {fileList.length > 0 && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <Button
+                                            type="link"
+                                            icon={<EyeOutlined />}
+                                            onClick={() => handlePreview(fileList[0])}
+                                            size="small"
+                                        >
+                                            Preview Image
+                                        </Button>
+                                    </div>
+                                )}
+                            </Form.Item>
+                        ) : (
+                            <Form.Item
+                                name="content"
+                                label="Content"
+                                rules={[
+                                    { required: true, message: 'Content is required' },
+                                    { min: 10, message: 'Content must be at least 10 characters' }
+                                ]}
+                            >
+                                <TextArea
+                                    placeholder="Detailed content for this section"
+                                    rows={5}
+                                    disabled={loading}
+                                    showCount
+                                />
+                            </Form.Item>
+                        )}
+
                         <div className="info-box">
                             <div>💡</div>
                             <p>
@@ -228,10 +378,22 @@ const CreateCourseModal = ({ isOpen, onClose, session, onCourseCreated }) => {
                     loading={loading}
                     size="large"
                     className="submit-btn"
+                    disabled={currentStep === 1 && selectedContentType === 'image' && fileList.length === 0}
                 >
                     {currentStep === 0 ? 'Create Course & Continue' : 'Complete Setup'}
                 </Button>
             </div>
+
+            {/* Image Preview Modal */}
+            <Modal
+                open={previewVisible}
+                title="Image Preview"
+                footer={null}
+                onCancel={() => setPreviewVisible(false)}
+                centered
+            >
+                <img alt="preview" style={{ width: '100%' }} src={previewImage} />
+            </Modal>
         </Modal>
     );
 };

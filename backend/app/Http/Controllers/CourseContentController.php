@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CourseContent;
 use Illuminate\Http\Request;
+use App\Services\imageService;
 
 class CourseContentController extends Controller
 {
@@ -22,11 +23,22 @@ class CourseContentController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $type = $request->input('type');
+        $rules = [
             'training_course_id' => 'required|exists:training_courses,id',
-            'content' => 'nullable|string',
             'type' => 'required|string',
-        ]);
+        ];
+        if ($type === 'image') {
+            $rules['content'] = 'required|file|image|max:5120'; // 5MB max
+        } else {
+            $rules['content'] = 'nullable|string';
+        }
+        $validated = $request->validate($rules);
+        $imageService = new imageService();
+        if ($type === 'image') {
+            $validated['content'] = $imageService->uploadToImgbb($request->file('content'));
+        }
+
         return CourseContent::create($validated);
     }
 
