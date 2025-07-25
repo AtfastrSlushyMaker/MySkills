@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
+import Lightbox from 'yet-another-react-lightbox';
+import Captions from 'yet-another-react-lightbox/plugins/captions';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import { useAuth } from '../contexts/AuthContext';
 import { courseCompletionApi, trainingSessionApi, trainingCourseApi, courseContentApi } from '../services/api';
 import { useParams } from 'react-router-dom';
@@ -49,6 +54,7 @@ const CourseContent = () => {
     const [manageModalOpen, setManageModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -57,8 +63,9 @@ const CourseContent = () => {
                 setCourse(courseRes.data);
                 setLoading(false);
             })
-            .catch(() => {
-                setError('Failed to load course content');
+            .catch((err) => {
+                const msg = err?.response?.data?.message || err?.message || 'Unknown error';
+                setError('Failed to load course content: ' + msg);
                 setLoading(false);
             });
     }, [courseId]);
@@ -127,7 +134,29 @@ const CourseContent = () => {
                                 {course.content.type === 'video' && course.content.content ? (
                                     <VideoPlayer url={course.content.content} />
                                 ) : course.content.type === 'image' && course.content.content ? (
-                                    <img src={course.content.content} alt="Course" className="w-full max-h-96 rounded object-contain" />
+                                    <>
+                                        <div className="flex justify-center items-center w-full py-6">
+                                            <img
+                                                src={course.content.content}
+                                                alt="Course"
+                                                className="max-w-3xl w-full h-auto rounded-2xl object-contain shadow-lg cursor-pointer transition-transform duration-200 hover:scale-105"
+                                                style={{ background: 'rgba(30,41,59,0.7)' }}
+                                                onClick={() => setLightboxOpen(true)}
+                                            />
+                                        </div>
+                                        {lightboxOpen && (
+                                            <Lightbox
+                                                open={lightboxOpen}
+                                                close={() => setLightboxOpen(false)}
+                                                slides={[{
+                                                    src: course.content.content,
+                                                    alt: 'Course',
+                                                    description: course.title || '',
+                                                }]}
+                                                plugins={[Captions, Thumbnails]}
+                                            />
+                                        )}
+                                    </>
                                 ) : course.content.type === 'file' && course.content.content ? (
                                     <a href={course.content.content} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">Download file</a>
                                 ) : course.content.type === 'text' ? (

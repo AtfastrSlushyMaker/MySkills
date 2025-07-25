@@ -181,11 +181,58 @@ export const courseCompletionApi = {
 };
 
 export const courseContentApi = {
-    getAll: () => api.get('/course-contents'),
+    getAll: (params = {}) => {
+        // Support filtering by training_course_id
+        const queryString = new URLSearchParams(params).toString();
+        const url = queryString ? `/course-contents?${queryString}` : '/course-contents';
+        return api.get(url);
+    },
+
     get: (id) => api.get(`/course-contents/${id}`),
-    create: (data) => api.post('/course-contents', data),
-    update: (id, data) => api.put(`/course-contents/${id}`, data),
+
+    create: (data) => {
+        if (data instanceof FormData) {
+            return api.post('/course-contents', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+        } else {
+            return api.post('/course-contents', data);
+        }
+    },
+
+    update: (id, data) => {
+        if (data instanceof FormData) {
+            // For FormData updates, use POST with method spoofing
+            // This ensures Laravel properly handles file uploads
+            // Don't add _method here - Laravel should handle PUT via the route
+            return api.post(`/course-contents/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'X-HTTP-Method-Override': 'PUT'
+                }
+            }).then(response => {
+                return response;
+            }).catch(error => {
+                throw error;
+            });
+        } else {
+            // For regular JSON updates, use PUT
+            return api.put(`/course-contents/${id}`, data, {
+                headers: { 'Content-Type': 'application/json' }
+            }).then(response => {
+                return response;
+            }).catch(error => {
+                throw error;
+            });
+        }
+    },
+
     delete: (id) => api.delete(`/course-contents/${id}`),
+
+    // Helper method to get content by course
+    getByCourse: (trainingCourseId) => {
+        return api.get(`/course-contents?training_course_id=${trainingCourseId}`);
+    }
 };
 
 export const imageApi = {
