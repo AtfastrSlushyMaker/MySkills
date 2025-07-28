@@ -4,6 +4,7 @@ import { SearchOutlined, PlusOutlined, SolutionOutlined, CheckCircleOutlined, Cl
 import RegistrationCreateModal from '../components/registrations/RegistrationCreateModal';
 import RegistrationEditModal from '../components/registrations/RegistrationEditModal';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import RegistrationDetailsModal from '../components/registrations/RegistrationDetailsModal';
 import { registrationApi } from '../../services/api';
 
 const { Title, Text } = Typography;
@@ -25,6 +26,8 @@ function RegistrationsPage() {
         current: 1,
         pageSize: 10,
     });
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+    const [selectedRegistration, setSelectedRegistration] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -207,7 +210,16 @@ function RegistrationsPage() {
             key: 'actions',
             render: (_, record) => (
                 <Space size="small">
-                    <Button type="text" icon={<EyeOutlined />} className="hover:bg-blue-50 hover:text-blue-600 border-0 text-gray-600" size="small" />
+                    <Button
+                        type="text"
+                        icon={<EyeOutlined />}
+                        className="hover:bg-blue-50 hover:text-blue-600 border-0 text-gray-600"
+                        size="small"
+                        onClick={() => {
+                            setSelectedRegistration(record);
+                            setDetailsModalOpen(true);
+                        }}
+                    />
                     <Button type="text" icon={<EditOutlined />} className="hover:bg-green-50 hover:text-green-600 border-0 text-gray-600" size="small" onClick={() => { setEditingRegistration(record); setEditModalOpen(true); }} />
                     <Button type="text" icon={<DeleteOutlined />} className="hover:bg-red-50 hover:text-red-600 border-0 text-gray-600" size="small" onClick={() => { setDeletingRegistration(record); setDeleteModalOpen(true); }} />
                 </Space>
@@ -373,6 +385,15 @@ function RegistrationsPage() {
                     onCancel={() => { setDeleteModalOpen(false); setDeletingRegistration(null); }}
                     itemName="registration"
                     message={"Are you sure you want to delete this registration? This action cannot be undone."}
+                />
+
+                <RegistrationDetailsModal
+                    visible={detailsModalOpen}
+                    registration={selectedRegistration}
+                    onCancel={() => {
+                        setDetailsModalOpen(false);
+                        setSelectedRegistration(null);
+                    }}
                 />
             </div>
 
