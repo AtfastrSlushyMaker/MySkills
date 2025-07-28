@@ -194,11 +194,20 @@ function NotificationsPage() {
             key: 'user_id',
             render: (userId, record) => (
                 <div className="flex items-center gap-3">
-                    <Avatar
-                        size={40}
-                        icon={<UserOutlined />}
-                        className="bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0"
-                    />
+                    {record.user?.profile_picture ? (
+                        <img
+                            src={record.user.profile_picture}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-white/40 shadow"
+                        />
+                    ) : (
+                        <Avatar
+                            size={40}
+                            className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold flex-shrink-0"
+                        >
+                            {record.user?.first_name?.charAt(0).toUpperCase() || <UserOutlined />}
+                        </Avatar>
+                    )}
                     <div className="min-w-0">
                         <div className="font-semibold text-gray-900 truncate">
                             {record.user ? `${record.user.first_name} ${record.user.last_name}` : `User ${userId}`}
