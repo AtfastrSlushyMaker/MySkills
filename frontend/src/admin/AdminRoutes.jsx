@@ -6,7 +6,6 @@ import UsersPage from "./pages/UsersPage";
 import SessionsPage from "./pages/SessionsPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import RegistrationsPage from "./pages/RegistrationsPage";
-import AttendancePage from "./pages/AttendancePage";
 import FeedbackPage from "./pages/FeedbackPage";
 import NotificationsPage from "./pages/NotificationsPage";
 
@@ -98,14 +97,6 @@ function AdminRoutes() {
                 }
             />
             <Route
-                path="attendance"
-                element={
-                    <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
-                        <AttendancePage theme={theme} />
-                    </AdminLayout>
-                }
-            />
-            <Route
                 path="feedback"
                 element={
                     <AdminLayout isLight={isLight} onToggleTheme={handleToggleTheme} theme={theme}>
@@ -113,7 +104,7 @@ function AdminRoutes() {
                     </AdminLayout>
                 }
             />
-            
+
         </Routes>
     );
 }

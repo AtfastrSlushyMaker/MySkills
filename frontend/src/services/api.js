@@ -87,6 +87,7 @@ export const notificationApi = {
 export const registrationApi = {
     getPendingRegistrations: (coordinatorId) => api.get(`/registrations/status/pending/${coordinatorId}`),
     getRegistrationStats: () => api.get('/registrations/dashboard/stats'),
+    getGlobalRegistrationStats: () => api.get('/registrations/dashboard/global-stats'),
     approveRegistration: (id) => api.post(`/registrations/${id}/approve`),
     rejectRegistration: (id) => api.post(`/registrations/${id}/reject`),
     getRegistrationDetails: (id) => api.get(`/registrations/${id}`),
@@ -97,6 +98,8 @@ export const registrationApi = {
     getConfirmedUsersBySession: (sessionId) => api.get(`/registrations/session/${sessionId}/confirmed-users`),
     getStatusByUserAndSession: (sessionId) => api.get(`/registrations/status/${sessionId}`),
     getRegistrationsByUser: (userId) => api.get(`/registrations/user/${userId}`),
+    getAllRegistrations: () => api.get('/registrations'),
+    getRegistrationsBySession: (sessionId) => api.get(`/registrations/session/${sessionId}`),
 };
 
 export const trainingSessionApi = {

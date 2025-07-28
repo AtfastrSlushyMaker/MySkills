@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Modal, Descriptions, Tag, Badge, Avatar, Input, Tooltip, Button, Pagination } from "antd";
+import { Modal, Descriptions, Tag, Badge, Avatar, Input, Tooltip, Button, Pagination, message } from "antd";
 import {
     CalendarOutlined,
     ClockCircleOutlined,
@@ -83,7 +83,8 @@ function getStatusIcon(status) {
     return statusIcons[status?.toLowerCase()] || <ExclamationCircleOutlined />;
 }
 
-function SessionDetailsModal({ visible, session, onCancel }) {
+
+function SessionDetailsModal({ visible, session, onCancel, onRefresh }) {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -93,19 +94,24 @@ function SessionDetailsModal({ visible, session, onCancel }) {
     const [courseSearch, setCourseSearch] = useState("");
     const [coursePage, setCoursePage] = useState(1);
     const [participantPage, setParticipantPage] = useState(1);
+    const [localCourses, setLocalCourses] = useState(session?.training_courses || []);
+
+    React.useEffect(() => {
+        setLocalCourses(session?.training_courses || []);
+    }, [session?.training_courses]);
 
     const COURSES_PER_PAGE = 3;
     const PARTICIPANTS_PER_PAGE = 5;
 
     const filteredCourses = useMemo(() => {
-        if (!Array.isArray(session?.training_courses)) return [];
-        if (!courseSearch.trim()) return session.training_courses;
+        if (!Array.isArray(localCourses)) return [];
+        if (!courseSearch.trim()) return localCourses;
         const search = courseSearch.trim().toLowerCase();
-        return session.training_courses.filter(c =>
+        return localCourses.filter(c =>
             (c.title && c.title.toLowerCase().includes(search)) ||
             (c.description && c.description.toLowerCase().includes(search))
         );
-    }, [session?.training_courses, courseSearch]);
+    }, [localCourses, courseSearch]);
 
     const paginatedCourses = useMemo(() => {
         const start = (coursePage - 1) * COURSES_PER_PAGE;
@@ -573,16 +579,18 @@ function SessionDetailsModal({ visible, session, onCancel }) {
                 onConfirm={async () => {
                     setDeleteLoading(true);
                     try {
-                        // TODO: Replace with actual API call
                         if (courseToDelete?.id) {
                             const { trainingCourseApi } = await import('../../../services/api');
                             await trainingCourseApi.deleteCourse(courseToDelete.id);
+                            // Remove from localCourses for instant UI update
+                            setLocalCourses(prev => prev.filter(c => c.id !== courseToDelete.id));
+                            message.success('Course deleted successfully!');
                         }
                         setDeleteModalOpen(false);
                         setCourseToDelete(null);
-                        // TODO: Optionally trigger a refresh in parent if needed
+                        if (typeof onRefresh === 'function') onRefresh();
                     } catch (err) {
-                        // TODO: Show error notification
+                        message.error('Failed to delete course.');
                     } finally {
                         setDeleteLoading(false);
                     }
@@ -590,6 +598,7 @@ function SessionDetailsModal({ visible, session, onCancel }) {
                 onCancel={() => {
                     setDeleteModalOpen(false);
                     setCourseToDelete(null);
+                    if (typeof onRefresh === 'function') onRefresh();
                 }}
             />
         </Modal>

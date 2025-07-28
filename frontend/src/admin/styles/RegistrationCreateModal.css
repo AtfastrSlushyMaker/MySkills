@@ -1,0 +1,74 @@
+.glass-modal .ant-modal-content {
+    border-radius: 1.5rem !important;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%) !important;
+    box-shadow: 0 8px 40px 0 rgba(16, 30, 54, 0.18) !important;
+}
+
+.glass-modal .ant-modal-header {
+    background: transparent !important;
+    border-bottom: none !important;
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+}
+
+.glass-modal .ant-modal-title {
+    color: #1e293b !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+.glass-modal .ant-form-item-label>label {
+    color: #334155 !important;
+    font-weight: 600 !important;
+    font-size: 1.08rem !important;
+}
+
+.glass-modal .ant-input,
+.glass-modal .ant-select-selector,
+.glass-modal .ant-input-affix-wrapper,
+.glass-modal .ant-input-textarea {
+    font-size: 1.1rem !important;
+    padding: 0.9rem 1.2rem !important;
+    border-radius: 0.85rem !important;
+    border-width: 2px !important;
+    border-color: #e2e8f0 !important;
+    background: #f8fafc !important;
+    box-shadow: 0 2px 8px 0 rgba(16, 30, 54, 0.04);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.glass-modal .ant-input:focus,
+.glass-modal .ant-select-focused .ant-select-selector,
+.glass-modal .ant-input-affix-wrapper-focused,
+.glass-modal .ant-input-textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px #c7d2fe !important;
+    background: #fff !important;
+}
+
+.glass-modal .ant-btn-primary {
+    background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    border-radius: 0.85rem !important;
+    box-shadow: 0 4px 16px 0 rgba(16, 30, 54, 0.08);
+    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.glass-modal .ant-btn-primary:hover,
+.glass-modal .ant-btn-primary:focus {
+    background: linear-gradient(90deg, #1d4ed8 0%, #6366f1 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 24px 0 rgba(16, 30, 54, 0.12);
+}
+
+.glass-modal .ant-btn {
+    font-size: 1.1rem !important;
+    border-radius: 0.85rem !important;
+    font-weight: 600 !important;
+}
+
+.glass-modal .ant-form-item {
+    margin-bottom: 2.2rem !important;
+}

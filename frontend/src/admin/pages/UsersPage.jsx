@@ -206,11 +206,19 @@ function UsersPage({ theme = 'light' }) {
             key: 'name',
             render: (text, record) => (
                 <div className="flex items-center gap-3">
-                    <Avatar
-                        size={40}
-                        icon={<UserOutlined />}
-                        className="bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0"
-                    />
+                    {record.profile_picture ? (
+                        <Avatar
+                            size={40}
+                            src={record.profile_picture}
+                            className="bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 object-cover"
+                        />
+                    ) : (
+                        <Avatar
+                            size={40}
+                            icon={<UserOutlined />}
+                            className="bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0"
+                        />
+                    )}
                     <div className="min-w-0">
                         <div className="font-semibold text-gray-900 truncate">
                             {record.first_name} {record.last_name}

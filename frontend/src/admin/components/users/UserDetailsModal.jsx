@@ -198,9 +198,17 @@ function UserDetailsModal({ open, user, onClose }) {
                         <div className="relative p-8 pb-4">
                             <div className="flex items-start gap-6">
                                 <div className="flex-shrink-0">
-                                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-4 ring-white/20">
-                                        <UserOutlined className="text-white text-4xl" />
-                                    </div>
+                                    {user?.profile_picture ? (
+                                        <img
+                                            src={user.profile_picture}
+                                            alt="Profile"
+                                            className="w-24 h-24 rounded-full object-cover shadow-lg ring-4 ring-white/20 border border-white/40"
+                                        />
+                                    ) : (
+                                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-4 ring-white/20">
+                                            <UserOutlined className="text-white text-4xl" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="text-3xl font-bold text-gray-900 mb-2">

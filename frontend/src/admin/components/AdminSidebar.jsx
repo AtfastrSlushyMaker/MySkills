@@ -28,7 +28,6 @@ function AdminSidebar() {
         { to: '/admin/sessions', label: 'Sessions', icon: BookOutlined },
         { to: '/admin/categories', label: 'Categories', icon: AppstoreOutlined },
         { to: '/admin/registrations', label: 'Registrations', icon: SolutionOutlined },
-        { to: '/admin/attendance', label: 'Attendance', icon: CheckCircleOutlined },
         { to: '/admin/feedback', label: 'Feedback', icon: MessageOutlined },
         { to: '/admin/notifications', label: 'Notifications', icon: BellOutlined },
     ];
@@ -164,12 +163,20 @@ function AdminSidebar() {
                 <div className="px-6 pt-4 pb-6">
                     <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl backdrop-blur-lg border border-white/10">
                         <Badge dot color="green" className="flex-shrink-0">
-                            <Avatar
-                                size={42}
-                                className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold shadow"
-                            >
-                                {user?.first_name?.charAt(0).toUpperCase() || 'A'}
-                            </Avatar>
+                            {user?.profile_picture ? (
+                                <img
+                                    src={user.profile_picture}
+                                    alt="Profile"
+                                    className="w-12 h-12 rounded-full object-cover shadow-lg ring-4 ring-white/20 border border-white/40"
+                                />
+                            ) : (
+                                <Avatar
+                                    size={42}
+                                    className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold shadow"
+                                >
+                                    {user?.first_name?.charAt(0).toUpperCase() || 'A'}
+                                </Avatar>
+                            )}
                         </Badge>
                         <div className="flex-1 min-w-0">
                             <div className="text-white font-semibold truncate">
@@ -189,7 +196,7 @@ function AdminSidebar() {
                 <div className="px-4 py-2 text-center text-xs text-white/50">
                     MySkills Admin v2.4.1
                 </div>
-            </div>
+            </div >
 
             <style >{`
                 @keyframes pulse {
@@ -197,7 +204,7 @@ function AdminSidebar() {
                     50% { opacity: 0.4; transform: scale(1.05); }
                 }
             `}</style>
-        </aside>
+        </aside >
     );
 }
 

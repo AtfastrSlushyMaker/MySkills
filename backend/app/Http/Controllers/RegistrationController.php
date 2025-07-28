@@ -10,6 +10,22 @@ use App\Models\User;
 class RegistrationController extends Controller
 {
     /**
+     * Get global registration statistics (for admin dashboard)
+     */
+    public function globalStats()
+    {
+        $stats = [
+            'total' => Registration::count(),
+            'pending' => Registration::where('status', RegistrationStatus::PENDING)->count(),
+            'confirmed' => Registration::where('status', RegistrationStatus::CONFIRMED)->count(),
+            'cancelled' => Registration::where('status', RegistrationStatus::CANCELLED)->count(),
+        ];
+        return response()->json([
+            'message' => 'Global registration statistics retrieved successfully',
+            'stats' => $stats
+        ], 200);
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -254,6 +270,19 @@ class RegistrationController extends Controller
         return response()->json([
             'users' => $users,
             'count' => $users->count()
+        ], 200);
+    }
+
+    public function getRegistrationsBySession($sessionId)
+    {
+        $registrations = Registration::with(['user', 'trainingSession'])
+            ->where('training_session_id', $sessionId)
+            ->get();
+
+        return response()->json([
+            'message' => 'Registrations for session retrieved successfully',
+            'registrations' => $registrations,
+            'count' => $registrations->count()
         ], 200);
     }
 }
