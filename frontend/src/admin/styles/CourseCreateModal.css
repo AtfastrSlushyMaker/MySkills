@@ -1,0 +1,378 @@
+/* Improved CourseCreateModal Styles - Cleaner Backoffice Design */
+
+/* Modal Container */
+.create-course-modal .ant-modal-content {
+    border-radius: 16px !important;
+    border: 1px solid #0ea5e9 !important;
+    box-shadow: 0 10px 40px rgba(14, 165, 233, 0.15) !important;
+    background: #ffffff !important;
+    overflow: hidden;
+}
+
+.create-course-modal .ant-modal-header {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+    border-bottom: 1px solid #bae6fd !important;
+    padding: 24px 32px !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.create-course-modal .ant-modal-body {
+    padding: 0 !important;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+}
+
+.create-course-modal .ant-modal-close {
+    color: #0ea5e9 !important;
+    font-size: 18px !important;
+    top: 24px !important;
+    right: 24px !important;
+}
+
+/* Steps Component - Cleaner Design */
+.create-course-modal .ant-steps.course-steps,
+.create-course-modal .css-dev-only-do-not-override-16dneet.ant-steps.course-steps {
+    background: rgba(240, 249, 255, 0.6) !important;
+    border: 1px solid #bae6fd !important;
+    border-radius: 12px !important;
+    padding: 20px 24px !important;
+    margin-bottom: 32px !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Override any conflicting styles from the dev class */
+.create-course-modal .css-dev-only-do-not-override-16dneet {
+    color: inherit !important;
+}
+
+/* Force text visibility for all step content */
+.create-course-modal .ant-steps *,
+.create-course-modal .css-dev-only-do-not-override-16dneet * {
+    color: inherit !important;
+}
+
+.create-course-modal .ant-steps-item-content,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-content {
+    color: #475569 !important;
+}
+
+.create-course-modal .ant-steps-horizontal .ant-steps-item {
+    margin-right: 40px !important;
+}
+
+.create-course-modal .ant-steps-horizontal .ant-steps-item:last-child {
+    margin-right: 0 !important;
+}
+
+/* Step Icons - Modern Minimal Design */
+.create-course-modal .ant-steps-icon,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-icon {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.create-course-modal .ant-steps-item-process .ant-steps-icon,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-process .ant-steps-icon {
+    background: #0ea5e9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2) !important;
+}
+
+.create-course-modal .ant-steps-item-finish .ant-steps-icon,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-finish .ant-steps-icon {
+    background: #22c55e !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Ensure icon content (numbers/checkmarks) are visible */
+.create-course-modal .ant-steps-icon .ant-steps-icon-dot,
+.create-course-modal .ant-steps-icon .anticon,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-icon .ant-steps-icon-dot,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-icon .anticon {
+    color: inherit !important;
+    fill: currentColor !important;
+}
+
+/* Step Titles - Better Typography */
+.create-course-modal .ant-steps-item-title,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-title {
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    margin-top: 8px !important;
+}
+
+.create-course-modal .ant-steps-item-process .ant-steps-item-title,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-process .ant-steps-item-title {
+    color: #0ea5e9 !important;
+    font-weight: 700 !important;
+}
+
+.create-course-modal .ant-steps-item-finish .ant-steps-item-title,
+.create-course-modal .css-dev-only-do-not-override-16dneet .ant-steps-item-finish .ant-steps-item-title {
+    color: #22c55e !important;
+    font-weight: 700 !important;
+}
+
+/* Fix for the specific class combination causing white text */
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-title,
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-title * {
+    color: #475569 !important;
+}
+
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-process .ant-steps-item-title,
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-process .ant-steps-item-title * {
+    color: #0ea5e9 !important;
+}
+
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-finish .ant-steps-item-title,
+.create-course-modal .ant-steps.ant-steps-horizontal.course-steps.css-dev-only-do-not-override-16dneet .ant-steps-item-finish .ant-steps-item-title * {
+    color: #22c55e !important;
+}
+
+/* Main Content Container */
+.create-course-modal .bg-white.rounded-xl {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    margin: 32px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Section Headers - More Subtle */
+.create-course-modal .bg-gradient-to-r.from-cyan-50 {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%) !important;
+    border: 1px solid #bae6fd !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 24px !important;
+}
+
+.create-course-modal .bg-gradient-to-r.from-blue-50 {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #eff6ff 100%) !important;
+    border: 1px solid #93c5fd !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 24px !important;
+}
+
+/* Form Inputs - Cleaner Styling */
+.create-course-modal .ant-input,
+.create-course-modal .ant-input-affix-wrapper,
+.create-course-modal .ant-select-selector,
+.create-course-modal textarea {
+    background: #ffffff !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    color: #1e293b !important;
+    font-size: 15px !important;
+    transition: all 0.2s ease !important;
+}
+
+.create-course-modal .ant-input:focus,
+.create-course-modal .ant-input-affix-wrapper:focus,
+.create-course-modal .ant-select-selector:focus,
+.create-course-modal textarea:focus,
+.create-course-modal .ant-input:hover,
+.create-course-modal .ant-input-affix-wrapper:hover,
+.create-course-modal .ant-select-selector:hover,
+.create-course-modal textarea:hover {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1) !important;
+    background: #ffffff !important;
+}
+
+/* Form Labels */
+.create-course-modal .ant-form-item-label label {
+    color: #334155 !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+
+/* Upload Area - Refined */
+.create-course-modal .border-dashed {
+    border: 2px dashed #94a3b8 !important;
+    border-radius: 12px !important;
+    background: #f8fafc !important;
+    transition: all 0.3s ease !important;
+}
+
+.create-course-modal .border-dashed:hover {
+    border-color: #0ea5e9 !important;
+    background: #f0f9ff !important;
+}
+
+/* Info Boxes - More Subtle */
+.create-course-modal .bg-gradient-to-r.from-blue-50.to-indigo-50 {
+    background: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%) !important;
+    border: 1px solid #c7d2fe !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
+}
+
+.create-course-modal .bg-gradient-to-r.from-green-50.to-emerald-50 {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%) !important;
+    border: 1px solid #bbf7d0 !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
+}
+
+/* Buttons - Professional Look */
+.create-course-modal .ant-btn {
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    height: 44px !important;
+    padding: 0 24px !important;
+    font-size: 15px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.create-course-modal .ant-btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+}
+
+.create-course-modal .ant-btn-primary:hover,
+.create-course-modal .ant-btn-primary:focus {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4) !important;
+}
+
+.create-course-modal .ant-btn:not(.ant-btn-primary) {
+    background: #ffffff !important;
+    border: 2px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+.create-course-modal .ant-btn:not(.ant-btn-primary):hover,
+.create-course-modal .ant-btn:not(.ant-btn-primary):focus {
+    background: #f8fafc !important;
+    border-color: #0ea5e9 !important;
+    color: #0ea5e9 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Footer */
+.create-course-modal .border-t-2.border-gray-100 {
+    border-top: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    padding: 24px 0 0 0 !important;
+    margin-top: 32px !important;
+}
+
+/* Animations */
+.create-course-modal .animate-fade-in {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Select Dropdown */
+.create-course-modal .ant-select-dropdown {
+    border-radius: 8px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.create-course-modal .ant-select-item {
+    border-radius: 6px !important;
+    margin: 4px 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.create-course-modal .ant-select-item-option-selected {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+    color: #0ea5e9 !important;
+    font-weight: 600 !important;
+}
+
+/* Image Preview */
+.create-course-modal .ant-image {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .create-course-modal .ant-modal {
+        width: 95vw !important;
+        margin: 10px !important;
+    }
+
+    .create-course-modal .bg-white.rounded-xl {
+        margin: 16px !important;
+    }
+
+    .create-course-modal .ant-steps-horizontal .ant-steps-item {
+        margin-right: 20px !important;
+    }
+
+    .create-course-modal .ant-modal-header {
+        padding: 16px 20px !important;
+    }
+}
+
+/* Text Colors - Ensure Readability */
+.create-course-modal h3 {
+    color: #1e293b !important;
+}
+
+.create-course-modal p {
+    color: #475569 !important;
+    line-height: 1.6 !important;
+}
+
+.create-course-modal .text-gray-600 {
+    color: #64748b !important;
+}
+
+.create-course-modal .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+/* Icon Colors in Colored Backgrounds */
+.create-course-modal .bg-gradient-to-r .text-white,
+.create-course-modal .w-10.h-10 .anticon,
+.create-course-modal .w-12.h-12 .anticon {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Loading States */
+.create-course-modal .ant-btn-loading {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+}
+
+/* Notification Positioning */
+.ant-notification {
+    z-index: 1060 !important;
+}
+
+.ant-steps-item-icon {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    border: none;
+}
