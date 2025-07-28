@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Typography, Badge, Button, Space } from "antd";
 import {
     UserOutlined,
@@ -6,13 +7,13 @@ import {
     AppstoreOutlined,
     BarChartOutlined,
     PlusCircleOutlined,
-    SettingOutlined,
     LineChartOutlined,
     UsergroupAddOutlined,
     RocketOutlined,
     CheckCircleOutlined
 } from "@ant-design/icons";
 import { userApi, categoryApi, trainingCourseApi, trainingSessionApi } from "../../services/api";
+import UserCreateModal from "../components/users/UserCreateModal";
 import { systemHealthApi } from "../../services/api";
 
 const { Title, Text } = Typography;
@@ -41,7 +42,7 @@ const fetchData = async () => {
             totalSessions: 0
         };
     }
-}
+};
 
 function StatCard({ title, value, icon: IconComponent, trend = "+12%", color = "blue" }) {
     const colorMap = {
@@ -127,6 +128,8 @@ function AdminDashboard() {
     const [systemHealth, setSystemHealth] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [healthLoading, setHealthLoading] = React.useState(true);
+    const [userCreateModalOpen, setUserCreateModalOpen] = React.useState(false);
+    const navigate = useNavigate();
 
     React.useEffect(() => {
         fetchData().then((result) => {
@@ -225,35 +228,35 @@ function AdminDashboard() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <QuickAction
-                            title="Add Course"
-                            description="Create new learning content"
+                            title="Add User"
+                            description="Create a new user account"
                             icon={PlusCircleOutlined}
                             color="blue"
-                            onClick={() => console.log('Add course clicked')}
+                            onClick={() => setUserCreateModalOpen(true)}
                         />
                         <QuickAction
                             title="Manage Users"
                             description="View and edit user profiles"
                             icon={UsergroupAddOutlined}
                             color="green"
-                            onClick={() => console.log('Manage users clicked')}
+                            onClick={() => navigate('/admin/users')}
                         />
                         <QuickAction
                             title="Analytics"
                             description="View detailed reports"
                             icon={LineChartOutlined}
                             color="purple"
-                            onClick={() => console.log('Analytics clicked')}
-                        />
-                        <QuickAction
-                            title="Settings"
-                            description="Configure system settings"
-                            icon={SettingOutlined}
-                            color="orange"
-                            onClick={() => console.log('Settings clicked')}
+                            onClick={() => navigate('/admin/analytics')}
                         />
                     </div>
                 </div>
+
+                {/* User Create Modal */}
+                <UserCreateModal
+                    visible={userCreateModalOpen}
+                    onCancel={() => setUserCreateModalOpen(false)}
+                    onCreated={() => setUserCreateModalOpen(false)}
+                />
 
                 {/* Welcome Panel */}
                 <Card className="border-0 shadow-lg bg-white/20 backdrop-blur-md border border-white/30">
@@ -272,12 +275,14 @@ function AdminDashboard() {
                                     type="primary"
                                     className="bg-gradient-to-r from-blue-600/90 to-indigo-600/90 hover:from-blue-700/90 hover:to-indigo-700/90 border-0 shadow-lg backdrop-blur-sm"
                                     icon={<BookOutlined />}
+                                    onClick={() => navigate('/admin/courses')}
                                 >
                                     View Courses
                                 </Button>
                                 <Button
                                     className="bg-white/30 backdrop-blur-md border border-white/30 hover:bg-white/40 text-gray-700"
                                     icon={<LineChartOutlined />}
+                                    onClick={() => navigate('/admin/analytics')}
                                 >
                                     View Reports
                                 </Button>
@@ -310,7 +315,7 @@ function AdminDashboard() {
                                         <BookOutlined className="text-blue-600 text-sm" />
                                     </div>
                                     <div>
-                                        <Text className="text-sm font-medium text-gray-900 block">Course "React Basics" updated</Text>
+                                        <Text className="text-sm font-medium text-gray-900 block">Course \"React Basics\" updated</Text>
                                         <Text className="text-xs text-gray-600">1 hour ago</Text>
                                     </div>
                                 </div>
