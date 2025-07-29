@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { trainingSessionApi, registrationApi } from '../services/api'
+import { trainingSessionApi, registrationApi, sessionCompletionApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -25,16 +25,31 @@ function TraineeDashboard() {
     const fetchDashboardData = async () => {
         try {
             // Fetch only confirmed registrations for the logged-in user
-            const [registrationsRes, sessionsRes] = await Promise.all([
-                registrationApi.getConfirmedRegistrationsLoggedInUser(),// Only confirmed registrations
-                trainingSessionApi.getAllSessions()
+            const [registrationsRes, sessionsRes, completionsRes] = await Promise.all([
+                registrationApi.getConfirmedRegistrationsLoggedInUser(), // Only confirmed registrations
+                trainingSessionApi.getAllSessions(),
+                sessionCompletionApi.getAll({ user_id: user?.id })
             ])
 
             // Filter sessions for those the trainee is registered and confirmed for
             const myRegistrations = Array.isArray(registrationsRes.data.registrations) ? registrationsRes.data.registrations : [];
             const mySessionIds = myRegistrations.map(r => String(r.training_session_id));
             const allSessions = Array.isArray(sessionsRes.data) ? sessionsRes.data : [];
-            const mySessions = allSessions.filter(s => mySessionIds.includes(String(s.id)));
+            let mySessions = allSessions.filter(s => mySessionIds.includes(String(s.id)));
+
+            // Merge session completion status (handle paginated response)
+            const completionsArr = Array.isArray(completionsRes.data?.data) ? completionsRes.data.data : (Array.isArray(completionsRes.data) ? completionsRes.data : []);
+            const completionsBySessionId = {};
+            completionsArr.forEach(c => {
+                if (c.training_session_id) completionsBySessionId[String(c.training_session_id)] = c;
+            });
+            mySessions = mySessions.map(session => {
+                const completion = completionsBySessionId[String(session.id)];
+                if (completion && completion.status === 'completed') {
+                    return { ...session, status: 'completed', completed_at: completion.completed_at };
+                }
+                return session;
+            });
             setAllMySessions(mySessions);
 
             // Stats
@@ -105,6 +120,12 @@ function TraineeDashboard() {
             label: 'My Sessions',
             icon: 'fas fa-calendar-alt',
             description: 'View and manage your sessions'
+        },
+        {
+            id: 'completed',
+            label: 'Completed Sessions',
+            icon: 'fas fa-flag-checkered',
+            description: 'Sessions you have completed'
         }
     ]
 
@@ -344,8 +365,7 @@ function TraineeDashboard() {
                             </div>
                         </div>
                     </>
-                ) : (
-                    // My Sessions View (can be expanded later)
+                ) : activeView === 'sessions' ? (
                     <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
                         <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
                             <i className="fas fa-calendar-alt text-blue-400 mr-3"></i>
@@ -390,7 +410,52 @@ function TraineeDashboard() {
                             </div>
                         )}
                     </div>
-                )}
+                ) : activeView === 'completed' ? (
+                    <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-xl">
+                        <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                            <i className="fas fa-flag-checkered text-green-400 mr-3"></i>
+                            Completed Sessions
+                        </h2>
+                        {allMySessions.filter(s => s.status === 'completed').length === 0 ? (
+                            <p className="text-white/70">You have not completed any sessions yet.</p>
+                        ) : (
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                                {allMySessions.filter(s => s.status === 'completed').map((session) => (
+                                    <div key={session.id} className="bg-green-500/10 backdrop-blur-2xl rounded-3xl p-6 border border-green-400/40 hover:border-green-400 transition-all duration-300">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-bold text-green-300 mb-1">
+                                                    {session.skill_name}
+                                                </h3>
+                                                <div className="flex items-center text-green-200/80 text-sm mb-2">
+                                                    <i className="fas fa-calendar mr-2"></i>
+                                                    <span>{session.date} at {session.start_time}</span>
+                                                </div>
+                                                <div className="flex items-center text-green-200/80 text-sm mb-2">
+                                                    <i className="fas fa-map-marker-alt mr-2"></i>
+                                                    <span>{session.location}</span>
+                                                </div>
+                                                <div className="flex items-center text-green-200/80 text-sm">
+                                                    <i className="fas fa-chalkboard-teacher mr-2"></i>
+                                                    <span>{session.trainer ? session.trainer.first_name + ' ' + session.trainer.last_name : ''}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <button
+                                                    className="px-4 py-2 bg-transparent border border-green-400/30 hover:bg-green-400/20 text-green-300 font-semibold rounded-xl transition-all duration-200 flex items-center"
+                                                    onClick={() => navigate(`/sessions/${session.id}`)}
+                                                >
+                                                    <i className="fas fa-eye mr-2"></i>
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : null}
             </div>
         </div>
     )

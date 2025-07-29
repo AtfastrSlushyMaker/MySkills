@@ -7,6 +7,10 @@ use App\Models\SessionCompletion;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
+use App\Models\TrainingSession;
+use App\Models\User;
+use App\Http\Controllers\CertController;
+
 class SessionCompletionController extends Controller
 {
     /**
@@ -55,12 +59,14 @@ class SessionCompletionController extends Controller
         $validated = $request->validate([
             'registration_id' => 'required|exists:registrations,id',
             'training_session_id' => 'required|exists:training_sessions,id',
-            'overall_completion_percentage' => 'nullable|numeric|min:0|max:100',
             'courses_completed' => 'nullable|integer|min:0',
             'total_courses' => 'nullable|integer|min:0',
-            'final_score' => 'nullable|numeric|min:0|max:100',
             'completion_notes' => 'nullable|string|max:1000',
-            'skill_earned' => 'nullable|string|max:255',
+            'started_at' => 'nullable|date',
+            'completed_at' => 'nullable|date',
+            'certificate_issued' => 'nullable|boolean',
+            'certificate_url' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:in_progress,completed,failed',
         ]);
 
         // Validate that registration belongs to the specified training session
@@ -73,7 +79,7 @@ class SessionCompletionController extends Controller
 
         // Check if session completion already exists for this registration
         $existingCompletion = SessionCompletion::where('registration_id', $validated['registration_id'])->first();
-        
+
         if ($existingCompletion) {
             return response()->json([
                 'message' => 'Session completion already exists for this registration'
@@ -82,16 +88,23 @@ class SessionCompletionController extends Controller
 
         // Get registration to validate it's confirmed
         $registration = Registration::find($validated['registration_id']);
-        
+
         if (!$registration->isConfirmed()) {
             return response()->json([
                 'message' => 'Registration must be confirmed before creating completion record'
             ], 422);
         }
 
+
         $validated['started_at'] = now();
-        
         $completion = SessionCompletion::create($validated);
+
+        // Auto-generate certificate if completed and not already issued
+        if ($completion->isCompleted() && !$completion->certificate_issued) {
+            $certController = app(CertController::class);
+            $certController->generateCertificate(request(), $completion);
+            $completion->refresh();
+        }
 
         return response()->json([
             'message' => 'Session completion created successfully',
@@ -115,15 +128,24 @@ class SessionCompletionController extends Controller
     public function update(Request $request, SessionCompletion $sessionCompletion): JsonResponse
     {
         $validated = $request->validate([
-            'overall_completion_percentage' => 'nullable|numeric|min:0|max:100',
             'courses_completed' => 'nullable|integer|min:0',
             'total_courses' => 'nullable|integer|min:0',
-            'final_score' => 'nullable|numeric|min:0|max:100',
             'completion_notes' => 'nullable|string|max:1000',
-            'skill_earned' => 'nullable|string|max:255',
+            'started_at' => 'nullable|date',
+            'completed_at' => 'nullable|date',
+            'certificate_issued' => 'nullable|boolean',
+            'certificate_url' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:in_progress,completed,failed',
         ]);
 
         $sessionCompletion->update($validated);
+
+        // Auto-generate certificate if completed and not already issued
+        if ($sessionCompletion->isCompleted() && !$sessionCompletion->certificate_issued) {
+            $certController = app(CertController::class);
+            $certController->generateCertificate(request(), $sessionCompletion);
+            $sessionCompletion->refresh();
+        }
 
         return response()->json([
             'message' => 'Session completion updated successfully',
@@ -137,9 +159,11 @@ class SessionCompletionController extends Controller
     public function markCompleted(Request $request, SessionCompletion $sessionCompletion): JsonResponse
     {
         $validated = $request->validate([
-            'skill_earned' => 'nullable|string|max:255',
-            'final_score' => 'nullable|numeric|min:0|max:100',
             'completion_notes' => 'nullable|string|max:1000',
+            'completed_at' => 'nullable|date',
+            'certificate_issued' => 'nullable|boolean',
+            'certificate_url' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:in_progress,completed,failed',
         ]);
 
         if ($sessionCompletion->isCompleted()) {
@@ -167,26 +191,9 @@ class SessionCompletionController extends Controller
      */
     public function generateCertificate(SessionCompletion $sessionCompletion): JsonResponse
     {
-        if (!$sessionCompletion->isCompleted()) {
-            return response()->json([
-                'message' => 'Session must be completed before generating certificate'
-            ], 422);
-        }
-
-        if ($sessionCompletion->hasCertificate()) {
-            return response()->json([
-                'message' => 'Certificate already exists',
-                'certificate_url' => $sessionCompletion->certificate_url
-            ]);
-        }
-
-        $certificateUrl = $sessionCompletion->generateCertificate();
-
-        return response()->json([
-            'message' => 'Certificate generated successfully',
-            'certificate_url' => $certificateUrl,
-            'data' => $sessionCompletion->fresh()
-        ]);
+        // Delegate to CertController for certificate generation logic
+        $certController = app(CertController::class);
+        return $certController->generateCertificate(request(), $sessionCompletion);
     }
 
     /**

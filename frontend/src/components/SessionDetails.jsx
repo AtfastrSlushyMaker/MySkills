@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
+import { sessionCompletionApi, trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from './modals/CreateSessionModal';
 import CreateCourseModal from './modals/CreateCourseModal';
@@ -9,75 +9,36 @@ import TraineeList from './sessionDetails/TraineeList';
 import FeedbackForm from './sessionDetails/FeedbackForm';
 import CommentsList from './sessionDetails/CommentsList';
 
+
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const navigate = useNavigate();
-    // Always prefer session.training_courses if present, else fallback to course, else empty array
+    const { user } = useAuth();
+
+    // ALL useState hooks must be at the top level and in consistent order
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
-    const [showUpdateModal, setShowUpdateModal] = useState(false)
-    const [selectedCourse, setSelectedCourse] = useState(null)
-    const [updating, setUpdating] = useState(false)
-    const [updateForm, setUpdateForm] = useState({ title: '', description: '' })
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [updating, setUpdating] = useState(false);
+    const [updateForm, setUpdateForm] = useState({ title: '', description: '' });
     const [enrolling, setEnrolling] = useState(false);
     const [enrollSuccess, setEnrollSuccess] = useState(false);
     const [enrollError, setEnrollError] = useState(null);
-    const { user } = useAuth();
-    // Feedback state
     const [feedbacks, setFeedbacks] = useState([]);
     const [feedbackLoading, setFeedbackLoading] = useState(true);
     const [feedbackError, setFeedbackError] = useState(null);
+    const [completedCourses, setCompletedCourses] = useState([]);
+    const [markingComplete, setMarkingComplete] = useState({}); // { [courseId]: boolean }
+    const [registrationStatus, setRegistrationStatus] = useState(null);
+
+    // Derived values - calculate these AFTER all useState hooks
     const courses = Array.isArray(session?.training_courses)
         ? session.training_courses
         : session?.course
             ? [session.course]
             : [];
-    // Add state to track completed courses for the current user
-    const [completedCourses, setCompletedCourses] = useState([]);
-    const [markingComplete, setMarkingComplete] = useState({}); // { [courseId]: boolean }
-
-    useEffect(() => {
-        const fetchSession = async () => {
-            setLoading(true);
-            try {
-                const res = await trainingSessionApi.getSession(sessionId);
-                setSession(res.data);
-            } catch (e) {
-                setError('Session not found.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchSession();
-    }, [sessionId]);
-
-    // Fetch feedbacks for this session
-    useEffect(() => {
-        setFeedbackLoading(true);
-        feedbackApi.getFeedbackBySession(sessionId)
-            .then(res => {
-                setFeedbacks(res.data);
-                setFeedbackError(null);
-            })
-            .catch(() => setFeedbackError('Could not load feedback.'))
-            .finally(() => setFeedbackLoading(false));
-    }, [sessionId]);
-
-    // Fetch completed courses for this user in this session
-    useEffect(() => {
-        if (user && user.role === 'trainee' && courses.length > 0) {
-            // Get all completions for this user
-            courseCompletionApi.getAll().then(res => {
-                const completions = Array.isArray(res.data) ? res.data : [];
-                const completed = completions
-                    .filter(cc => cc.user_id === user.id && cc.status === 'completed')
-                    .map(cc => cc.training_course_id);
-                setCompletedCourses(completed);
-            });
-        }
-    }, [user, courses]);
-
 
     // Find current user's registration for this session
     const userRegistration = session && session.registrations && user
@@ -97,23 +58,11 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         return endDate <= new Date();
     })();
 
-    // Registration status for current user
-    const [registrationStatus, setRegistrationStatus] = useState(null);
-    useEffect(() => {
-        if (user && user.role === 'trainee') {
-            registrationApi.getStatusByUserAndSession(sessionId)
-                .then(res => {
-                    setRegistrationStatus(res.data?.status ?? null);
-                })
-                .catch(() => setRegistrationStatus(null));
-        }
-    }, [user, sessionId]);
-
     // Helper to map registration status to icon and color classes
     const getStatusIconAndColor = (status) => {
         switch (status) {
             case 'pending':
-                return { icon: 'fa-hourglass-half', color: 'bg-amber-500/30 text-amber-300 border border-amber-400/50' }; // Example: 30% opacity on a darker amber, brighter text
+                return { icon: 'fa-hourglass-half', color: 'bg-amber-500/30 text-amber-300 border border-amber-400/50' };
             case 'confirmed':
                 return { icon: 'fa-check-circle', color: 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' };
             case 'cancelled':
@@ -127,6 +76,102 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         }
     };
 
+    useEffect(() => {
+        const fetchSession = async () => {
+            setLoading(true);
+            try {
+                const res = await trainingSessionApi.getSession(sessionId);
+                setSession(res.data);
+            } catch (e) {
+                setError('Session not found.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSession();
+    }, [sessionId]);
+
+
+    useEffect(() => {
+        setFeedbackLoading(true);
+        feedbackApi.getFeedbackBySession(sessionId)
+            .then(res => {
+                setFeedbacks(res.data);
+                setFeedbackError(null);
+            })
+            .catch(() => setFeedbackError('Could not load feedback.'))
+            .finally(() => setFeedbackLoading(false));
+    }, [sessionId]);
+
+
+    useEffect(() => {
+        if (user && user.role === 'trainee' && courses.length > 0) {
+            // Get all completions for this user
+            courseCompletionApi.getAll().then(res => {
+                const completions = Array.isArray(res.data) ? res.data : [];
+                const completed = completions
+                    .filter(cc => cc.user_id === user.id && cc.status === 'completed')
+                    .map(cc => cc.training_course_id);
+                setCompletedCourses(completed);
+            });
+        }
+    }, [user, courses]);
+
+    // Registration status for current user
+    useEffect(() => {
+        if (user && user.role === 'trainee') {
+            registrationApi.getStatusByUserAndSession(sessionId)
+                .then(res => {
+                    setRegistrationStatus(res.data?.status ?? null);
+                })
+                .catch(() => setRegistrationStatus(null));
+        }
+    }, [user, sessionId]);
+
+    // Auto-create session completion on page load if all courses are completed
+    useEffect(() => {
+        if (
+            user &&
+            user.role === 'trainee' &&
+            courses.length > 0 &&
+            completedCourses.length === courses.length &&
+            session &&
+            userRegistration
+        ) {
+            const now = new Date().toISOString().slice(0, 19).replace('T', ' '); // MySQL DATETIME format
+            const completionPayload = {
+                registration_id: userRegistration.id,
+                training_session_id: session.id,
+                courses_completed: courses.length,
+                total_courses: courses.length,
+                status: 'completed',
+                completed_at: now,
+            };
+            sessionCompletionApi.getByRegistration(userRegistration.id)
+                .then(res => {
+                    if (!res.data || !res.data.data) {
+                        sessionCompletionApi.create(completionPayload).then(() => {
+                            // Wait a moment, then refetch to get the certificate_url
+                            setTimeout(() => {
+                                sessionCompletionApi.getByRegistration(userRegistration.id).then(() => {
+                                    // Optionally update UI or state here if needed
+                                });
+                            }, 2000); // Adjust delay as needed
+                        });
+                    }
+                })
+                .catch(() => {
+                    sessionCompletionApi.create(completionPayload).then(() => {
+                        setTimeout(() => {
+                            sessionCompletionApi.getByRegistration(userRegistration.id).then(() => {
+                                // Optionally update UI or state here if needed
+                            });
+                        }, 2000);
+                    });
+                });
+        }
+    }, [user, courses, completedCourses, session, userRegistration]);
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-900 via-purple-900 to-pink-900">
             <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20">
@@ -135,6 +180,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             </div>
         </div>
     );
+
     if (error || !session) return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-900 via-purple-900 to-pink-900">
             <div className="bg-red-500/10 border border-red-400/30 rounded-3xl p-8">
@@ -149,13 +195,16 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         setUpdateForm({ title: course.title, description: course.description || '' })
         setShowUpdateModal(true)
     }
+
     const closeUpdateModal = () => {
         setShowUpdateModal(false)
         setSelectedCourse(null)
     }
+
     const handleUpdateChange = (e) => {
         setUpdateForm({ ...updateForm, [e.target.name]: e.target.value })
     }
+
     const handleUpdateSubmit = async (e) => {
         e.preventDefault()
         if (!selectedCourse) return
@@ -172,6 +221,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             setUpdating(false)
         }
     }
+
     const handleToggleActive = async (course) => {
         try {
             await toggleCourseActiveApi(course.id, !course.is_active)
@@ -181,6 +231,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             // handle error
         }
     }
+
     const handleEnroll = async () => {
         if (!user || !session) return;
         setEnrolling(true);
@@ -202,13 +253,43 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             setEnrolling(false);
         }
     }
-    const handleMarkAsComplete = async (courseId) => {
+
+    const handleMarkAsComplete = async (courseId, e) => {
+        if (e) e.stopPropagation();
         setMarkingComplete(prev => ({ ...prev, [courseId]: true }));
         try {
             await courseCompletionApi.markAsComplete({ user_id: user.id, training_course_id: courseId });
-            setCompletedCourses(prev => [...prev, courseId]);
+            setCompletedCourses(prev => {
+                const updated = [...prev, courseId];
+                setTimeout(async () => {
+                    if (session && Array.isArray(session.training_courses)) {
+                        const allCourseIds = session.training_courses.map(c => c.id);
+                        const allCompleted = allCourseIds.every(cid => [...updated].includes(cid));
+                        if (allCompleted && userRegistration) {
+                            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                            const completionPayload = {
+                                registration_id: userRegistration.id,
+                                training_session_id: session.id,
+                                courses_completed: allCourseIds.length,
+                                total_courses: allCourseIds.length,
+                                status: 'completed',
+                                completed_at: now,
+                            };
+                            try {
+                                const res = await sessionCompletionApi.getByRegistration(userRegistration.id);
+                                if (!res.data || !res.data.data) {
+                                    await sessionCompletionApi.create(completionPayload);
+                                }
+                            } catch (err) {
+                                await sessionCompletionApi.create(completionPayload);
+                            }
+                        }
+                    }
+                }, 0);
+                return updated;
+            });
         } catch (e) {
-            // Optionally show error
+            alert('Failed to mark course as complete or create session completion.');
         } finally {
             setMarkingComplete(prev => ({ ...prev, [courseId]: false }));
         }
@@ -366,7 +447,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                             : 'bg-green-500/80 text-white hover:bg-green-600'}
                                                     `}
                                                     disabled={completedCourses.includes(course.id) || markingComplete[course.id]}
-                                                    onClick={() => handleMarkAsComplete(course.id)}
+                                                    onClick={e => handleMarkAsComplete(course.id, e)}
                                                 >
                                                     {completedCourses.includes(course.id)
                                                         ? 'Completed'
@@ -423,7 +504,6 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     )}
                 </CommentsList>
 
-                {/* Modal rendered at root level for proper overlay */}
 
                 <CreateCourseModal
                     isOpen={showCreateCourseModal}
@@ -435,7 +515,6 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     }}
                 />
             </div>
-            {/* Update Course Modal styled like CreateSessionModal */}
             {showUpdateModal && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-lg p-4 overflow-y-auto pt-24">
                     <div className="min-h-full flex items-center justify-center py-4">

@@ -47,6 +47,18 @@ class ImageService
         }
     }
 
+    public function uploadImage($image)
+    {
+        if (is_string($image) && file_exists($image)) {
+            return $this->uploadToImgbb($image);
+        } elseif (is_array($image) && isset($image['tmp_name']) && file_exists($image['tmp_name'])) {
+            return $this->uploadToImgbb($image['tmp_name']);
+        } else {
+            \Log::error('Invalid image provided for upload', ['image' => $image]);
+            return null;
+        }
+    }
+
 
 
 }

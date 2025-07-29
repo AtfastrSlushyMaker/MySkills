@@ -12,26 +12,23 @@ class SessionCompletion extends Model
     protected $fillable = [
         'registration_id',
         'training_session_id',
-        'overall_completion_percentage',
         'courses_completed',
         'total_courses',
-        'final_score',
         'completion_notes',
-        'skill_earned',
         'started_at',
         'completed_at',
         'certificate_issued',
         'certificate_url',
+        'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'overall_completion_percentage' => 'decimal:2',
-            'final_score' => 'decimal:2',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
             'certificate_issued' => 'boolean',
+            'status' => 'string',
         ];
     }
 
@@ -80,7 +77,7 @@ class SessionCompletion extends Model
             ]);
             return $certificateUrl;
         }
-        
+
         return $this->certificate_url ?? '';
     }
 
