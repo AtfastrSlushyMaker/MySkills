@@ -14,8 +14,14 @@ class TrainingSessionController extends Controller
      */
     public function index()
     {
-        $sessions = TrainingSession::with(['category', 'trainer', 'coordinator', 'trainingCourses', 'registrations.user'])
-                                    ->get();
+        $sessions = TrainingSession::with([
+            'category',
+            'trainer',
+            'coordinator',
+            'trainingCourses',
+            'registrations.user',
+            'sessionCompletions', // Add sessionCompletions relationship
+        ])->get();
         return response()->json($sessions, 200);
     }
 
@@ -68,7 +74,8 @@ class TrainingSessionController extends Controller
             'trainer',
             'coordinator',
             'trainingCourses',
-            'registrations.user' // Eager-load user for each registration
+            'registrations.user', // Eager-load user for each registration
+            'sessionCompletions', // Add sessionCompletions relationship
         ]);
         return response()->json($trainingSession, 200);
     }

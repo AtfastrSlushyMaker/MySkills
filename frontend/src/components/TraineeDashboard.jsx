@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import moment from 'moment';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 import { trainingSessionApi, registrationApi, sessionCompletionApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -17,6 +20,8 @@ function TraineeDashboard() {
     const [recentActivity, setRecentActivity] = useState([])
     const [loading, setLoading] = useState(true)
     const [allMySessions, setAllMySessions] = useState([])
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxImg, setLightboxImg] = useState(null);
 
     useEffect(() => {
         fetchDashboardData()
@@ -142,6 +147,11 @@ function TraineeDashboard() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
+            <Lightbox
+                open={lightboxOpen && !!lightboxImg}
+                close={() => setLightboxOpen(false)}
+                slides={lightboxImg ? [{ src: lightboxImg }] : []}
+            />
             <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
                 {/* Trainee Welcome Header */}
                 <div className="mb-12">
@@ -429,7 +439,28 @@ function TraineeDashboard() {
                                                 </h3>
                                                 <div className="flex items-center text-green-200/80 text-sm mb-2">
                                                     <i className="fas fa-calendar mr-2"></i>
-                                                    <span>{session.date} at {session.start_time}</span>
+                                                    <span>
+                                                        {(() => {
+                                                            if (session.date && session.start_time) {
+                                                                // Accepts ISO or date string with time
+                                                                let dateTimeString = session.date;
+                                                                // If date does not include time, append T and time
+                                                                if (!/T\d{2}:\d{2}/.test(session.date)) {
+                                                                    dateTimeString = `${session.date}T${session.start_time}`;
+                                                                }
+                                                                const m = moment(dateTimeString);
+                                                                if (m.isValid()) {
+                                                                    return m.format('YYYY-MM-DD, hh:mm A');
+                                                                }
+                                                            }
+                                                            if (session.date) {
+                                                                const m = moment(session.date);
+                                                                if (m.isValid()) return m.format('YYYY-MM-DD');
+                                                                return session.date;
+                                                            }
+                                                            return 'Date not available';
+                                                        })()}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center text-green-200/80 text-sm mb-2">
                                                     <i className="fas fa-map-marker-alt mr-2"></i>
@@ -439,37 +470,34 @@ function TraineeDashboard() {
                                                     <i className="fas fa-chalkboard-teacher mr-2"></i>
                                                     <span>{session.trainer ? session.trainer.first_name + ' ' + session.trainer.last_name : ''}</span>
                                                 </div>
-                                                {/* Certificate Section */}
-                                                {session.certificate_url && (
-                                                    <div className="mt-4 flex flex-col items-start">
-                                                        <h4 className="text-lg font-bold text-yellow-300 mb-2 flex items-center gap-2">
-                                                            <i className="fas fa-certificate"></i> Certificate
-                                                        </h4>
-                                                        <a
-                                                            href={session.certificate_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-cyan-300 underline text-base mb-2 break-all"
-                                                        >
-                                                            View Certificate
-                                                        </a>
-                                                        <img
-                                                            src={session.certificate_url}
-                                                            alt="Certificate"
-                                                            className="max-w-full max-h-60 rounded-xl border border-cyan-400/30 shadow-lg"
-                                                            style={{ background: '#fff' }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
-                                            <div className="flex items-center space-x-3">
+                                            <div className="flex flex-col items-start space-y-2">
                                                 <button
-                                                    className="px-4 py-2 bg-transparent border border-green-400/30 hover:bg-green-400/20 text-green-300 font-semibold rounded-xl transition-all duration-200 flex items-center"
+                                                    className="w-full px-4 py-2 bg-transparent border border-green-400/30 hover:bg-green-400/20 text-green-300 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center"
                                                     onClick={() => navigate(`/sessions/${session.id}`)}
                                                 >
                                                     <i className="fas fa-eye mr-2"></i>
                                                     View Details
                                                 </button>
+                                                {(() => {
+                                                    // Try to get certificate_url from possible locations, including session_completions array
+                                                    const certUrl = session.certificate_url
+                                                        || session.completion?.certificate_url
+                                                        || session.session_completion?.certificate_url
+                                                        || (Array.isArray(session.session_completions) && session.session_completions.length > 0
+                                                            ? session.session_completions[0].certificate_url
+                                                            : null);
+                                                    if (!certUrl) return null;
+                                                    return (
+                                                        <button
+                                                            className="w-full px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center"
+                                                            onClick={() => { setLightboxImg(certUrl); setLightboxOpen(true); }}
+                                                        >
+                                                            <i className="fas fa-certificate mr-2"></i>
+                                                            View Certificate
+                                                        </button>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
                                     </div>

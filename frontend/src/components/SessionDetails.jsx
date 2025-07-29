@@ -1,3 +1,6 @@
+import { feedbackApi, trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, courseCompletionApi, sessionCompletionApi } from '../services/api';
+import { message } from 'antd';
+import { useAuth } from '../contexts/AuthContext';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -5,26 +8,26 @@ import {
     Button,
     Typography,
     Spin,
+    Statistic,
+    Popconfirm,
     Alert,
-    Modal,
-    Form,
-    Input,
-    Switch,
-    Tag,
-    Avatar,
-    Divider,
-    Pagination,
+    Badge,
+    Progress,
     Row,
     Col,
     Space,
-    Badge,
-    message,
+    Tag,
     Tooltip,
+    Switch,
+    Pagination,
+    Avatar,
+    Modal,
+    Form,
+    Input,
     Empty,
-    Image,
-    Progress,
-    Statistic
+    Image
 } from 'antd';
+
 import {
     ArrowLeftOutlined,
     BookOutlined,
@@ -41,20 +44,24 @@ import {
     EnvironmentOutlined,
     TeamOutlined,
     StarOutlined,
-    FileImageOutlined
+    FileImageOutlined,
+    SearchOutlined,
+    DeleteOutlined,
+    FireOutlined
 } from '@ant-design/icons';
-import Lightbox from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
-import { sessionCompletionApi, trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 import CreateCourseModal from './modals/CreateCourseModal';
 import SessionInfo from './sessionDetails/SessionInfo';
 import TraineeList from './sessionDetails/TraineeList';
 import FeedbackForm from './sessionDetails/FeedbackForm';
 import CommentsList from './sessionDetails/CommentsList';
 
+// Import Lightbox for image viewing
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+
 const { Title, Text, Paragraph } = Typography;
 const { Meta } = Card;
+const { Search } = Input;
 
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const navigate = useNavigate();
@@ -80,8 +87,10 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [registrationStatus, setRegistrationStatus] = useState(null);
     const [sessionCompletion, setSessionCompletion] = useState(null);
     const [completionLoading, setCompletionLoading] = useState(false);
+    const [deletingCourse, setDeletingCourse] = useState({});
 
-    // Pagination state
+    // Search and pagination state
+    const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(6);
 
@@ -97,6 +106,14 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             ? [session.course]
             : [];
 
+    // Filter courses based on search term
+    const filteredCourses = courses.filter(course =>
+        course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.level?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (course.trainer && `${course.trainer.first_name} ${course.trainer.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
     const userRegistration = session && session.registrations && user
         ? session.registrations.find(r => r.user_id === user.id)
         : null;
@@ -104,7 +121,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     // Pagination calculations
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginatedCourses = courses.slice(startIndex, endIndex);
+    const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
 
     // Helper functions
     const isSessionFinished = (() => {
@@ -127,6 +144,16 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             failed: { icon: ExclamationCircleOutlined, color: 'default', text: 'Failed' }
         };
         return configs[status] || { icon: ExclamationCircleOutlined, color: 'default', text: status };
+    };
+
+    const getDifficultyColor = (level) => {
+        const colors = {
+            'beginner': '#10b981',
+            'intermediate': '#f59e0b',
+            'advanced': '#ef4444',
+            'expert': '#8b5cf6'
+        };
+        return colors[level?.toLowerCase()] || '#6b7280';
     };
 
     const openLightbox = (imageUrl, index = 0) => {
@@ -262,6 +289,20 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         }
     };
 
+    const handleDeleteCourse = async (courseId) => {
+        setDeletingCourse(prev => ({ ...prev, [courseId]: true }));
+        try {
+            await trainingCourseApi.deleteCourse(courseId);
+            const res = await trainingSessionApi.getSession(sessionId);
+            setSession(res.data);
+            message.success('Course deleted successfully');
+        } catch (err) {
+            message.error('Failed to delete course');
+        } finally {
+            setDeletingCourse(prev => ({ ...prev, [courseId]: false }));
+        }
+    };
+
     const handleToggleActive = async (course) => {
         try {
             await toggleCourseActiveApi(course.id, !course.is_active);
@@ -351,6 +392,11 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         setShowUpdateModal(true);
     };
 
+    // Reset pagination when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     // Loading state
     if (loading) {
         return (
@@ -417,7 +463,6 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             position: 'relative',
             overflow: 'hidden'
         }}>
-            {/* Glassmorphism background is now handled globally */}
             <div style={{
                 position: 'relative',
                 zIndex: 10,
@@ -471,19 +516,18 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                         <Row align="middle" justify="space-between">
                             <Col>
                                 <Space direction="vertical" size="small">
-                                    <Title level={4} style={{ color: 'white', margin: 0 }}>
-                                        Enrollment Status
+                                    <Title level={3} style={{ color: 'white', margin: 0 }}>
+                                        <BookOutlined style={{ marginRight: '12px', color: '#a855f7' }} />
+                                        Courses in this Session
                                     </Title>
-                                    {registrationStatus && (
-                                        <Badge
-                                            status={getStatusConfig(registrationStatus).color}
-                                            text={
-                                                <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                                                    {getStatusConfig(registrationStatus).text}
-                                                </Text>
-                                            }
-                                        />
-                                    )}
+                                    <Badge
+                                        status={getStatusConfig(registrationStatus).color}
+                                        text={
+                                            <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                                                {getStatusConfig(registrationStatus).text}
+                                            </Text>
+                                        }
+                                    />
                                     {completionPercentage > 0 && (
                                         <div style={{ minWidth: '200px' }}>
                                             <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
@@ -570,7 +614,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     }}
                 >
                     <div style={{ marginBottom: '24px' }}>
-                        <Row justify="space-between" align="middle">
+                        <Row justify="space-between" align="middle" style={{ marginBottom: '20px' }}>
                             <Col>
                                 <Title level={3} style={{ color: 'white', margin: 0 }}>
                                     <BookOutlined style={{ marginRight: '12px', color: '#a855f7' }} />
@@ -594,13 +638,41 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                 </Space>
                             </Col>
                         </Row>
+
+                        {/* Search Bar */}
+                        <Input
+                            placeholder="Search courses by title, description, level, or trainer..."
+                            allowClear
+                            size="large"
+                            prefix={<SearchOutlined style={{ color: 'rgba(255, 255, 255, 0.5)' }} />}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                maxWidth: '500px',
+                                height: '44px',
+                                fontSize: '16px',
+                                lineHeight: '44px',
+                                padding: '0 12px',
+                                borderRadius: '12px'
+                            }}
+                            className="custom-search"
+                        />
+                        <style>{`
+                            .custom-search .ant-input {
+                                height: 44px !important;
+                                font-size: 16px !important;
+                                line-height: 44px !important;
+                                border-radius: 12px !important;
+                                padding: 0 12px !important;
+                            }
+                        `}</style>
                     </div>
 
-                    {courses.length === 0 ? (
+                    {filteredCourses.length === 0 ? (
                         <Empty
                             description={
                                 <Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                                    No courses assigned to this session yet
+                                    {searchTerm ? 'No courses match your search criteria' : 'No courses assigned to this session yet'}
                                 </Text>
                             }
                             style={{ margin: '40px 0' }}
@@ -611,6 +683,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                 {paginatedCourses.map((course, idx) => {
                                     const isCompleted = completedCourses.includes(course.id);
                                     const isMarking = markingComplete[course.id];
+                                    const isDeleting = deletingCourse[course.id];
 
                                     return (
                                         <Col xs={24} md={12} lg={8} key={course.id || idx}>
@@ -618,17 +691,23 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                 hoverable
                                                 style={{
                                                     background: isCompleted
-                                                        ? 'rgba(34, 197, 94, 0.2)'
-                                                        : 'rgba(255, 255, 255, 0.05)',
+                                                        ? 'rgba(16, 185, 129, 0.15)'
+                                                        : 'rgba(255, 255, 255, 0.08)',
                                                     backdropFilter: 'blur(20px)',
                                                     border: isCompleted
-                                                        ? '1px solid rgba(34, 197, 94, 0.4)'
-                                                        : '1px solid rgba(255, 255, 255, 0.2)',
-                                                    borderRadius: '16px',
+                                                        ? '2px solid rgba(16, 185, 129, 0.4)'
+                                                        : '1px solid rgba(255, 255, 255, 0.15)',
+                                                    borderRadius: '20px',
                                                     height: '100%',
                                                     transform: isCompleted ? 'scale(1.02)' : 'scale(1)',
-                                                    transition: 'all 0.3s ease'
+                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    boxShadow: isCompleted
+                                                        ? '0 20px 40px rgba(16, 185, 129, 0.2)'
+                                                        : '0 10px 30px rgba(0, 0, 0, 0.1)',
+                                                    position: 'relative',
+                                                    overflow: 'hidden'
                                                 }}
+                                                styles={{ body: { padding: '20px' } }}
                                                 onClick={() => navigate(`/courses/${course.id}`)}
                                                 actions={[
                                                     ...(user && user.role === 'trainer' ? [
@@ -636,7 +715,11 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                             <Button
                                                                 icon={<EditOutlined />}
                                                                 type="text"
-                                                                style={{ color: '#06b6d4' }}
+                                                                style={{
+                                                                    color: '#06b6d4',
+                                                                    background: 'rgba(6, 182, 212, 0.1)',
+                                                                    border: 'none'
+                                                                }}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     openUpdateModal(course);
@@ -651,8 +734,38 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                                     handleToggleActive(course);
                                                                 }}
                                                                 onClick={(checked, e) => e.stopPropagation()}
+                                                                style={{
+                                                                    background: course.is_active ? '#10b981' : '#6b7280'
+                                                                }}
                                                             />
-                                                        </Tooltip>
+                                                        </Tooltip>,
+                                                        <Popconfirm
+                                                            key="delete"
+                                                            title="Delete Course"
+                                                            description="Are you sure you want to delete this course? This action cannot be undone."
+                                                            onConfirm={(e) => {
+                                                                e?.stopPropagation();
+                                                                handleDeleteCourse(course.id);
+                                                            }}
+                                                            onCancel={(e) => e?.stopPropagation()}
+                                                            okText="Delete"
+                                                            cancelText="Cancel"
+                                                            okButtonProps={{ danger: true }}
+                                                        >
+                                                            <Tooltip title="Delete Course">
+                                                                <Button
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="text"
+                                                                    danger
+                                                                    loading={isDeleting}
+                                                                    style={{
+                                                                        background: 'rgba(239, 68, 68, 0.1)',
+                                                                        border: 'none'
+                                                                    }}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                />
+                                                            </Tooltip>
+                                                        </Popconfirm>
                                                     ] : []),
                                                     ...(user && user.role === 'trainee' && registrationStatus === 'confirmed' ? [
                                                         <Button
@@ -665,7 +778,9 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                             onClick={(e) => handleMarkAsComplete(course.id, e)}
                                                             style={{
                                                                 background: isCompleted ? '#10b981' : '#06b6d4',
-                                                                border: 'none'
+                                                                border: 'none',
+                                                                borderRadius: '8px',
+                                                                fontWeight: 600
                                                             }}
                                                         >
                                                             {isCompleted ? 'Completed' : isMarking ? 'Marking...' : 'Complete'}
@@ -673,53 +788,203 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                     ] : [])
                                                 ]}
                                             >
+                                                {/* Course completion indicator */}
+                                                {isCompleted && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        right: 0,
+                                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                        color: 'white',
+                                                        padding: '4px 12px',
+                                                        borderRadius: '0 20px 0 12px',
+                                                        fontSize: '11px',
+                                                        fontWeight: 600,
+                                                        zIndex: 1
+                                                    }}>
+                                                        <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                                                        COMPLETED
+                                                    </div>
+                                                )}
+
+                                                {/* Difficulty badge */}
+                                                {course.level && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: '12px',
+                                                        left: '12px',
+                                                        background: getDifficultyColor(course.level),
+                                                        color: 'white',
+                                                        padding: '4px 8px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '10px',
+                                                        fontWeight: 600,
+                                                        textTransform: 'uppercase',
+                                                        zIndex: 1,
+                                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                                                    }}>
+                                                        {course.level}
+                                                    </div>
+                                                )}
+
                                                 <Meta
                                                     title={
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'flex-start',
+                                                            marginTop: course.level ? '20px' : '0'
+                                                        }}>
+                                                            <Text strong style={{
+                                                                color: 'white',
+                                                                fontSize: '18px',
+                                                                lineHeight: '1.4',
+                                                                display: 'block',
+                                                                marginRight: '8px'
+                                                            }}>
                                                                 {course.title}
                                                             </Text>
-                                                            <Tag color="purple">
-                                                                {course.duration_hours}h
-                                                            </Tag>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <Tag
+                                                                    color="purple"
+                                                                    style={{
+                                                                        background: 'rgba(139, 92, 246, 0.2)',
+                                                                        border: '1px solid rgba(139, 92, 246, 0.4)',
+                                                                        color: '#c4b5fd',
+                                                                        fontWeight: 600
+                                                                    }}
+                                                                >
+                                                                    <ClockCircleOutlined style={{ marginRight: '4px' }} />
+                                                                    {course.duration_hours}h
+                                                                </Tag>
+                                                            </div>
                                                         </div>
                                                     }
                                                     description={
-                                                        <div>
+                                                        <div style={{ marginTop: '12px' }}>
                                                             <Paragraph
-                                                                style={{ color: 'rgba(255, 255, 255, 0.7)', margin: '8px 0' }}
-                                                                ellipsis={{ rows: 2 }}
+                                                                style={{
+                                                                    color: 'rgba(255, 255, 255, 0.8)',
+                                                                    margin: '0 0 16px 0',
+                                                                    fontSize: '14px',
+                                                                    lineHeight: '1.6'
+                                                                }}
+                                                                ellipsis={{ rows: 3 }}
                                                             >
                                                                 {course.description || 'No description provided.'}
                                                             </Paragraph>
 
-                                                            <Space wrap style={{ marginTop: '12px' }}>
-                                                                {course.level && (
-                                                                    <Tag color="blue">Level: {course.level}</Tag>
-                                                                )}
-                                                                {course.is_active !== undefined && (
-                                                                    <Tag color={course.is_active ? 'green' : 'red'}>
-                                                                        {course.is_active ? 'Active' : 'Inactive'}
+                                                            {/* Course status - only visible to trainees and coordinators */}
+                                                            {user && (user.role === 'trainee' || user.role === 'coordinator') && (
+                                                                <Space wrap style={{ marginBottom: '12px' }}>
+                                                                    <Tag
+                                                                        color={course.is_active ? 'green' : 'red'}
+                                                                        style={{
+                                                                            background: course.is_active
+                                                                                ? 'rgba(16, 185, 129, 0.2)'
+                                                                                : 'rgba(239, 68, 68, 0.2)',
+                                                                            border: course.is_active
+                                                                                ? '1px solid rgba(16, 185, 129, 0.4)'
+                                                                                : '1px solid rgba(239, 68, 68, 0.4)',
+                                                                            color: course.is_active ? '#10b981' : '#ef4444',
+                                                                            fontWeight: 600
+                                                                        }}
+                                                                    >
+                                                                        {course.is_active ? (
+                                                                            <>
+                                                                                <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                                                                                Active
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <ExclamationCircleOutlined style={{ marginRight: '4px' }} />
+                                                                                Inactive
+                                                                            </>
+                                                                        )}
                                                                     </Tag>
-                                                                )}
+                                                                </Space>
+                                                            )}
+
+                                                            {/* Tags */}
+                                                            <Space wrap style={{ marginBottom: '12px' }}>
                                                                 {course.tags && course.tags.map((tag, i) => (
-                                                                    <Tag key={i} color="cyan">{tag}</Tag>
+                                                                    <Tag
+                                                                        key={i}
+                                                                        style={{
+                                                                            background: 'rgba(6, 182, 212, 0.2)',
+                                                                            border: '1px solid rgba(6, 182, 212, 0.4)',
+                                                                            color: '#67e8f9',
+                                                                            borderRadius: '12px'
+                                                                        }}
+                                                                    >
+                                                                        <BookOutlined style={{ marginRight: '4px' }} />
+                                                                        {tag}
+                                                                    </Tag>
                                                                 ))}
                                                             </Space>
 
+                                                            {/* Trainer info */}
                                                             {course.trainer && (
-                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center' }}>
-                                                                    <Avatar size="small" icon={<UserOutlined />} style={{ marginRight: '8px' }} />
-                                                                    <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
-                                                                        {course.trainer.first_name} {course.trainer.last_name}
-                                                                    </Text>
+                                                                <div style={{
+                                                                    marginTop: '16px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    padding: '8px',
+                                                                    background: 'rgba(255, 255, 255, 0.05)',
+                                                                    borderRadius: '8px',
+                                                                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                                                                }}>
+                                                                    <Avatar
+                                                                        size="small"
+                                                                        icon={<UserOutlined />}
+                                                                        style={{
+                                                                            marginRight: '8px',
+                                                                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                                                                        }}
+                                                                    />
+                                                                    <div>
+                                                                        <Text style={{
+                                                                            color: 'rgba(255, 255, 255, 0.9)',
+                                                                            fontSize: '13px',
+                                                                            fontWeight: 600,
+                                                                            display: 'block'
+                                                                        }}>
+                                                                            {course.trainer.first_name} {course.trainer.last_name}
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            color: 'rgba(255, 255, 255, 0.6)',
+                                                                            fontSize: '11px'
+                                                                        }}>
+                                                                            Course Trainer
+                                                                        </Text>
+                                                                    </div>
                                                                 </div>
                                                             )}
 
+                                                            {/* Prerequisites */}
                                                             {course.prerequisites && course.prerequisites.length > 0 && (
-                                                                <div style={{ marginTop: '8px' }}>
-                                                                    <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
-                                                                        Prerequisites: {course.prerequisites.join(', ')}
+                                                                <div style={{
+                                                                    marginTop: '12px',
+                                                                    padding: '8px',
+                                                                    background: 'rgba(251, 191, 36, 0.1)',
+                                                                    borderRadius: '8px',
+                                                                    border: '1px solid rgba(251, 191, 36, 0.3)'
+                                                                }}>
+                                                                    <Text style={{
+                                                                        color: '#fbbf24',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: 600,
+                                                                        display: 'block',
+                                                                        marginBottom: '4px'
+                                                                    }}>
+                                                                        <FireOutlined style={{ marginRight: '4px' }} />
+                                                                        Prerequisites:
+                                                                    </Text>
+                                                                    <Text style={{
+                                                                        color: 'rgba(255, 255, 255, 0.8)',
+                                                                        fontSize: '11px'
+                                                                    }}>
+                                                                        {course.prerequisites.join(', ')}
                                                                     </Text>
                                                                 </div>
                                                             )}
@@ -733,12 +998,12 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                             </Row>
 
                             {/* Pagination */}
-                            {courses.length > pageSize && (
+                            {filteredCourses.length > pageSize && (
                                 <div style={{ textAlign: 'center', marginTop: '32px' }}>
                                     <Pagination
                                         current={currentPage}
                                         pageSize={pageSize}
-                                        total={courses.length}
+                                        total={filteredCourses.length}
                                         onChange={(page, size) => {
                                             setCurrentPage(page);
                                             setPageSize(size);
@@ -748,8 +1013,15 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                         showTotal={(total, range) =>
                                             <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                                                 {`${range[0]}-${range[1]} of ${total} courses`}
+                                                {searchTerm && ` (filtered from ${courses.length} total)`}
                                             </Text>
                                         }
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            padding: '16px',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)'
+                                        }}
                                     />
                                 </div>
                             )}
@@ -768,7 +1040,9 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                     background: 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)',
                                     border: 'none',
                                     borderRadius: '12px',
-                                    fontWeight: 600
+                                    fontWeight: 600,
+                                    height: '48px',
+                                    padding: '0 32px'
                                 }}
                             >
                                 Create Course for this Session
@@ -934,7 +1208,13 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                             <Input
                                 size="large"
                                 placeholder="Enter course title"
-                                style={{ borderRadius: '8px' }}
+                                style={{
+                                    borderRadius: '8px',
+                                    background: '#f9fafb',
+                                    color: '#1f2937',
+                                    border: '1px solid #d1d5db'
+                                }}
+                                className="update-modal-input"
                             />
                         </Form.Item>
 
@@ -945,7 +1225,13 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                             <Input.TextArea
                                 rows={4}
                                 placeholder="Enter course description"
-                                style={{ borderRadius: '8px' }}
+                                style={{
+                                    borderRadius: '8px',
+                                    background: '#f9fafb',
+                                    color: '#1f2937',
+                                    border: '1px solid #d1d5db'
+                                }}
+                                className="update-modal-input"
                             />
                         </Form.Item>
 
@@ -989,16 +1275,40 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 />
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes float {
                     0%, 100% { transform: translateY(0px) rotate(0deg); }
                     50% { transform: translateY(-20px) rotate(5deg); }
+                }
+
+                /* Scoped styles for update course modal inputs */
+                .ant-modal .update-modal-input,
+                .ant-modal .update-modal-input textarea {
+                    background: #f9fafb !important;
+                    color: #1f2937 !important;
+                    border: 1px solid #d1d5db !important;
+                }
+                .ant-modal .update-modal-input::placeholder,
+                .ant-modal .update-modal-input textarea::placeholder {
+                    color: #6b7280 !important;
+                }
+
+
+                .custom-search .ant-input::placeholder {
+                    color: rgba(255, 255, 255, 0.5) !important;
+                }
+
+                .custom-search .ant-input:focus,
+                .custom-search .ant-input:hover {
+                    border-color: rgba(139, 92, 246, 0.6) !important;
+                    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
                 }
 
                 .ant-pagination-item {
                     background: rgba(255, 255, 255, 0.1) !important;
                     border: 1px solid rgba(255, 255, 255, 0.2) !important;
                     border-radius: 8px !important;
+                    backdrop-filter: blur(20px);
                 }
 
                 .ant-pagination-item a {
@@ -1020,6 +1330,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     border: 1px solid rgba(255, 255, 255, 0.2) !important;
                     color: white !important;
                     border-radius: 8px !important;
+                    backdrop-filter: blur(20px);
                 }
 
                 .ant-pagination-prev:hover .ant-pagination-item-link,
@@ -1033,6 +1344,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     border: 1px solid rgba(255, 255, 255, 0.2) !important;
                     color: white !important;
                     border-radius: 6px !important;
+                    backdrop-filter: blur(20px);
                 }
 
                 .ant-select-selector {
@@ -1040,6 +1352,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     border: 1px solid rgba(255, 255, 255, 0.2) !important;
                     color: white !important;
                     border-radius: 6px !important;
+                    backdrop-filter: blur(20px);
                 }
 
                 .ant-select-arrow {
@@ -1049,6 +1362,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 .ant-card-actions {
                     background: rgba(255, 255, 255, 0.05) !important;
                     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    backdrop-filter: blur(20px);
                 }
 
                 .ant-card-actions > li {
@@ -1072,6 +1386,17 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
+                }
+
+                .ant-card:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+                }
+
+                .ant-popconfirm .ant-popover-inner {
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-radius: 12px !important;
                 }
             `}</style>
         </div>
