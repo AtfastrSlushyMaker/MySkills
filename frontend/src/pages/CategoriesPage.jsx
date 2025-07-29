@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import GlassmorphismBackground from '../components/GlassmorphismBackground';
 import { Link } from 'react-router-dom';
 
 function CategoriesPage() {
@@ -72,6 +73,7 @@ function CategoriesPage() {
 
     return (
         <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-900/40 via-purple-900/40 to-pink-900/40">
+            <GlassmorphismBackground />
             <div className="max-w-7xl mx-auto px-6 py-20">
                 <div className="text-center mb-16">
                     <h1 className="text-6xl font-black mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent drop-shadow-2xl animate-gradient-x">

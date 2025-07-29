@@ -13,6 +13,7 @@ import {
     isBefore,
     startOfDay
 } from 'date-fns';
+import GlassmorphismBackground from '../components/GlassmorphismBackground';
 
 function CategorySessionsPage() {
     const { categoryId } = useParams();
@@ -72,6 +73,7 @@ function CategorySessionsPage() {
                         &larr; Back to Categories
                     </Link>
                 </div>
+                <GlassmorphismBackground />
                 <div className="flex justify-center mb-12">
                     <input
                         type="text"

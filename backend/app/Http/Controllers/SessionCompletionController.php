@@ -56,60 +56,99 @@ class SessionCompletionController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'registration_id' => 'required|exists:registrations,id',
-            'training_session_id' => 'required|exists:training_sessions,id',
-            'courses_completed' => 'nullable|integer|min:0',
-            'total_courses' => 'nullable|integer|min:0',
-            'completion_notes' => 'nullable|string|max:1000',
-            'started_at' => 'nullable|date',
-            'completed_at' => 'nullable|date',
-            'certificate_issued' => 'nullable|boolean',
-            'certificate_url' => 'nullable|string|max:255',
-            'status' => 'nullable|string|in:in_progress,completed,failed',
-        ]);
+        try {
+            $validated = $request->validate([
+                'registration_id' => 'required|exists:registrations,id',
+                'training_session_id' => 'required|exists:training_sessions,id',
+                'courses_completed' => 'nullable|integer|min:0',
+                'total_courses' => 'nullable|integer|min:0',
+                'completion_notes' => 'nullable|string|max:1000',
+                'started_at' => 'nullable|date',
+                'completed_at' => 'nullable|date',
+                'certificate_issued' => 'nullable|boolean',
+                'certificate_url' => 'nullable|string|max:255',
+                'status' => 'nullable|string|in:in_progress,completed,failed',
+            ]);
 
-        // Validate that registration belongs to the specified training session
-        $registration = Registration::find($validated['registration_id']);
-        if ($registration->training_session_id != $validated['training_session_id']) {
-            return response()->json([
-                'message' => 'Registration does not belong to the specified training session'
-            ], 422);
-        }
+            // Validate that registration belongs to the specified training session
+            $registration = Registration::find($validated['registration_id']);
+            if ($registration->training_session_id != $validated['training_session_id']) {
+                return response()->json([
+                    'message' => 'Registration does not belong to the specified training session'
+                ], 422);
+            }
 
-        // Check if session completion already exists for this registration
-        $existingCompletion = SessionCompletion::where('registration_id', $validated['registration_id'])->first();
+            // Check if session completion already exists for this registration
+            $existingCompletion = SessionCompletion::where('registration_id', $validated['registration_id'])->first();
 
-        if ($existingCompletion) {
-            return response()->json([
-                'message' => 'Session completion already exists for this registration'
-            ], 409);
-        }
+            if ($existingCompletion) {
+                return response()->json([
+                    'message' => 'Session completion already exists for this registration',
+                    'data' => $existingCompletion->load(['registration.user', 'trainingSession'])
+                ], 409);
+            }
 
-        // Get registration to validate it's confirmed
-        $registration = Registration::find($validated['registration_id']);
+            // Get registration to validate it's confirmed
+            if (!$registration->isConfirmed()) {
+                return response()->json([
+                    'message' => 'Registration must be confirmed before creating completion record'
+                ], 422);
+            }
 
-        if (!$registration->isConfirmed()) {
-            return response()->json([
-                'message' => 'Registration must be confirmed before creating completion record'
-            ], 422);
-        }
+            // Set default values
+            $validated['started_at'] = $validated['started_at'] ?? now();
 
+            // Create the completion record
+            $completion = SessionCompletion::create($validated);
 
-        $validated['started_at'] = now();
-        $completion = SessionCompletion::create($validated);
+            // Auto-generate certificate if completed and not already issued
+            if ($completion->isCompleted() && !$completion->certificate_issued) {
+                try {
+                    $certController = app(CertController::class);
+                    $response = $certController->generateCertificate(request(), $completion);
+                    $data = $response->getData(true);
 
-        // Auto-generate certificate if completed and not already issued
-        if ($completion->isCompleted() && !$completion->certificate_issued) {
-            $certController = app(CertController::class);
-            $certController->generateCertificate(request(), $completion);
+                    if (!empty($data['certificate_url'])) {
+                        $completion->update([
+                            'certificate_url' => $data['certificate_url'],
+                            'certificate_issued' => true
+                        ]);
+                    }
+                } catch (\Exception $certError) {
+                    Log::error('Certificate generation failed during session completion creation', [
+                        'completion_id' => $completion->id,
+                        'error' => $certError->getMessage()
+                    ]);
+                    // Don't fail the entire operation if certificate generation fails
+                }
+            }
+
+            // Refresh and return the completion
             $completion->refresh();
-        }
 
-        return response()->json([
-            'message' => 'Session completion created successfully',
-            'data' => $completion->load(['registration.user', 'trainingSession'])
-        ], 201);
+            return response()->json([
+                'message' => 'Session completion created successfully',
+                'data' => $completion->load(['registration.user', 'trainingSession'])
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Session completion creation failed', [
+                'request_data' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to create session completion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -143,7 +182,13 @@ class SessionCompletionController extends Controller
         // Auto-generate certificate if completed and not already issued
         if ($sessionCompletion->isCompleted() && !$sessionCompletion->certificate_issued) {
             $certController = app(CertController::class);
-            $certController->generateCertificate(request(), $sessionCompletion);
+            $response = $certController->generateCertificate(request(), $sessionCompletion);
+            $data = $response->getData(true);
+            if (!empty($data['certificate_url'])) {
+                $sessionCompletion->certificate_url = $data['certificate_url'];
+                $sessionCompletion->certificate_issued = true;
+                $sessionCompletion->save();
+            }
             $sessionCompletion->refresh();
         }
 
@@ -201,17 +246,36 @@ class SessionCompletionController extends Controller
      */
     public function getByRegistration(Registration $registration): JsonResponse
     {
-        $completion = $registration->sessionCompletion;
+        try {
+            // Load the session completion with relationships
+            $completion = SessionCompletion::with(['registration.user', 'trainingSession'])
+                ->where('registration_id', $registration->id)
+                ->first();
 
-        if (!$completion) {
+            if (!$completion) {
+                return response()->json([
+                    'message' => 'No session completion found for this registration',
+                    'data' => null
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'No session completion found for this registration'
-            ], 404);
-        }
+                'message' => 'Session completion found',
+                'data' => $completion
+            ]);
 
-        return response()->json([
-            'data' => $completion
-        ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching session completion by registration', [
+                'registration_id' => $registration->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error fetching session completion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

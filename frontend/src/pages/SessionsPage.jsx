@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { trainingSessionApi, categoryApi } from '../services/api'
+import GlassmorphismBackground from '../components/GlassmorphismBackground';
 
 function SessionsPage() {
     const [sessions, setSessions] = useState([])
@@ -147,6 +148,7 @@ function SessionsPage() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
+            <GlassmorphismBackground />
             <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
                 {/* Header Section */}
                 <div className="text-center mb-20">

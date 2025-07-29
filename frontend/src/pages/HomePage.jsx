@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import GlassmorphismBackground from '../components/GlassmorphismBackground';
 import { Link } from 'react-router-dom';
 import { categoryApi, trainingCourseApi, userApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -90,6 +91,7 @@ function HomePage() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
+            <GlassmorphismBackground />
             <div className="relative z-10">
                 {/* Hero Section with Advanced Glassmorphism */}
                 <section className="min-h-screen flex items-center justify-center relative px-6">

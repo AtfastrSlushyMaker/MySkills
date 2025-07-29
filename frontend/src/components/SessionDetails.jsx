@@ -1,20 +1,67 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+    Card,
+    Button,
+    Typography,
+    Spin,
+    Alert,
+    Modal,
+    Form,
+    Input,
+    Switch,
+    Tag,
+    Avatar,
+    Divider,
+    Pagination,
+    Row,
+    Col,
+    Space,
+    Badge,
+    message,
+    Tooltip,
+    Empty,
+    Image,
+    Progress,
+    Statistic
+} from 'antd';
+import {
+    ArrowLeftOutlined,
+    BookOutlined,
+    UserAddOutlined,
+    EditOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    ExclamationCircleOutlined,
+    PlusOutlined,
+    TrophyOutlined,
+    LockOutlined,
+    UserOutlined,
+    CalendarOutlined,
+    EnvironmentOutlined,
+    TeamOutlined,
+    StarOutlined,
+    FileImageOutlined
+} from '@ant-design/icons';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 import { sessionCompletionApi, trainingSessionApi, trainingCourseApi, toggleCourseActiveApi, registrationApi, feedbackApi, courseCompletionApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import Modal from './modals/CreateSessionModal';
 import CreateCourseModal from './modals/CreateCourseModal';
 import SessionInfo from './sessionDetails/SessionInfo';
 import TraineeList from './sessionDetails/TraineeList';
 import FeedbackForm from './sessionDetails/FeedbackForm';
 import CommentsList from './sessionDetails/CommentsList';
 
+const { Title, Text, Paragraph } = Typography;
+const { Meta } = Card;
 
 const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [form] = Form.useForm();
 
-    // ALL useState hooks must be at the top level and in consistent order
+    // State management
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -22,7 +69,6 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [updating, setUpdating] = useState(false);
-    const [updateForm, setUpdateForm] = useState({ title: '', description: '' });
     const [enrolling, setEnrolling] = useState(false);
     const [enrollSuccess, setEnrollSuccess] = useState(false);
     const [enrollError, setEnrollError] = useState(null);
@@ -30,25 +76,39 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
     const [feedbackLoading, setFeedbackLoading] = useState(true);
     const [feedbackError, setFeedbackError] = useState(null);
     const [completedCourses, setCompletedCourses] = useState([]);
-    const [markingComplete, setMarkingComplete] = useState({}); // { [courseId]: boolean }
+    const [markingComplete, setMarkingComplete] = useState({});
     const [registrationStatus, setRegistrationStatus] = useState(null);
+    const [sessionCompletion, setSessionCompletion] = useState(null);
+    const [completionLoading, setCompletionLoading] = useState(false);
 
-    // Derived values - calculate these AFTER all useState hooks
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(6);
+
+    // Lightbox state
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxImages, setLightboxImages] = useState([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Derived values
     const courses = Array.isArray(session?.training_courses)
         ? session.training_courses
         : session?.course
             ? [session.course]
             : [];
 
-    // Find current user's registration for this session
     const userRegistration = session && session.registrations && user
         ? session.registrations.find(r => r.user_id === user.id)
         : null;
 
-    // Helper: is session finished? Use end_date and end_time if available, else fallback to date and start_time
+    // Pagination calculations
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedCourses = courses.slice(startIndex, endIndex);
+
+    // Helper functions
     const isSessionFinished = (() => {
         if (!session) return false;
-        // Prefer end_date and end_time if available
         let endDateStr = session.end_date || session.date;
         let endTimeStr = session.end_time || session.start_time || '23:59:59';
         if (!endDateStr) return false;
@@ -58,24 +118,24 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         return endDate <= new Date();
     })();
 
-    // Helper to map registration status to icon and color classes
-    const getStatusIconAndColor = (status) => {
-        switch (status) {
-            case 'pending':
-                return { icon: 'fa-hourglass-half', color: 'bg-amber-500/30 text-amber-300 border border-amber-400/50' };
-            case 'confirmed':
-                return { icon: 'fa-check-circle', color: 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/50' };
-            case 'cancelled':
-                return { icon: 'fa-times-circle', color: 'bg-rose-500/30 text-rose-300 border border-rose-400/50' };
-            case 'completed':
-                return { icon: 'fa-flag-checkered', color: 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/50' };
-            case 'failed':
-                return { icon: 'fa-exclamation-triangle', color: 'bg-slate-500/30 text-slate-300 border border-slate-400/50' };
-            default:
-                return { icon: 'fa-info-circle', color: 'bg-purple-500/30 text-purple-300 border border-purple-400/50' };
-        }
+    const getStatusConfig = (status) => {
+        const configs = {
+            pending: { icon: ClockCircleOutlined, color: 'warning', text: 'Pending' },
+            confirmed: { icon: CheckCircleOutlined, color: 'success', text: 'Confirmed' },
+            cancelled: { icon: ExclamationCircleOutlined, color: 'error', text: 'Cancelled' },
+            completed: { icon: CheckCircleOutlined, color: 'processing', text: 'Completed' },
+            failed: { icon: ExclamationCircleOutlined, color: 'default', text: 'Failed' }
+        };
+        return configs[status] || { icon: ExclamationCircleOutlined, color: 'default', text: status };
     };
 
+    const openLightbox = (imageUrl, index = 0) => {
+        setLightboxImages([{ src: imageUrl }]);
+        setLightboxIndex(index);
+        setLightboxOpen(true);
+    };
+
+    // API calls and effects
     useEffect(() => {
         const fetchSession = async () => {
             setLoading(true);
@@ -84,13 +144,13 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 setSession(res.data);
             } catch (e) {
                 setError('Session not found.');
+                message.error('Failed to load session details');
             } finally {
                 setLoading(false);
             }
         };
         fetchSession();
     }, [sessionId]);
-
 
     useEffect(() => {
         setFeedbackLoading(true);
@@ -99,14 +159,15 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 setFeedbacks(res.data);
                 setFeedbackError(null);
             })
-            .catch(() => setFeedbackError('Could not load feedback.'))
+            .catch(() => {
+                setFeedbackError('Could not load feedback.');
+                message.error('Failed to load feedback');
+            })
             .finally(() => setFeedbackLoading(false));
     }, [sessionId]);
 
-
     useEffect(() => {
         if (user && user.role === 'trainee' && courses.length > 0) {
-            // Get all completions for this user
             courseCompletionApi.getAll().then(res => {
                 const completions = Array.isArray(res.data) ? res.data : [];
                 const completed = completions
@@ -117,7 +178,6 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         }
     }, [user, courses]);
 
-    // Registration status for current user
     useEffect(() => {
         if (user && user.role === 'trainee') {
             registrationApi.getStatusByUserAndSession(sessionId)
@@ -128,7 +188,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         }
     }, [user, sessionId]);
 
-    // Auto-create session completion on page load if all courses are completed
+    // Session completion effect
     useEffect(() => {
         if (
             user &&
@@ -138,7 +198,9 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
             session &&
             userRegistration
         ) {
-            const now = new Date().toISOString().slice(0, 19).replace('T', ' '); // MySQL DATETIME format
+            setCompletionLoading(true);
+
+            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
             const completionPayload = {
                 registration_id: userRegistration.id,
                 training_session_id: session.id,
@@ -147,90 +209,69 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 status: 'completed',
                 completed_at: now,
             };
+
             sessionCompletionApi.getByRegistration(userRegistration.id)
                 .then(res => {
-                    if (!res.data || !res.data.data) {
-                        sessionCompletionApi.create(completionPayload).then(() => {
-                            // Wait a moment, then refetch to get the certificate_url
-                            setTimeout(() => {
-                                sessionCompletionApi.getByRegistration(userRegistration.id).then(() => {
-                                    // Optionally update UI or state here if needed
-                                });
-                            }, 2000); // Adjust delay as needed
-                        });
+                    if (res.data && res.data.data) {
+                        setSessionCompletion(res.data.data);
+                    } else {
+                        return sessionCompletionApi.create(completionPayload);
                     }
                 })
-                .catch(() => {
-                    sessionCompletionApi.create(completionPayload).then(() => {
-                        setTimeout(() => {
-                            sessionCompletionApi.getByRegistration(userRegistration.id).then(() => {
-                                // Optionally update UI or state here if needed
+                .then(createRes => {
+                    if (createRes) {
+                        setSessionCompletion(createRes.data.data);
+                        message.success('Session completed! Certificate generated.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Session completion error:', error);
+                    if (error.response && error.response.status === 409) {
+                        sessionCompletionApi.getByRegistration(userRegistration.id)
+                            .then(res => {
+                                if (res.data && res.data.data) {
+                                    setSessionCompletion(res.data.data);
+                                }
+                            })
+                            .catch(fetchError => {
+                                console.error('Failed to fetch after conflict:', fetchError);
                             });
-                        }, 2000);
-                    });
+                    }
+                })
+                .finally(() => {
+                    setCompletionLoading(false);
                 });
         }
     }, [user, courses, completedCourses, session, userRegistration]);
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-900 via-purple-900 to-pink-900">
-            <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20">
-                <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-white text-center">Loading session details...</p>
-            </div>
-        </div>
-    );
-
-    if (error || !session) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-900 via-purple-900 to-pink-900">
-            <div className="bg-red-500/10 border border-red-400/30 rounded-3xl p-8">
-                <p className="text-red-400 text-center">{error || 'Session not found.'}</p>
-                <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-400/20 text-red-300 rounded-lg">Go Back</button>
-            </div>
-        </div>
-    );
-
-    const openUpdateModal = (course) => {
-        setSelectedCourse(course)
-        setUpdateForm({ title: course.title, description: course.description || '' })
-        setShowUpdateModal(true)
-    }
-
-    const closeUpdateModal = () => {
-        setShowUpdateModal(false)
-        setSelectedCourse(null)
-    }
-
-    const handleUpdateChange = (e) => {
-        setUpdateForm({ ...updateForm, [e.target.name]: e.target.value })
-    }
-
-    const handleUpdateSubmit = async (e) => {
-        e.preventDefault()
-        if (!selectedCourse) return
-        setUpdating(true)
+    // Event handlers
+    const handleUpdateCourse = async (values) => {
+        if (!selectedCourse) return;
+        setUpdating(true);
         try {
-            await trainingCourseApi.updateCourse(selectedCourse.id, updateForm)
-            // refetch session
-            const res = await trainingSessionApi.getSession(sessionId)
-            setSession(res.data)
-            closeUpdateModal()
+            await trainingCourseApi.updateCourse(selectedCourse.id, values);
+            const res = await trainingSessionApi.getSession(sessionId);
+            setSession(res.data);
+            setShowUpdateModal(false);
+            form.resetFields();
+            message.success('Course updated successfully');
         } catch (err) {
-            // handle error
+            message.error('Failed to update course');
         } finally {
-            setUpdating(false)
+            setUpdating(false);
         }
-    }
+    };
 
     const handleToggleActive = async (course) => {
         try {
-            await toggleCourseActiveApi(course.id, !course.is_active)
-            const res = await trainingSessionApi.getSession(sessionId)
-            setSession(res.data)
+            await toggleCourseActiveApi(course.id, !course.is_active);
+            const res = await trainingSessionApi.getSession(sessionId);
+            setSession(res.data);
+            message.success(`Course ${course.is_active ? 'deactivated' : 'activated'} successfully`);
         } catch (err) {
-            // handle error
+            message.error('Failed to toggle course status');
         }
-    }
+    };
 
     const handleEnroll = async () => {
         if (!user || !session) return;
@@ -238,7 +279,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         setEnrollError(null);
         try {
             const today = new Date();
-            const registeredAt = today.toISOString().split('T')[0]; // YYYY-MM-DD
+            const registeredAt = today.toISOString().split('T')[0];
             await registrationApi.createRegistration({
                 user_id: user.id,
                 training_session_id: session.id,
@@ -246,13 +287,18 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 status: 'pending',
             });
             setEnrollSuccess(true);
-            // Optionally refetch session or update UI
+            message.success('Successfully enrolled in session!');
+            setTimeout(() => {
+                setRegistrationStatus('pending');
+            }, 1000);
         } catch (err) {
-            setEnrollError(err?.response?.data?.message || 'Enrollment failed.');
+            const errorMsg = err?.response?.data?.message || 'Enrollment failed.';
+            setEnrollError(errorMsg);
+            message.error(errorMsg);
         } finally {
             setEnrolling(false);
         }
-    }
+    };
 
     const handleMarkAsComplete = async (courseId, e) => {
         if (e) e.stopPropagation();
@@ -288,307 +334,746 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                 }, 0);
                 return updated;
             });
+            message.success('Course marked as complete!');
         } catch (e) {
-            alert('Failed to mark course as complete or create session completion.');
+            message.error('Failed to mark course as complete');
         } finally {
             setMarkingComplete(prev => ({ ...prev, [courseId]: false }));
         }
+    };
+
+    const openUpdateModal = (course) => {
+        setSelectedCourse(course);
+        form.setFieldsValue({
+            title: course.title,
+            description: course.description || ''
+        });
+        setShowUpdateModal(true);
+    };
+
+    // Loading state
+    if (loading) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #0c4a6e 0%, #7c3aed 50%, #db2777 100%)'
+            }}>
+                <Card style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '24px'
+                }}>
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <Spin size="large" />
+                        <div style={{ marginTop: 16, color: 'white' }}>Loading session details...</div>
+                    </div>
+                </Card>
+            </div>
+        );
     }
 
+    // Error state
+    if (error || !session) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #0c4a6e 0%, #7c3aed 50%, #db2777 100%)'
+            }}>
+                <Card style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '24px'
+                }}>
+                    <Alert
+                        message="Error"
+                        description={error || 'Session not found.'}
+                        type="error"
+                        showIcon
+                        style={{ background: 'transparent', border: 'none' }}
+                    />
+                    <div style={{ textAlign: 'center', marginTop: 16 }}>
+                        <Button onClick={onBack} type="primary" danger>
+                            Go Back
+                        </Button>
+                    </div>
+                </Card>
+            </div>
+        );
+    }
+
+    const completionPercentage = courses.length > 0 ? (completedCourses.length / courses.length) * 100 : 0;
+
     return (
-        <div className="min-h-screen relative overflow-hidden">
-            {/* Animated Orbs for glassmorphism effect */}
-            <div className="absolute top-20 left-10 w-80 h-80 bg-gradient-to-br from-cyan-400/40 to-blue-600/40 rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{ zIndex: 1 }}></div>
-            <div className="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/40 to-pink-600/40 rounded-full mix-blend-multiply filter blur-3xl animate-float-delayed" style={{ zIndex: 1 }}></div>
-            <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-gradient-to-br from-emerald-400/40 to-cyan-600/40 rounded-full mix-blend-multiply filter blur-3xl animate-float-slow" style={{ zIndex: 1 }}></div>
-            <div className="relative z-10 max-w-5xl mx-auto px-4 py-16 flex flex-col gap-10">
+        <div style={{
+            minHeight: '100vh',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Glassmorphism background is now handled globally */}
+            <div style={{
+                position: 'relative',
+                zIndex: 10,
+                maxWidth: '1200px',
+                margin: '0 auto',
+                padding: '24px'
+            }}>
                 {/* Back Button */}
-                <div className="flex items-center gap-4 mb-6">
-                    <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-cyan-200 font-semibold rounded-xl shadow-lg backdrop-blur border border-white/20 transition">
-                        <i className="fas fa-arrow-left text-lg"></i> Back
-                    </button>
+                <div style={{ marginBottom: '24px' }}>
+                    <Button
+                        icon={<ArrowLeftOutlined />}
+                        onClick={onBack}
+                        size="large"
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            borderRadius: '12px',
+                            fontWeight: 600
+                        }}
+                    >
+                        Back
+                    </Button>
                 </div>
-                {/* Session Header Card */}
-                {/* Session Info Section */}
-                <SessionInfo session={session} />
-                {/* Enroll button for trainees only - moved below SessionInfo for clarity */}
+
+                {/* Session Info */}
+                <Card
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '24px',
+                        marginBottom: '24px'
+                    }}
+                >
+                    <SessionInfo session={session} />
+                </Card>
+
+                {/* Enrollment Section for Trainees */}
                 {user && user.role === 'trainee' && (
-                    (() => {
-                        return (
-                            <div className="mt-2 flex flex-col items-start gap-2">
-                                <button
-                                    className={`px-7 py-3 font-bold rounded-full shadow-lg backdrop-blur border transition-all duration-300 flex items-center gap-2 overflow-hidden relative disabled:opacity-60 disabled:cursor-not-allowed ${registrationStatus ? getStatusIconAndColor(registrationStatus).color : 'bg-transparent hover:bg-white/10 text-white border-white/30 hover:scale-105'}`}
-                                    onClick={handleEnroll}
+                    <Card
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '24px',
+                            marginBottom: '24px'
+                        }}
+                    >
+                        <Row align="middle" justify="space-between">
+                            <Col>
+                                <Space direction="vertical" size="small">
+                                    <Title level={4} style={{ color: 'white', margin: 0 }}>
+                                        Enrollment Status
+                                    </Title>
+                                    {registrationStatus && (
+                                        <Badge
+                                            status={getStatusConfig(registrationStatus).color}
+                                            text={
+                                                <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                                                    {getStatusConfig(registrationStatus).text}
+                                                </Text>
+                                            }
+                                        />
+                                    )}
+                                    {completionPercentage > 0 && (
+                                        <div style={{ minWidth: '200px' }}>
+                                            <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
+                                                Course Progress
+                                            </Text>
+                                            <Progress
+                                                percent={completionPercentage}
+                                                size="small"
+                                                strokeColor={{
+                                                    '0%': '#06b6d4',
+                                                    '100%': '#10b981'
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                </Space>
+                            </Col>
+                            <Col>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    icon={isSessionFinished ? <LockOutlined /> : <UserAddOutlined />}
+                                    loading={enrolling}
                                     disabled={enrolling || enrollSuccess || registrationStatus || isSessionFinished}
-                                    style={{ minWidth: 180 }}
+                                    onClick={handleEnroll}
+                                    style={{
+                                        background: isSessionFinished
+                                            ? 'rgba(107, 114, 128, 0.3)'
+                                            : registrationStatus
+                                                ? 'rgba(34, 197, 94, 0.3)'
+                                                : 'linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%)',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontWeight: 600,
+                                        minWidth: '180px'
+                                    }}
                                 >
-                                    <span className="flex items-center gap-2 relative z-10">
-                                        <i className={`fas ${isSessionFinished ? 'fa-lock' : (registrationStatus ? getStatusIconAndColor(registrationStatus).icon : 'fa-user-plus')} text-lg`}></i>
-                                        {isSessionFinished
-                                            ? 'Session Finished'
-                                            : enrolling
-                                                ? 'Enrolling...'
-                                                : registrationStatus
-                                                    ? `Status: ${registrationStatus.charAt(0).toUpperCase() + registrationStatus.slice(1)}`
-                                                    : enrollSuccess
-                                                        ? 'Enrolled!'
-                                                        : 'Enroll in this Session'}
-                                    </span>
-                                    <span className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-opacity-70 rounded-full"></span>
-                                </button>
-                                {enrollError && (
-                                    <span className="text-red-400 text-sm mt-1">{enrollError}</span>
-                                )}
-                                {enrollSuccess && !registrationStatus && (
-                                    <span className="text-green-400 text-sm mt-1">Successfully enrolled!</span>
-                                )}
-                            </div>
-                        );
-                    })()
+                                    {isSessionFinished
+                                        ? 'Session Finished'
+                                        : enrolling
+                                            ? 'Enrolling...'
+                                            : registrationStatus
+                                                ? `Status: ${getStatusConfig(registrationStatus).text}`
+                                                : enrollSuccess
+                                                    ? 'Enrolled!'
+                                                    : 'Enroll in Session'
+                                    }
+                                </Button>
+                            </Col>
+                        </Row>
+                        {enrollError && (
+                            <Alert
+                                message={enrollError}
+                                type="error"
+                                style={{ marginTop: 16, background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                            />
+                        )}
+                    </Card>
                 )}
-                {/* Registered Trainees (only for coordinators and trainers) */}
+
+                {/* Registered Trainees (for coordinators and trainers) */}
                 {user && (user.role === 'coordinator' || user.role === 'trainer') && (
-                    <TraineeList registrations={session.registrations || []} />
+                    <Card
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '24px',
+                            marginBottom: '24px'
+                        }}
+                    >
+                        <TraineeList registrations={session.registrations || []} />
+                    </Card>
                 )}
 
                 {/* Courses Section */}
-                <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-8 border border-white/20 shadow-xl animate-fade-in relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
-                    <div className="relative z-10">
-                        <h3 className="text-3xl font-black text-white mb-6 flex items-center tracking-tight">
-                            <i className="fas fa-book-open text-purple-400 mr-3"></i>
-                            Courses in this Session
-                        </h3>
-                        {courses.length === 0 ? (
-                            <div className="text-white/60 italic mb-4">No courses assigned to this session yet.</div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {courses.map((course, idx) => (
-                                    <div
-                                        key={course.id || idx}
-                                        className={`backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-300 shadow-2xl relative overflow-hidden group
-                                            ${completedCourses.includes(course.id)
-                                                ? 'bg-green-500/30 border-green-400/60 hover:bg-green-500/40 hover:border-green-500 scale-105'
-                                                : 'bg-white/5 hover:bg-white/10 border-white/20 hover:border-purple-400 hover:scale-105'}
-                                        `}
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => navigate(`/courses/${course.id}`)}
-                                    >
-                                        {/* Glassy gradient orb overlays for extra depth */}
-                                        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-400/30 to-indigo-400/30 rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-all"></div>
-                                        <div className="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-2xl opacity-60 group-hover:opacity-80 transition-all"></div>
-                                        <div className="relative z-10">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <h4 className="text-2xl font-bold text-white mb-1 text-glow tracking-tight drop-shadow-lg">{course.title}</h4>
-                                                <span className="text-lg font-bold text-purple-400">{course.duration_hours}h</span>
-                                            </div>
-                                            <div className="text-white/70 mb-2 text-base font-light">{course.description || 'No description provided.'}</div>
-                                            <div className="flex flex-wrap gap-2 text-xs text-white/60 mb-2">
-                                                {/* Only show Active/Inactive status and created date to trainers */}
-                                                {user && user.role === 'trainer' && (
-                                                    <>
-                                                        {course.is_active ? (
-                                                            <span className="px-2 py-1 rounded bg-green-400/20 text-green-300">Active</span>
-                                                        ) : (
-                                                            <span className="px-2 py-1 rounded bg-red-400/20 text-red-300">Inactive</span>
-                                                        )}
-                                                        {course.created_at && (
-                                                            <span className="px-2 py-1 rounded bg-white/10">Created: {new Date(course.created_at).toLocaleDateString()}</span>
-                                                        )}
-                                                    </>
-                                                )}
-                                                {/* Show tags, level, and prerequisites if available */}
-                                                {course.level && (
-                                                    <span className="px-2 py-1 rounded bg-blue-400/20 text-blue-200">Level: {course.level}</span>
-                                                )}
-                                                {course.prerequisites && course.prerequisites.length > 0 && (
-                                                    <span className="px-2 py-1 rounded bg-pink-400/20 text-pink-200">Prerequisites: {course.prerequisites.join(', ')}</span>
-                                                )}
-                                                {course.tags && course.tags.length > 0 && course.tags.map((tag, i) => (
-                                                    <span key={i} className="px-2 py-1 rounded bg-cyan-400/20 text-cyan-200">{tag}</span>
-                                                ))}
-                                            </div>
-                                            {/* Show trainer if available */}
-                                            {course.trainer && (
-                                                <div className="text-white/70 text-xs mb-1 flex items-center gap-1">
-                                                    <i className="fas fa-user-tie text-cyan-300"></i>
-                                                    <span>Trainer: {course.trainer.first_name} {course.trainer.last_name}</span>
-                                                </div>
-                                            )}
-                                            {/* Only trainers can edit or toggle active */}
-                                            {user && user.role === 'trainer' && (
-                                                <div className="flex gap-2 mt-2">
-                                                    <button
-                                                        type="button"
-                                                        className="px-3 py-1 bg-white/20 hover:bg-cyan-400/20 rounded text-cyan-200 text-xs font-semibold flex items-center gap-1 border border-cyan-300/30 hover:border-cyan-400/60 transition"
-                                                        onClick={() => openUpdateModal(course)}
-                                                        title="Edit Course"
-                                                    >
-                                                        <i className="fas fa-edit"></i> Edit
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className={`px-3 py-1 rounded text-xs font-semibold flex items-center gap-1 border transition ${course.is_active ? 'bg-green-400/10 text-green-300 border-green-300/30 hover:bg-green-400/20' : 'bg-red-400/10 text-red-300 border-red-300/30 hover:bg-red-400/20'}`}
-                                                        onClick={() => handleToggleActive(course)}
-                                                        title={course.is_active ? 'Make Inactive' : 'Make Active'}
-                                                    >
-                                                        <i className={`fas ${course.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
-                                                        {course.is_active ? 'Active' : 'Inactive'}
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {/* Mark as Complete button for trainees */}
-                                            {user && user.role === 'trainee' && registrationStatus === 'confirmed' && (
-                                                <button
-                                                    className={`mt-2 px-4 py-2 rounded font-semibold shadow transition disabled:opacity-60 disabled:cursor-not-allowed
-                                                        ${completedCourses.includes(course.id)
-                                                            ? 'bg-green-600 text-white cursor-default'
-                                                            : 'bg-green-500/80 text-white hover:bg-green-600'}
-                                                    `}
-                                                    disabled={completedCourses.includes(course.id) || markingComplete[course.id]}
-                                                    onClick={e => handleMarkAsComplete(course.id, e)}
-                                                >
-                                                    {completedCourses.includes(course.id)
-                                                        ? 'Completed'
-                                                        : markingComplete[course.id]
-                                                            ? 'Marking...'
-                                                            : 'Mark as Complete'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {/* Only show create course if allowed */}
-                        {user && (user.role === 'trainer') && (
-                            <div className="mt-8 flex justify-end">
-                                <button
-                                    onClick={() => setShowCreateCourseModal(true)}
-                                    className="mt-6 px-7 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/20 hover:border-white/40 text-white font-semibold transition-all duration-300 text-base flex items-center justify-center gap-2 shadow-none cursor-pointer"
-                                >
-                                    <i className="fas fa-plus mr-2"></i> Create Course for this Session
-                                </button>
-                            </div>
-                        )}
+                <Card
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '24px',
+                        marginBottom: '24px'
+                    }}
+                >
+                    <div style={{ marginBottom: '24px' }}>
+                        <Row justify="space-between" align="middle">
+                            <Col>
+                                <Title level={3} style={{ color: 'white', margin: 0 }}>
+                                    <BookOutlined style={{ marginRight: '12px', color: '#a855f7' }} />
+                                    Courses in this Session
+                                </Title>
+                            </Col>
+                            <Col>
+                                <Space>
+                                    <Statistic
+                                        title={<span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Total Courses</span>}
+                                        value={courses.length}
+                                        valueStyle={{ color: 'white', fontSize: '18px' }}
+                                    />
+                                    {user && user.role === 'trainee' && courses.length > 0 && (
+                                        <Statistic
+                                            title={<span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Completed</span>}
+                                            value={completedCourses.length}
+                                            valueStyle={{ color: '#10b981', fontSize: '18px' }}
+                                        />
+                                    )}
+                                </Space>
+                            </Col>
+                        </Row>
                     </div>
-                </div>
-                {/* Comments/Feedback Section - now below courses, FeedbackForm inside CommentsList */}
-                <CommentsList feedbacks={feedbacks} loading={feedbackLoading} error={feedbackError}>
-                    {user && user.role === 'trainee' && userRegistration && (
-                        registrationStatus === 'confirmed' ? (
-                            <FeedbackForm
-                                sessionId={sessionId}
-                                onSubmit={async (data) => {
-                                    // Compose feedback payload
-                                    const payload = {
-                                        registration_id: userRegistration.id,
-                                        rating: data.rating,
-                                        comment: data.comment,
-                                    };
-                                    await feedbackApi.submitFeedback(payload);
-                                    // Refetch feedbacks
-                                    setFeedbackLoading(true);
-                                    feedbackApi.getFeedbackBySession(sessionId)
-                                        .then(res => setFeedbacks(res.data))
-                                        .finally(() => setFeedbackLoading(false));
-                                }}
-                            />
-                        ) : (
-                            <div className="text-white/60 italic mb-4 flex items-center gap-2">
-                                <i className="fas fa-lock text-rose-300"></i>
-                                Only confirmed trainees can submit feedback.
-                            </div>
-                        )
+
+                    {courses.length === 0 ? (
+                        <Empty
+                            description={
+                                <Text style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                                    No courses assigned to this session yet
+                                </Text>
+                            }
+                            style={{ margin: '40px 0' }}
+                        />
+                    ) : (
+                        <>
+                            <Row gutter={[24, 24]}>
+                                {paginatedCourses.map((course, idx) => {
+                                    const isCompleted = completedCourses.includes(course.id);
+                                    const isMarking = markingComplete[course.id];
+
+                                    return (
+                                        <Col xs={24} md={12} lg={8} key={course.id || idx}>
+                                            <Card
+                                                hoverable
+                                                style={{
+                                                    background: isCompleted
+                                                        ? 'rgba(34, 197, 94, 0.2)'
+                                                        : 'rgba(255, 255, 255, 0.05)',
+                                                    backdropFilter: 'blur(20px)',
+                                                    border: isCompleted
+                                                        ? '1px solid rgba(34, 197, 94, 0.4)'
+                                                        : '1px solid rgba(255, 255, 255, 0.2)',
+                                                    borderRadius: '16px',
+                                                    height: '100%',
+                                                    transform: isCompleted ? 'scale(1.02)' : 'scale(1)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                                onClick={() => navigate(`/courses/${course.id}`)}
+                                                actions={[
+                                                    ...(user && user.role === 'trainer' ? [
+                                                        <Tooltip title="Edit Course" key="edit">
+                                                            <Button
+                                                                icon={<EditOutlined />}
+                                                                type="text"
+                                                                style={{ color: '#06b6d4' }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openUpdateModal(course);
+                                                                }}
+                                                            />
+                                                        </Tooltip>,
+                                                        <Tooltip title={course.is_active ? 'Deactivate' : 'Activate'} key="toggle">
+                                                            <Switch
+                                                                checked={course.is_active}
+                                                                size="small"
+                                                                onChange={(checked) => {
+                                                                    handleToggleActive(course);
+                                                                }}
+                                                                onClick={(checked, e) => e.stopPropagation()}
+                                                            />
+                                                        </Tooltip>
+                                                    ] : []),
+                                                    ...(user && user.role === 'trainee' && registrationStatus === 'confirmed' ? [
+                                                        <Button
+                                                            key="complete"
+                                                            type={isCompleted ? "default" : "primary"}
+                                                            size="small"
+                                                            icon={isCompleted ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+                                                            loading={isMarking}
+                                                            disabled={isCompleted || isMarking}
+                                                            onClick={(e) => handleMarkAsComplete(course.id, e)}
+                                                            style={{
+                                                                background: isCompleted ? '#10b981' : '#06b6d4',
+                                                                border: 'none'
+                                                            }}
+                                                        >
+                                                            {isCompleted ? 'Completed' : isMarking ? 'Marking...' : 'Complete'}
+                                                        </Button>
+                                                    ] : [])
+                                                ]}
+                                            >
+                                                <Meta
+                                                    title={
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                                                                {course.title}
+                                                            </Text>
+                                                            <Tag color="purple">
+                                                                {course.duration_hours}h
+                                                            </Tag>
+                                                        </div>
+                                                    }
+                                                    description={
+                                                        <div>
+                                                            <Paragraph
+                                                                style={{ color: 'rgba(255, 255, 255, 0.7)', margin: '8px 0' }}
+                                                                ellipsis={{ rows: 2 }}
+                                                            >
+                                                                {course.description || 'No description provided.'}
+                                                            </Paragraph>
+
+                                                            <Space wrap style={{ marginTop: '12px' }}>
+                                                                {course.level && (
+                                                                    <Tag color="blue">Level: {course.level}</Tag>
+                                                                )}
+                                                                {course.is_active !== undefined && (
+                                                                    <Tag color={course.is_active ? 'green' : 'red'}>
+                                                                        {course.is_active ? 'Active' : 'Inactive'}
+                                                                    </Tag>
+                                                                )}
+                                                                {course.tags && course.tags.map((tag, i) => (
+                                                                    <Tag key={i} color="cyan">{tag}</Tag>
+                                                                ))}
+                                                            </Space>
+
+                                                            {course.trainer && (
+                                                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center' }}>
+                                                                    <Avatar size="small" icon={<UserOutlined />} style={{ marginRight: '8px' }} />
+                                                                    <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
+                                                                        {course.trainer.first_name} {course.trainer.last_name}
+                                                                    </Text>
+                                                                </div>
+                                                            )}
+
+                                                            {course.prerequisites && course.prerequisites.length > 0 && (
+                                                                <div style={{ marginTop: '8px' }}>
+                                                                    <Text style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+                                                                        Prerequisites: {course.prerequisites.join(', ')}
+                                                                    </Text>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    }
+                                                />
+                                            </Card>
+                                        </Col>
+                                    );
+                                })}
+                            </Row>
+
+                            {/* Pagination */}
+                            {courses.length > pageSize && (
+                                <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                                    <Pagination
+                                        current={currentPage}
+                                        pageSize={pageSize}
+                                        total={courses.length}
+                                        onChange={(page, size) => {
+                                            setCurrentPage(page);
+                                            setPageSize(size);
+                                        }}
+                                        showSizeChanger
+                                        showQuickJumper
+                                        showTotal={(total, range) =>
+                                            <Text style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                                                {`${range[0]}-${range[1]} of ${total} courses`}
+                                            </Text>
+                                        }
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
-                </CommentsList>
 
+                    {/* Create Course Button for Trainers */}
+                    {user && user.role === 'trainer' && (
+                        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<PlusOutlined />}
+                                onClick={() => setShowCreateCourseModal(true)}
+                                style={{
+                                    background: 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 600
+                                }}
+                            >
+                                Create Course for this Session
+                            </Button>
+                        </div>
+                    )}
+                </Card>
 
+                {/* Certificate Section */}
+                {user && user.role === 'trainee' && sessionCompletion && sessionCompletion.certificate_url && (
+                    <Card
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '24px',
+                            marginBottom: '24px',
+                            textAlign: 'center'
+                        }}
+                    >
+                        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                            <Title level={3} style={{ color: 'white', margin: 0 }}>
+                                <TrophyOutlined style={{ marginRight: '12px', color: '#fbbf24' }} />
+                                Your Certificate
+                            </Title>
+
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <Image
+                                    src={sessionCompletion.certificate_url}
+                                    alt="Certificate"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '400px',
+                                        borderRadius: '12px',
+                                        border: '2px solid rgba(251, 191, 36, 0.5)',
+                                        cursor: 'pointer'
+                                    }}
+                                    preview={{
+                                        mask: (
+                                            <div style={{
+                                                background: 'rgba(0, 0, 0, 0.6)',
+                                                color: 'white',
+                                                padding: '8px 16px',
+                                                borderRadius: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px'
+                                            }}>
+                                                <FileImageOutlined />
+                                                View Full Size
+                                            </div>
+                                        )
+                                    }}
+                                />
+                            </div>
+
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<TrophyOutlined />}
+                                onClick={() => window.open(sessionCompletion.certificate_url, '_blank')}
+                                style={{
+                                    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontWeight: 600
+                                }}
+                            >
+                                Download Certificate
+                            </Button>
+                        </Space>
+                    </Card>
+                )}
+
+                {/* Comments/Feedback Section */}
+                <Card
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '24px',
+                        marginBottom: '24px'
+                    }}
+                >
+                    <CommentsList feedbacks={feedbacks} loading={feedbackLoading} error={feedbackError}>
+                        {user && user.role === 'trainee' && userRegistration && (
+                            registrationStatus === 'confirmed' ? (
+                                <FeedbackForm
+                                    sessionId={sessionId}
+                                    onSubmit={async (data) => {
+                                        const payload = {
+                                            registration_id: userRegistration.id,
+                                            rating: data.rating,
+                                            comment: data.comment,
+                                        };
+                                        await feedbackApi.submitFeedback(payload);
+                                        setFeedbackLoading(true);
+                                        feedbackApi.getFeedbackBySession(sessionId)
+                                            .then(res => setFeedbacks(res.data))
+                                            .finally(() => setFeedbackLoading(false));
+                                        message.success('Feedback submitted successfully!');
+                                    }}
+                                />
+                            ) : (
+                                <Alert
+                                    message="Feedback Restricted"
+                                    description="Only confirmed trainees can submit feedback for this session."
+                                    type="info"
+                                    showIcon
+                                    icon={<LockOutlined />}
+                                    style={{
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                                        borderRadius: '12px'
+                                    }}
+                                />
+                            )
+                        )}
+                    </CommentsList>
+                </Card>
+
+                {/* Create Course Modal */}
                 <CreateCourseModal
                     isOpen={showCreateCourseModal}
                     onClose={() => setShowCreateCourseModal(false)}
                     session={session}
                     onCourseCreated={() => {
-                        // Refresh session data after successful creation
                         trainingSessionApi.getSession(sessionId).then(res => setSession(res.data));
+                        message.success('Course created successfully!');
                     }}
                 />
+
+                {/* Update Course Modal */}
+                <Modal
+                    title={
+                        <Title level={4} style={{ margin: 0, color: '#1f2937' }}>
+                            <EditOutlined style={{ marginRight: '8px', color: '#6366f1' }} />
+                            Update Course
+                        </Title>
+                    }
+                    open={showUpdateModal}
+                    onCancel={() => {
+                        setShowUpdateModal(false);
+                        form.resetFields();
+                    }}
+                    footer={null}
+                    width={600}
+                    style={{
+                        backdropFilter: 'blur(20px)'
+                    }}
+                >
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onFinish={handleUpdateCourse}
+                        style={{ marginTop: '24px' }}
+                    >
+                        <Form.Item
+                            name="title"
+                            label={<Text strong>Course Title</Text>}
+                            rules={[{ required: true, message: 'Please enter course title' }]}
+                        >
+                            <Input
+                                size="large"
+                                placeholder="Enter course title"
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="description"
+                            label={<Text strong>Description</Text>}
+                        >
+                            <Input.TextArea
+                                rows={4}
+                                placeholder="Enter course description"
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                            <Space>
+                                <Button
+                                    onClick={() => {
+                                        setShowUpdateModal(false);
+                                        form.resetFields();
+                                    }}
+                                    disabled={updating}
+                                    style={{ borderRadius: '8px' }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    loading={updating}
+                                    icon={<CheckCircleOutlined />}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    {updating ? 'Updating...' : 'Update Course'}
+                                </Button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+
+                {/* Lightbox for Images */}
+                <Lightbox
+                    open={lightboxOpen}
+                    close={() => setLightboxOpen(false)}
+                    slides={lightboxImages}
+                    index={lightboxIndex}
+                />
             </div>
-            {showUpdateModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-lg p-4 overflow-y-auto pt-24">
-                    <div className="min-h-full flex items-center justify-center py-4">
-                        <div className="bg-white/80 backdrop-blur-3xl rounded-3xl p-6 border border-white/30 shadow-2xl max-w-lg w-full relative transform transition-all duration-300 ease-out">
-                            {/* Decorative background elements */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                                        Update Course
-                                    </h2>
-                                    <button
-                                        onClick={closeUpdateModal}
-                                        className="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center transition-all duration-300 border border-white/25 hover:border-white/40"
-                                    >
-                                        <i className="fas fa-times text-white text-sm"></i>
-                                    </button>
-                                </div>
-                                <form onSubmit={handleUpdateSubmit} className="space-y-3">
-                                    <div className="mb-4 bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25">
-                                        <label className="block text-white/90 text-sm font-medium mb-1.5">Title</label>
-                                        <input
-                                            type="text"
-                                            name="title"
-                                            value={updateForm.title}
-                                            onChange={handleUpdateChange}
-                                            className="w-full px-3 py-2.5 bg-white/15 border border-white/25 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-6 bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/25">
-                                        <label className="block text-white/90 text-sm font-medium mb-1.5">Description</label>
-                                        <textarea
-                                            name="description"
-                                            value={updateForm.description}
-                                            onChange={handleUpdateChange}
-                                            rows="3"
-                                            className="w-full px-3 py-2.5 bg-white/15 border border-white/25 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400 focus:bg-white/20 transition-all resize-none"
-                                        />
-                                    </div>
-                                    <div className="flex justify-end gap-4 pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={closeUpdateModal}
-                                            disabled={updating}
-                                            className="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/25 hover:border-white/40 rounded-lg text-white font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={updating}
-                                            className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg text-white font-medium transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
-                                        >
-                                            {updating ? (
-                                                <>
-                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                                                    Updating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <i className="fas fa-save mr-2"></i>
-                                                    Update Course
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+
+            <style jsx>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(5deg); }
+                }
+
+                .ant-pagination-item {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 8px !important;
+                }
+
+                .ant-pagination-item a {
+                    color: white !important;
+                }
+
+                .ant-pagination-item-active {
+                    background: rgba(99, 102, 241, 0.6) !important;
+                    border-color: rgba(99, 102, 241, 0.8) !important;
+                }
+
+                .ant-pagination-item-active a {
+                    color: white !important;
+                }
+
+                .ant-pagination-prev .ant-pagination-item-link,
+                .ant-pagination-next .ant-pagination-item-link {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                    border-radius: 8px !important;
+                }
+
+                .ant-pagination-prev:hover .ant-pagination-item-link,
+                .ant-pagination-next:hover .ant-pagination-item-link {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border-color: rgba(255, 255, 255, 0.4) !important;
+                }
+
+                .ant-pagination-options-quick-jumper input {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                }
+
+                .ant-select-selector {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                }
+
+                .ant-select-arrow {
+                    color: white !important;
+                }
+
+                .ant-card-actions {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                }
+
+                .ant-card-actions > li {
+                    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+                }
+
+                .ant-card-actions > li:last-child {
+                    border-right: none !important;
+                }
+
+                .ant-image-mask {
+                    background: rgba(0, 0, 0, 0.6) !important;
+                    border-radius: 12px !important;
+                }
+
+                .ant-progress-bg {
+                    background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%) !important;
+                }
+
+                .ant-statistic-content {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+            `}</style>
         </div>
     );
 };

@@ -421,7 +421,7 @@ function TraineeDashboard() {
                         ) : (
                             <div className="space-y-4 max-h-96 overflow-y-auto">
                                 {allMySessions.filter(s => s.status === 'completed').map((session) => (
-                                    <div key={session.id} className="bg-green-500/10 backdrop-blur-2xl rounded-3xl p-6 border border-green-400/40 hover:border-green-400 transition-all duration-300">
+                                    <div key={session.id} className="bg-green-500/10 backdrop-blur-2xl rounded-3xl p-6 border border-green-400/40 hover:border-green-400 transition-all duration-300 mb-8">
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="flex-1">
                                                 <h3 className="text-xl font-bold text-green-300 mb-1">
@@ -439,6 +439,28 @@ function TraineeDashboard() {
                                                     <i className="fas fa-chalkboard-teacher mr-2"></i>
                                                     <span>{session.trainer ? session.trainer.first_name + ' ' + session.trainer.last_name : ''}</span>
                                                 </div>
+                                                {/* Certificate Section */}
+                                                {session.certificate_url && (
+                                                    <div className="mt-4 flex flex-col items-start">
+                                                        <h4 className="text-lg font-bold text-yellow-300 mb-2 flex items-center gap-2">
+                                                            <i className="fas fa-certificate"></i> Certificate
+                                                        </h4>
+                                                        <a
+                                                            href={session.certificate_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-cyan-300 underline text-base mb-2 break-all"
+                                                        >
+                                                            View Certificate
+                                                        </a>
+                                                        <img
+                                                            src={session.certificate_url}
+                                                            alt="Certificate"
+                                                            className="max-w-full max-h-60 rounded-xl border border-cyan-400/30 shadow-lg"
+                                                            style={{ background: '#fff' }}
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex items-center space-x-3">
                                                 <button

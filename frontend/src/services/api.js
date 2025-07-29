@@ -248,14 +248,23 @@ export const imageApi = {
 
 
 export const sessionCompletionApi = {
-
     getAll: (params = {}) => api.get('/session-completions', { params }),
     get: (id) => api.get(`/session-completions/${id}`),
     create: (data) => api.post('/session-completions', data),
     update: (id, data) => api.put(`/session-completions/${id}`, data),
     markCompleted: (id, data = {}) => api.post(`/session-completions/${id}/mark-completed`, data),
     generateCertificate: (id) => api.post(`/session-completions/${id}/generate-certificate`),
-    getByRegistration: (registrationId) => api.get(`/registrations/${registrationId}/session-completion`),
+
+    getByRegistration: (registrationId) => {
+        return api.get(`/registrations/${registrationId}/session-completion`)
+            .catch(error => {
+                if (error.response && error.response.status === 404) {
+                    return { data: { data: null } };
+                }
+                throw error;
+            });
+    },
+
     getUserSkills: (userId) => api.get('/users/skills', { params: { user_id: userId } }),
 };
 
