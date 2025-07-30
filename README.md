@@ -4,272 +4,206 @@
   <img src="frontend/public/logos/myskills-logo-icon.png" alt="MySkills Logo" width="120" />
 </p>
 
-[![Laravel](https://img.shields.io/badge/Laravel-12-red)](https://laravel.com)
-[![React](https://img.shields.io/badge/React-18.3-blue)](https://react.dev)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://mysql.com)
+<p align="center">
+  <strong>A comprehensive full-stack platform for managing skills training and development</strong>
+</p>
+
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-api-documentation">API</a> •
+  <a href="#-contributing">Contributing</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12-red?style=for-the-badge&logo=laravel" alt="Laravel">
+  <img src="https://img.shields.io/badge/React-18.3-blue?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/MySQL-8.0-orange?style=for-the-badge&logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge" alt="Status">
+</p>
 
 ---
 
 ## 📋 Overview
 
-MySkills is a full-stack web application for managing skills, training courses, sessions, and user progress. It features a robust Laravel (PHP) backend, a modern React (Vite) frontend, and a dedicated admin backoffice. The project supports multiple user roles (admin, coordinator, trainer, trainee) and provides a rich set of features for course/session management, feedback, notifications, and analytics.
+MySkills is a modern, full-stack web application designed to streamline the management of skills training programs. Built with Laravel and React, it provides a comprehensive solution for educational institutions and training organizations to manage courses, sessions, user progress, and analytics.
 
-**Duration**: 6 weeks (June 26 - August 6, 2025)  
-**Status**: 🚀 In Development (Esprit Summer Internship Project 2025)
+**🗓️ Project Timeline**: June 26 - August 6, 2025 (6 weeks)  
+**🏢 Context**: Esprit Summer Internship Project 2025  
+**🚀 Current Status**: Active Development
+
+### 🎯 Core Mission
+
+Empower organizations to efficiently manage their training ecosystem with role-based access, automated workflows, and comprehensive analytics.
 
 ---
 
-## 🎯 Key Features & Workflow
+## ✨ Features
 
-- User authentication and role-based access (admin, coordinator, trainer, trainee)
-- Category, course, and session management
-- Registration and attendance tracking
-- Feedback and notifications
-- Password reset and forgot password via email
-- Profile management with image upload
-- Responsive dashboards for each user role
-- RESTful API with validation and error handling
-- Admin analytics and CRUD for all resources
-- Glassmorphism UI: Modern, responsive design with animated navigation and profile cards
+### 🔐 Authentication & Authorization
+
+- **Multi-role authentication** (Admin, Coordinator, Trainer, Trainee)
+- **Secure password reset** via email
+- **Profile management** with image upload
+- **Role-based access control** with granular permissions
+
+### 📚 Training Management
+
+- **Category-based organization** of training sessions
+- **Course and session creation** with rich content support
+- **Registration workflow** with approval/rejection system
+- **Attendance tracking** and progress monitoring
+- **Certificate generation** upon completion
+
+### 🎨 Modern User Experience
+
+- **Glassmorphism UI design** with animated elements
+- **Responsive dashboards** tailored for each user role
+- **Real-time notifications** system
+- **Interactive feedback** and rating system
+
+### 📊 Analytics & Reporting
+
+- **Comprehensive analytics** for administrators
+- **Progress tracking** for trainees and trainers
+- **Performance metrics** and completion rates
+- **System health monitoring**
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Laravel 12 (PHP 8.2+)
-- **Frontend**: React.js 18.3, Ant Design, Tailwind CSS
-- **Database**: MySQL 8.0
+### Backend
+
+- **Framework**: Laravel 12 (PHP 8.2+)
+- **Authentication**: Laravel Sanctum
+- **Database**: MySQL 8.0 / SQLite
+- **Image Processing**: Intervention Image
+- **Email**: SMTP with Gmail integration
+- **Testing**: PHPUnit
+
+### Frontend
+
+- **Framework**: React 18.3 with Vite
+- **UI Library**: Ant Design + Tailwind CSS
+- **HTTP Client**: Axios
+- **Routing**: React Router DOM
+- **State Management**: React Context API
+- **Media**: React Player, React YouTube
+
+### External Services
+
+- **Image Storage**: [ImgBB API](https://api.imgbb.com/)
+- **Email Service**: SMTP (Gmail)
 - **Build Tools**: Vite, Composer, npm
-- **Version Control**: Git + GitHub
 
 ---
 
 ## 👥 User Roles & Permissions
 
-| Role        | Permissions |
-|-------------|-------------|
-| Admin       | Full access, user management, platform settings |
-| Coordinator | Create sessions, assign trainers, accept/reject trainee registrations, view attendance/feedback |
-| Trainer     | Create/manage courses within sessions, mark attendance, view feedback |
-| Trainee     | Enroll in sessions, attend courses, submit feedback |
+<table>
+  <thead>
+    <tr>
+      <th>Role</th>
+      <th>Key Permissions</th>
+      <th>Primary Functions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>🔑 Admin</strong></td>
+      <td>Full platform access</td>
+      <td>User management, system settings, analytics, CRUD operations</td>
+    </tr>
+    <tr>
+      <td><strong>📋 Coordinator</strong></td>
+      <td>Session & registration management</td>
+      <td>Create sessions, assign trainers, approve registrations, monitor progress</td>
+    </tr>
+    <tr>
+      <td><strong>👨‍🏫 Trainer</strong></td>
+      <td>Course & attendance management</td>
+      <td>Create courses, manage content, track attendance, provide feedback</td>
+    </tr>
+    <tr>
+      <td><strong>👨‍🎓 Trainee</strong></td>
+      <td>Learning & participation</td>
+      <td>Enroll in sessions, attend courses, submit feedback, track progress</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
-## 📊 Project Status & Timeline
+## 🚀 Quick Start
 
-- [x] Analysis & Design (1 week)
-- [x] Backend Development (2 weeks)
-- [x] Frontend Development (2 weeks)
-- [x] Notifications and password reset features (done)
-- [ ] Testing & Integration (0.5 week)
-- [ ] Documentation (0.5 week)
+### Prerequisites
 
----
+- **PHP** 8.2 or higher
+- **Composer** 2.0+
+- **Node.js** 18+ and npm
+- **MySQL** 8.0 or SQLite
+- **Git**
 
-## 📁 Project Structure
+### Backend Setup
 
-```text
-MySkills/
-├── docs/                # Documentation, diagrams, specifications
-│   ├── Glassmorphism_Navigation_Features.md
-│   ├── Navigation_Transformation.md
-│   └── specifications/
-│       ├── Cahier_des_Charges_MySkills_old.docx
-│       ├── Cahier_des_Charges_MySkills.xml
-│       ├── Cahier_des_Charges_Professional.md
-│       ├── cahier.md
-│       └── convert_to_markdown.py
-│   └── diagrams/
-│       ├── class/
-│       └── userCases/
-├── backend/             # Laravel 12 REST API
-│   ├── app/             # Models, Controllers, Services, Enums
-│   ├── config/          # Laravel config files
-│   ├── database/        # SQLite DB, migrations, seeders, factories
-│   ├── lang/            # Localization
-│   ├── public/          # Public assets
-│   ├── resources/       # Views, CSS, JS
-│   ├── routes/          # API & web routes
-│   ├── storage/         # File storage
-│   ├── tests/           # Feature & Unit tests
-│   ├── composer.json    # PHP dependencies
-│   └── package.json     # JS build tools (Vite, Tailwind)
-├── frontend/            # React 18 + Ant Design + Tailwind
-│   ├── public/          # Static assets
-│   ├── src/             # Main app code
-│   │   ├── admin/       # Admin panel (Sessions, Users, Categories, Feedback, Notifications, Registrations)
-│   │   ├── components/  # Shared components (Navigation, Dashboards, Modals, etc.)
-│   │   ├── contexts/    # Auth, global state
-│   │   ├── hooks/       # Custom hooks
-│   │   ├── pages/       # Main pages (Home, Login, Dashboard, etc.)
-│   │   └── services/    # API service layer
-│   ├── package.json     # Frontend dependencies
-│   └── tailwind.config.js
-└── README.md
+```bash
+# Clone the repository
+git clone <repository-url>
+cd MySkills/backend
+
+# Install PHP dependencies
+composer install
+
+# Environment setup
+cp .env.example .env
+# Edit .env with your database and email configuration
+
+# Generate application key
+php artisan key:generate
+
+# Run migrations and seed data
+php artisan migrate --seed
+
+# Install and build frontend assets
+npm install && npm run dev
+
+# Start the development server
+php artisan serve
 ```
 
-## 🗂️ Backend Models & Entities
+Your API will be available at `http://localhost:8000`
 
-Below is a summary of the main backend models/entities and their relationships:
+### Frontend Setup
 
-### User
+```bash
+# Navigate to frontend directory
+cd ../frontend
 
-- Represents all users (admin, coordinator, trainer, trainee).
-- Fields: id, first_name, last_name, email, password, phone, role (enum), status (enum), is_active, profile_picture, timestamps.
-- Relationships: Has many Registrations, Notifications, CourseCompletions; can be a Trainer or Coordinator for TrainingSessions.
+# Install dependencies
+npm install
 
-### Category
-
-- Groups training sessions by topic/skill.
-- Fields: id, name, description, is_active, timestamps.
-- Relationships: Has many TrainingSessions.
-
-### TrainingSession
-
-- Represents a scheduled training event.
-- Fields: id, category_id, coordinator_id, trainer_id, date, end_date, start_time, end_time, location, max_participants, skill_name, skill_description, status, timestamps.
-- Relationships: Belongs to Category, Coordinator, Trainer; has many TrainingCourses, Registrations, Feedback, SessionCompletions.
-
-### TrainingCourse
-
-- A course within a session (e.g., a module or topic).
-- Fields: id, training_session_id, title, description, duration_hours, created_by, is_active, timestamps.
-- Relationships: Belongs to TrainingSession; has many CourseContents, CourseCompletions.
-
-### CourseContent
-
-- Content/material for a course (text, video, file, etc.).
-- Fields: id, training_course_id, content, type (enum), timestamps.
-- Relationships: Belongs to TrainingCourse.
-
-### Registration
-
-- Tracks a user's registration for a session.
-- Fields: id, user_id, training_session_id, registered_at, status (enum), timestamps.
-- Relationships: Belongs to User and TrainingSession; has one Feedback, one SessionCompletion.
-
-### CourseCompletion
-
-- Tracks a user's completion of a course.
-- Fields: id, user_id, training_course_id, status, completed_at, timestamps.
-- Relationships: Belongs to User and TrainingCourse.
-
-### SessionCompletion
-
-- Tracks a user's completion of a session (and certificate issuance).
-- Fields: id, registration_id, training_session_id, courses_completed, total_courses, completion_notes, started_at, completed_at, certificate_issued, certificate_url, status, timestamps.
-- Relationships: Belongs to Registration and TrainingSession.
-
-### Feedback
-
-- User feedback for a session.
-- Fields: id, registration_id, training_session_id, rating, comment, timestamps.
-- Relationships: Belongs to Registration and TrainingSession.
-
-### Notification
-
-- In-app/email notifications for users.
-- Fields: id, user_id, type, title, message, data (json), priority (enum), is_read, read_at, action_url, icon, expires_at, timestamps.
-- Relationships: Belongs to User.
-
----
----
-
-## 🚀 Getting Started
-
-### Backend (Laravel)
-
-1. Install PHP 8.2+, Composer, Node.js
-2. `cd backend`
-3. `composer install`
-4. `cp .env.example .env` and configure DB (default: SQLite)
-5. `php artisan migrate --seed`
-6. `npm install && npm run dev` (for Vite/Tailwind)
-7. `php artisan serve` (API runs on <http://localhost:8000>)
-
-### Frontend (React)
-
-1. Install Node.js
-2. `cd frontend`
-3. `npm install`
-4. `npm run dev` (App runs on <http://localhost:5173>)
-
----
-
-## 🔗 API Endpoints
-
-See routes for full REST API:
-
-- `/api/users` (CRUD, roles, profile, stats)
-- `/api/categories` (CRUD, deactivate)
-- `/api/training-sessions` (CRUD, filter by trainer/coordinator/category)
-- `/api/training-courses` and `/api/courses` (CRUD, toggle active)
-- `/api/registrations` (CRUD, approve/reject, stats)
-- `/api/attendances` (CRUD)
-- `/api/feedbacks` (CRUD, by session/user)
-- `/api/session-completions` (CRUD, mark completed, certificates)
-- `/api/notifications` (CRUD, in-app/email notifications)
-- `/api/system-health` (server, DB, storage status)
-
----
-
-## 📦 Example API Request/Response
-
-**Create a new session (POST /api/training-sessions):**
-
-```json
-{
-  "category_id": 1,
-  "trainer_id": 2,
-  "coordinator_id": 3,
-  "date": "2025-07-20",
-  "start_time": "09:00",
-  "end_time": "12:00",
-  "location": "Room 101",
-  "max_participants": 20,
-  "skill_name": "Excel Basics",
-  "skill_description": "Intro to Excel for business."
-}
+# Start development server
+npm run dev
 ```
 
-**Response:**
+Your application will be available at `http://localhost:5173`
 
-```json
-{
-  "id": 5,
-  "category_id": 1,
-  "trainer_id": 2,
-  "coordinator_id": 3,
-  "date": "2025-07-20",
-  "start_time": "09:00",
-  "end_time": "12:00",
-  "location": "Room 101",
-  "max_participants": 20,
-  "skill_name": "Excel Basics",
-  "skill_description": "Intro to Excel for business.",
-  "created_at": "2025-07-18T10:00:00Z",
-  "updated_at": "2025-07-18T10:00:00Z"
-}
-```
+### 🔧 Environment Configuration
 
----
+#### Backend (.env)
 
-## ⚙️ Environment Variables
+```bash
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=myskills
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 
-### Backend (.env)
-
-### Backend (.env)
-
-- `DB_CONNECTION=sqlite` (or `mysql`)
-- `DB_DATABASE=...`
-- `DB_USERNAME=...`
-- `DB_PASSWORD=...`
-- `APP_KEY=...`
-- `APP_URL=http://localhost:8000`
-
-#### Email (SMTP) Configuration
-
-```
+# Email Configuration
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=465
@@ -278,84 +212,223 @@ MAIL_PASSWORD=your_app_password
 MAIL_ENCRYPTION=ssl
 MAIL_FROM_ADDRESS=your_email@gmail.com
 MAIL_FROM_NAME="MySkills"
-```
 
-#### Imgbb API Configuration
-
-```
+# Image Upload Service
 IMAGEBB_API_KEY=your_imgbb_api_key
 IMAGEBB_URL=https://api.imgbb.com/1/upload
 ```
 
-### Frontend
+---
 
-- No custom .env required for local dev (uses Vite defaults)
+## 📊 Project Status & Roadmap
+
+- [x] **Analysis & Design** (Week 1)
+- [x] **Backend Development** (Weeks 2-3)
+- [x] **Frontend Development** (Weeks 4-5)
+- [x] **Authentication & Notifications** (Complete)
+- [x] **Password Reset System** (Complete)
+- [ ] **Testing & Quality Assurance** (Week 6)
+- [ ] **Documentation Finalization** (Week 6)
 
 ---
 
-## 🧩 Component Architecture
+## 🏗️ Architecture Overview
 
-### User Interface Components (`src/components/`)
+### Project Structure
 
-- **Navigation:** Responsive navbar, theme switch, notification badge, avatar dropdown
-- **GlassmorphismBackground:** Animated, modern background for all pages
-- **LoadingSpinner:** Reusable spinner with glassmorphism style
-- **Dashboards:** TraineeDashboard, TrainerDashboard, CoordinatorDashboard (role-based)
-- **SessionDetails:** Detailed session info, comments, feedback, attendance
-- **Modals:** CreateCourseModal, CreateSessionModal, DeleteCourseContentModal, EditCourseContentModal, ManageCourseContentModal, UpdateSessionModal
+```
+MySkills/
+├── 📁 docs/                    # Documentation & specifications
+│   ├── specifications/         # Project requirements
+│   └── diagrams/              # UML & system diagrams
+├── 🔧 backend/                 # Laravel API
+│   ├── app/                   # Application logic
+│   │   ├── Models/            # Eloquent models
+│   │   ├── Http/Controllers/  # API controllers
+│   │   └── Services/          # Business logic
+│   ├── database/              # Migrations & seeders
+│   └── routes/api.php         # API routes
+├── 🎨 frontend/                # React application
+│   ├── src/
+│   │   ├── components/        # Reusable components
+│   │   ├── pages/            # Application pages
+│   │   ├── admin/            # Admin panel
+│   │   ├── contexts/         # React contexts
+│   │   └── services/         # API services
+│   └── public/               # Static assets
+└── README.md
+```
 
-### Admin Components (`src/admin/components/`)
+### Core Models & Relationships
 
-- **AdminSidebar:** Navigation for admin routes
-- **CRUD Modals:** For users, sessions, categories, feedback, notifications, registrations
-- **Details Modals:** UserDetailsModal, SessionDetailsModal, etc.
-
-All components are modular, reusable, and styled for a modern, accessible UI.
+```mermaid
+erDiagram
+    User {
+        int id
+        string first_name
+        string last_name
+        string email
+        enum role
+        enum status
+        boolean is_active
+    }
+    
+    TrainingSession {
+        int id
+        int category_id
+        int coordinator_id
+        int trainer_id
+        date date
+        time start_time
+        time end_time
+        string location
+        int max_participants
+    }
+    
+    Registration {
+        int id
+        int user_id
+        int training_session_id
+        enum status
+        timestamp registered_at
+    }
+    
+    User ||--o{ Registration : "registers for"
+    TrainingSession ||--o{ Registration : "has"
+    User ||--o{ TrainingSession : "coordinates/trains"
+```
 
 ---
 
-## 🧑‍💻 Development & Contribution
+## 🔗 API Documentation
 
-- Clone the repo and follow the setup steps above.
-- Run backend tests: `cd backend && php artisan test`
-- Run frontend lint: `cd frontend && npm run lint`
-- Pull requests and issues welcome!
+### Authentication Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/login` | User login |
+| `POST` | `/api/auth/register` | User registration |
+| `POST` | `/api/auth/logout` | User logout |
+| `POST` | `/api/auth/forgot-password` | Password reset request |
+
+### Core Resource Endpoints
+
+| Resource | Endpoints | Description |
+|----------|-----------|-------------|
+| **Users** | `/api/users`<br>`/api/users/{id}`<br>`/api/users/{id}/deactivate`<br>`/api/users/{id}/ban`<br>`/api/users/profile`<br>`/api/users/change-password` | User management, profiles, deactivate/ban, profile & password update |
+| **Categories** | `/api/categories`<br>`/api/categories/{id}`<br>`/api/categories/{category_id}/deactivate` | Training categories CRUD & deactivate |
+| **Sessions** | `/api/training-sessions`<br>`/api/training-sessions/{id}` | Training sessions CRUD |
+| **Courses** | `/api/training-courses`<br>`/api/training-courses/{id}` | Course content CRUD |
+| **Registrations** | `/api/registrations`<br>`/api/registrations/{id}`<br>`/api/registrations/status/{sessionId}`<br>`/api/registrations/session/{sessionId}`<br>`/api/registrations/status/pending/{coordinatorId}`<br>`/api/registrations/user/{user}` | Session registrations, status, by session/user, pending |
+| **Feedback** | `/api/feedbacks`<br>`/api/feedbacks/{id}` | User feedback CRUD |
+| **Notifications** | `/api/notifications`<br>`/api/notifications/{id}` | System notifications CRUD |
+| **Attendances** | `/api/attendances`<br>`/api/attendances/{id}` | Attendance tracking CRUD |
+| **Session Completion** | `/api/session-completions`<br>`/api/session-completions/{id}`<br>`/api/session-completions/{id}/mark-completed`<br>`/api/session-completions/{id}/generate-certificate`<br>`/api/registrations/{registrationId}/session-completion` | Session completion, mark as completed, generate certificate |
+| **Skills** | `/api/skills`<br>`/api/skills/{id}`<br>`/api/users/skills` | User skills management |
+| **System Health** | `/api/health` | System health check |
+
+### Example API Usage
+
+**Create Training Session**
+
+```bash
+POST /api/training-sessions
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "category_id": 1,
+  "trainer_id": 2,
+  "coordinator_id": 3,
+  "date": "2025-07-20",
+  "start_time": "09:00",
+  "end_time": "12:00",
+  "location": "Room 101",
+  "max_participants": 20,
+  "skill_name": "Excel Basics",
+  "skill_description": "Introduction to Excel for business applications"
+}
+```
 
 ---
 
-## 📚 Documentation
+## 🧪 Testing
 
-- Glassmorphism_Navigation_Features.md: UI/UX design details
-- Navigation_Transformation.md: Navigation system evolution
-- specifications: Project requirements and analysis
+### Backend Tests
+
+```bash
+cd backend
+php artisan test
+```
+
+### Frontend Linting
+
+```bash
+cd frontend
+npm run lint
+```
+
+### Test Coverage
+
+- **Unit Tests**: Model validation, service logic
+- **Feature Tests**: API endpoints, authentication flows
+- **Integration Tests**: Complete user workflows
+
+---
+
+## 🔧 Development Tools & Packages
+
+### Backend Dependencies
+
+- **Core**: Laravel Framework, Laravel Sanctum
+- **Image Processing**: Intervention Image
+- **Testing**: PHPUnit, Faker
+- **Documentation**: Scribe API Documentation
+
+### Frontend Dependencies
+
+- **UI Framework**: React, Ant Design, Tailwind CSS
+- **Utilities**: Axios, date-fns, React Router DOM
+- **Media**: React Player, React YouTube
+- **Development**: Vite, ESLint, PostCSS
 
 ---
 
-## 🧰 Used Packages & External APIs
+## 🤝 Contributing
 
-### Backend
+We welcome contributions! Please follow these steps:
 
-- [**Laravel Framework**](https://laravel.com/): Core backend
-- [**laravel/sanctum**](https://laravel.com/docs/12.x/sanctum): API authentication
-- [**intervention/image**](https://image.intervention.io/): Image manipulation, certificate generation
-- [**fakerphp/faker**](https://fakerphp.github.io/): Test data
-- [**phpunit/phpunit**](https://phpunit.de/): Testing
-- [**knuckleswtf/scribe**](https://scribe.knuckles.wtf/): API docs
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-### Frontend
+### Development Guidelines
 
-- [**React**](https://react.dev/), [**Vite**](https://vitejs.dev/): UI and build
-- [**Tailwind CSS**](https://tailwindcss.com/), [**Ant Design**](https://ant.design/), [**FontAwesome**](https://fontawesome.com/): Styling and icons
-- [**Axios**](https://axios-http.com/): HTTP client
-- [**date-fns**](https://date-fns.org/), [**moment**](https://momentjs.com/): Date/time utilities
-- [**react-router-dom**](https://reactrouter.com/): Routing
-- [**react-player**](https://github.com/cookpete/react-player), [**react-youtube**](https://github.com/tjallingt/react-youtube), [**yet-another-react-lightbox**](https://yet-another-react-lightbox.com/): Media
-- [**ESLint**](https://eslint.org/), [**PostCSS**](https://postcss.org/), [**autoprefixer**](https://github.com/postcss/autoprefixer): Linting and CSS tooling
-
-### External APIs
-
-- [**Imgbb API**](https://api.imgbb.com/): Image uploads (CourseContentController, imageService)
-- [**Laravel Sanctum**](https://laravel.com/docs/12.x/sanctum): API tokens
-- [**Intervention Image**](https://image.intervention.io/): Dynamic image/certificate generation
+- Follow PSR-12 coding standards for PHP
+- Use ESLint configuration for JavaScript/React
+- Write tests for new features
+- Update documentation as needed
 
 ---
+
+## 📝 License
+
+This project is developed as part of an academic internship program. Please contact the development team for licensing information.
+
+---
+
+## 📞 Support & Contact
+
+For questions, issues, or contributions:
+
+- **Create an issue** in the GitHub repository
+- **Contact the development team** through the university channels
+- **Check the documentation** in the `/docs` folder
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ during Esprit Summer Internship 2025</strong>
+</p>
