@@ -124,18 +124,6 @@ function AdminSidebar() {
                     })}
                 </nav>
 
-                {/* Settings Link */}
-                <div className="mb-2 px-3">
-                    <button
-                        onClick={() => handleNavClick('/admin/settings')}
-                        className="flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-gray-300 hover:bg-white/10 hover:text-white w-full text-left transition-colors"
-                    >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5">
-                            <SettingOutlined className="text-lg" />
-                        </div>
-                        <span className="flex-1 text-base">Settings</span>
-                    </button>
-                </div>
 
                 {/* Spacer to push content down */}
                 <div className="flex-grow"></div>
