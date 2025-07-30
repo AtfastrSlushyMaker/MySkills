@@ -74,13 +74,23 @@ MySkills/
 │   ├── Glassmorphism_Navigation_Features.md
 │   ├── Navigation_Transformation.md
 │   └── specifications/
+│       ├── Cahier_des_Charges_MySkills_old.docx
+│       ├── Cahier_des_Charges_MySkills.xml
+│       ├── Cahier_des_Charges_Professional.md
+│       ├── cahier.md
+│       └── convert_to_markdown.py
+│   └── diagrams/
+│       ├── class/
+│       └── userCases/
 ├── backend/             # Laravel 12 REST API
 │   ├── app/             # Models, Controllers, Services, Enums
 │   ├── config/          # Laravel config files
 │   ├── database/        # SQLite DB, migrations, seeders, factories
+│   ├── lang/            # Localization
 │   ├── public/          # Public assets
 │   ├── resources/       # Views, CSS, JS
 │   ├── routes/          # API & web routes
+│   ├── storage/         # File storage
 │   ├── tests/           # Feature & Unit tests
 │   ├── composer.json    # PHP dependencies
 │   └── package.json     # JS build tools (Vite, Tailwind)
@@ -98,6 +108,71 @@ MySkills/
 └── README.md
 ```
 
+## 🗂️ Backend Models & Entities
+
+Below is a summary of the main backend models/entities and their relationships:
+
+### User
+
+- Represents all users (admin, coordinator, trainer, trainee).
+- Fields: id, first_name, last_name, email, password, phone, role (enum), status (enum), is_active, profile_picture, timestamps.
+- Relationships: Has many Registrations, Notifications, CourseCompletions; can be a Trainer or Coordinator for TrainingSessions.
+
+### Category
+
+- Groups training sessions by topic/skill.
+- Fields: id, name, description, is_active, timestamps.
+- Relationships: Has many TrainingSessions.
+
+### TrainingSession
+
+- Represents a scheduled training event.
+- Fields: id, category_id, coordinator_id, trainer_id, date, end_date, start_time, end_time, location, max_participants, skill_name, skill_description, status, timestamps.
+- Relationships: Belongs to Category, Coordinator, Trainer; has many TrainingCourses, Registrations, Feedback, SessionCompletions.
+
+### TrainingCourse
+
+- A course within a session (e.g., a module or topic).
+- Fields: id, training_session_id, title, description, duration_hours, created_by, is_active, timestamps.
+- Relationships: Belongs to TrainingSession; has many CourseContents, CourseCompletions.
+
+### CourseContent
+
+- Content/material for a course (text, video, file, etc.).
+- Fields: id, training_course_id, content, type (enum), timestamps.
+- Relationships: Belongs to TrainingCourse.
+
+### Registration
+
+- Tracks a user's registration for a session.
+- Fields: id, user_id, training_session_id, registered_at, status (enum), timestamps.
+- Relationships: Belongs to User and TrainingSession; has one Feedback, one SessionCompletion.
+
+### CourseCompletion
+
+- Tracks a user's completion of a course.
+- Fields: id, user_id, training_course_id, status, completed_at, timestamps.
+- Relationships: Belongs to User and TrainingCourse.
+
+### SessionCompletion
+
+- Tracks a user's completion of a session (and certificate issuance).
+- Fields: id, registration_id, training_session_id, courses_completed, total_courses, completion_notes, started_at, completed_at, certificate_issued, certificate_url, status, timestamps.
+- Relationships: Belongs to Registration and TrainingSession.
+
+### Feedback
+
+- User feedback for a session.
+- Fields: id, registration_id, training_session_id, rating, comment, timestamps.
+- Relationships: Belongs to Registration and TrainingSession.
+
+### Notification
+
+- In-app/email notifications for users.
+- Fields: id, user_id, type, title, message, data (json), priority (enum), is_read, read_at, action_url, icon, expires_at, timestamps.
+- Relationships: Belongs to User.
+
+---
 ---
 
 ## 🚀 Getting Started

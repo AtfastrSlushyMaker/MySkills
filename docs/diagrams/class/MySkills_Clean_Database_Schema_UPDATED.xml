@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" version="27.2.0">
+  <diagram name="Database Schema">
+    <mxGraphModel dx="1500" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- User -->
+        <mxCell id="user" value="User" style="swimlane;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="user_fields" value="id: int (PK)&#xa;first_name: string&#xa;last_name: string&#xa;email: string (unique)&#xa;password: string&#xa;phone: string&#xa;role: enum&#xa;status: enum&#xa;is_active: bool&#xa;profile_picture: string&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="user">
+          <mxGeometry y="26" width="180" height="160" as="geometry" />
+        </mxCell>
+        <!-- Category -->
+        <mxCell id="category" value="Category" style="swimlane;fontStyle=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="300" y="40" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="category_fields" value="id: int (PK)&#xa;name: string&#xa;description: text&#xa;is_active: bool&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="category">
+          <mxGeometry y="26" width="160" height="80" as="geometry" />
+        </mxCell>
+        <!-- TrainingSession -->
+        <mxCell id="session" value="TrainingSession" style="swimlane;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="200" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="session_fields" value="id: int (PK)&#xa;category_id: int (FK)&#xa;coordinator_id: int (FK)&#xa;trainer_id: int (FK)&#xa;date: date&#xa;end_date: date&#xa;start_time: string&#xa;end_time: string&#xa;location: string&#xa;max_participants: int&#xa;skill_name: string&#xa;skill_description: string&#xa;status: enum&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="session">
+          <mxGeometry y="26" width="200" height="180" as="geometry" />
+        </mxCell>
+        <!-- TrainingCourse -->
+        <mxCell id="course" value="TrainingCourse" style="swimlane;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="300" y="300" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="course_fields" value="id: int (PK)&#xa;training_session_id: int (FK)&#xa;title: string&#xa;description: text&#xa;duration_hours: int&#xa;created_by: int (FK)&#xa;is_active: bool&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="course">
+          <mxGeometry y="26" width="200" height="110" as="geometry" />
+        </mxCell>
+        <!-- CourseContent -->
+        <mxCell id="content" value="CourseContent" style="swimlane;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="540" y="300" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="content_fields" value="id: int (PK)&#xa;training_course_id: int (FK)&#xa;content: text&#xa;type: enum&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="content">
+          <mxGeometry y="26" width="180" height="60" as="geometry" />
+        </mxCell>
+        <!-- Registration -->
+        <mxCell id="registration" value="Registration" style="swimlane;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="40" y="600" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="registration_fields" value="id: int (PK)&#xa;user_id: int (FK)&#xa;training_session_id: int (FK)&#xa;registered_at: datetime&#xa;status: enum&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="registration">
+          <mxGeometry y="26" width="200" height="70" as="geometry" />
+        </mxCell>
+        <!-- CourseCompletion -->
+        <mxCell id="coursecompletion" value="CourseCompletion" style="swimlane;fontStyle=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="300" y="600" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="coursecompletion_fields" value="id: int (PK)&#xa;user_id: int (FK)&#xa;training_course_id: int (FK)&#xa;status: string&#xa;completed_at: datetime&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="coursecompletion">
+          <mxGeometry y="26" width="180" height="60" as="geometry" />
+        </mxCell>
+        <!-- SessionCompletion -->
+        <mxCell id="sessioncompletion" value="SessionCompletion" style="swimlane;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="540" y="600" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sessioncompletion_fields" value="id: int (PK)&#xa;registration_id: int (FK)&#xa;training_session_id: int (FK)&#xa;courses_completed: int&#xa;total_courses: int&#xa;completion_notes: text&#xa;started_at: datetime&#xa;completed_at: datetime&#xa;certificate_issued: bool&#xa;certificate_url: string&#xa;status: string&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="sessioncompletion">
+          <mxGeometry y="26" width="200" height="80" as="geometry" />
+        </mxCell>
+        <!-- Feedback -->
+        <mxCell id="feedback" value="Feedback" style="swimlane;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="800" y="300" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="feedback_fields" value="id: int (PK)&#xa;registration_id: int (FK)&#xa;training_session_id: int (FK)&#xa;rating: int&#xa;comment: text&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="feedback">
+          <mxGeometry y="26" width="180" height="60" as="geometry" />
+        </mxCell>
+        <!-- Notification -->
+        <mxCell id="notification" value="Notification" style="swimlane;fontStyle=1;fillColor=#ffd966;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="800" y="40" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="notification_fields" value="id: int (PK)&#xa;user_id: int (FK)&#xa;type: string&#xa;title: string&#xa;message: text&#xa;data: json&#xa;priority: enum&#xa;is_read: bool&#xa;read_at: datetime&#xa;action_url: string&#xa;icon: string&#xa;expires_at: datetime&#xa;created_at: timestamp&#xa;updated_at: timestamp" style="text;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="notification">
+          <mxGeometry y="26" width="220" height="80" as="geometry" />
+        </mxCell>
+        <!-- Relationships -->
+        <mxCell id="user_registrations" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;" edge="1" parent="1" source="user" target="registration">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user_notifications" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#ffd966;" edge="1" parent="1" source="user" target="notification">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user_coursecompletions" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#e1d5e7;" edge="1" parent="1" source="user" target="coursecompletion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user_trainingcourses" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d5e8d4;" edge="1" parent="1" source="user" target="course">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="category_sessions" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;" edge="1" parent="1" source="category" target="session">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="session_courses" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;" edge="1" parent="1" source="session" target="course">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="session_registrations" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;" edge="1" parent="1" source="session" target="registration">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="session_feedbacks" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d79b00;" edge="1" parent="1" source="session" target="feedback">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="session_sessioncompletions" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;" edge="1" parent="1" source="session" target="sessioncompletion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="course_content" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;" edge="1" parent="1" source="course" target="content">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="course_coursecompletions" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#e1d5e7;" edge="1" parent="1" source="course" target="coursecompletion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="registration_feedback" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d79b00;" edge="1" parent="1" source="registration" target="feedback">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="registration_sessioncompletion" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;" edge="1" parent="1" source="registration" target="sessioncompletion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
