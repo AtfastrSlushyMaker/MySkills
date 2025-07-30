@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class NotificationController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * List all notifications (admin only).
      */
@@ -138,7 +146,19 @@ class NotificationController extends Controller
             'expires_at' => 'nullable|date|after:now'
         ]);
 
-        $notification = Notification::create($request->all());
+        $user = User::findOrFail($request->user_id);
+        // Use the NotificationService's generic creation logic for custom notifications
+        $notification = $this->notificationService->sendCustomNotification(
+            $user,
+            $request->type,
+            $request->title,
+            $request->message,
+            $request->input('priority', 'normal'),
+            $request->input('action_url'),
+            $request->input('icon'),
+            $request->input('expires_at'),
+            $request->input('data', [])
+        );
 
         return response()->json([
             'message' => 'Notification created successfully',
@@ -163,13 +183,20 @@ class NotificationController extends Controller
             'expires_at' => 'nullable|date|after:now'
         ]);
 
-        $notificationData = $request->except('user_ids');
         $notifications = [];
-
         foreach ($request->user_ids as $userId) {
-            $notifications[] = Notification::create(array_merge($notificationData, [
-                'user_id' => $userId
-            ]));
+            $user = User::findOrFail($userId);
+            $notifications[] = $this->notificationService->sendCustomNotification(
+                $user,
+                $request->type,
+                $request->title,
+                $request->message,
+                $request->input('priority', 'normal'),
+                $request->input('action_url'),
+                $request->input('icon'),
+                $request->input('expires_at'),
+                $request->input('data', [])
+            );
         }
 
         return response()->json([

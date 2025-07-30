@@ -7,6 +7,59 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
+    // CSS-in-JS styles to ensure proper isolation
+    const globalStyles = `
+    .backoffice-course-update-modal .ant-input,
+    .backoffice-course-update-modal .ant-input-number,
+    .backoffice-course-update-modal .ant-select-selector,
+    .backoffice-course-update-modal .ant-input-affix-wrapper {
+        background-color: #ffffff !important;
+        color: #1f2937 !important;
+        border-color: #d1d5db !important;
+    }
+
+    .backoffice-course-update-modal .ant-input::placeholder,
+    .backoffice-course-update-modal .ant-input-number input::placeholder {
+        color: #9ca3af !important;
+    }
+
+    .backoffice-course-update-modal .ant-select-selection-placeholder {
+        color: #9ca3af !important;
+    }
+
+    .backoffice-course-update-modal .ant-form-item-label > label {
+        color: #374151 !important;
+        font-weight: 500 !important;
+    }
+
+    .backoffice-course-update-modal .ant-input:focus,
+    .backoffice-course-update-modal .ant-input-focused,
+    .backoffice-course-update-modal .ant-input-number:focus,
+    .backoffice-course-update-modal .ant-input-number-focused,
+    .backoffice-course-update-modal .ant-select-focused .ant-select-selector {
+        border-color: #06b6d4 !important;
+        box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1) !important;
+    }
+    `;
+
+    // Inject styles
+    useEffect(() => {
+        const styleId = 'backoffice-course-modal-styles';
+        if (!document.getElementById(styleId)) {
+            const styleElement = document.createElement('style');
+            styleElement.id = styleId;
+            styleElement.textContent = globalStyles;
+            document.head.appendChild(styleElement);
+        }
+
+        return () => {
+            // Cleanup on unmount
+            const styleElement = document.getElementById(styleId);
+            if (styleElement) {
+                styleElement.remove();
+            }
+        };
+    }, []);
     const [courseForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [contentId, setContentId] = useState(null);
@@ -30,7 +83,7 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                         setContentType(content.type || 'text');
                         setContentId(content.id);
                         if (content.type === 'image' && content.content) {
-                            setImagePreview(content.content); // Assuming content is image URL
+                            setImagePreview(content.content);
                         } else {
                             setImagePreview(null);
                         }
@@ -106,14 +159,143 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
         }
     };
 
+    // Scoped styles object
+    const modalStyles = {
+        title: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#1f2937',
+            borderBottom: '1px solid #e5e7eb',
+            paddingBottom: '16px'
+        },
+        titleIcon: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+            borderRadius: '50%',
+            color: 'white'
+        },
+        titleText: {
+            background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+        },
+        modalBody: {
+            padding: '24px',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+        },
+        contentWrapper: {
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '24px',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb'
+        },
+        headerSection: {
+            background: 'linear-gradient(135deg, #ecfdf5 0%, #dbeafe 100%)',
+            padding: '16px',
+            borderRadius: '8px',
+            marginBottom: '24px',
+            borderLeft: '4px solid #06b6d4'
+        },
+        headerContent: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+        },
+        headerIcon: {
+            width: '32px',
+            height: '32px',
+            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        headerTitle: {
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '4px'
+        },
+        headerSubtitle: {
+            color: '#6b7280',
+            fontSize: '14px'
+        },
+        loadingWrapper: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '48px 0'
+        },
+        loadingText: {
+            marginLeft: '12px',
+            color: '#6b7280'
+        },
+        label: {
+            color: '#374151',
+            fontWeight: '500'
+        },
+        contentSection: {
+            background: 'linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%)',
+            padding: '16px',
+            borderRadius: '8px',
+            border: '1px solid #bfdbfe',
+            marginBottom: '16px'
+        },
+        contentSectionTitle: {
+            color: '#1f2937',
+            fontWeight: '500',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+        },
+        contentIcon: {
+            width: '24px',
+            height: '24px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        imagePreviewWrapper: {
+            backgroundColor: 'white',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb'
+        },
+        imagePreviewText: {
+            fontSize: '14px',
+            color: '#6b7280',
+            marginBottom: '8px',
+            fontWeight: '500'
+        },
+        footer: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '16px',
+            borderTop: '1px solid #e5e7eb'
+        }
+    };
+
     return (
         <Modal
             title={
-                <div className="flex items-center gap-3 text-xl font-bold text-gray-800 border-b border-gray-200 pb-4">
-                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-white">
-                        <BookOutlined className="text-lg" />
+                <div style={modalStyles.title}>
+                    <div style={modalStyles.titleIcon}>
+                        <BookOutlined style={{ fontSize: '18px' }} />
                     </div>
-                    <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    <span style={modalStyles.titleText}>
                         Update Course
                     </span>
                 </div>
@@ -122,34 +304,32 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
             onCancel={handleCancel}
             afterClose={handleCancel}
             footer={null}
-            className="update-course-modal"
+            className="backoffice-course-update-modal"
             width={600}
             centered
             styles={{
-                body: {
-                    padding: '24px',
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
-                }
+                body: modalStyles.modalBody
             }}
+            getContainer={false}
         >
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <div style={modalStyles.contentWrapper}>
                 {/* Header Section */}
-                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-4 rounded-lg mb-6 border-l-4 border-cyan-500">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
-                            <BookOutlined className="text-white text-sm" />
+                <div style={modalStyles.headerSection}>
+                    <div style={modalStyles.headerContent}>
+                        <div style={modalStyles.headerIcon}>
+                            <BookOutlined style={{ color: 'white', fontSize: '14px' }} />
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-1">Course Information</h3>
-                            <p className="text-gray-600 text-sm">Update course details and content</p>
+                            <h3 style={modalStyles.headerTitle}>Course Information</h3>
+                            <p style={modalStyles.headerSubtitle}>Update course details and content</p>
                         </div>
                     </div>
                 </div>
 
                 {contentLoading ? (
-                    <div className="flex items-center justify-center py-12">
+                    <div style={modalStyles.loadingWrapper}>
                         <Spin size="large" />
-                        <span className="ml-3 text-gray-600">Loading course data...</span>
+                        <span style={modalStyles.loadingText}>Loading course data...</span>
                     </div>
                 ) : (
                     <Form
@@ -161,26 +341,36 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                     >
                         <Form.Item
                             name="title"
-                            label={<span className="text-gray-700 font-medium">Course Title</span>}
+                            label={<span style={modalStyles.label}>Course Title</span>}
                             rules={[{ required: true, message: "Please enter the course title" }]}
                         >
                             <Input
                                 placeholder="Course Title"
                                 size="large"
-                                className="rounded-lg border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                                style={{
+                                    borderRadius: '8px',
+                                    borderColor: '#d1d5db',
+                                    backgroundColor: '#ffffff',
+                                    color: '#1f2937'
+                                }}
                                 autoFocus
                             />
                         </Form.Item>
 
                         <Form.Item
                             name="description"
-                            label={<span className="text-gray-700 font-medium">Description</span>}
+                            label={<span style={modalStyles.label}>Description</span>}
                             rules={[{ required: true, message: "Please enter a description" }]}
                         >
                             <TextArea
                                 placeholder="Description"
                                 size="large"
-                                className="rounded-lg border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                                style={{
+                                    borderRadius: '8px',
+                                    borderColor: '#d1d5db',
+                                    backgroundColor: '#ffffff',
+                                    color: '#1f2937'
+                                }}
                                 rows={4}
                                 showCount
                                 maxLength={500}
@@ -189,7 +379,7 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
 
                         <Form.Item
                             name="duration_hours"
-                            label={<span className="text-gray-700 font-medium">Duration (Hours)</span>}
+                            label={<span style={modalStyles.label}>Duration (Hours)</span>}
                             rules={[{ required: true, message: 'Duration is required' }]}
                         >
                             <Input
@@ -199,23 +389,28 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                                 step="0.5"
                                 placeholder="e.g., 8.5"
                                 size="large"
-                                className="rounded-lg border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                                style={{
+                                    borderRadius: '8px',
+                                    borderColor: '#d1d5db',
+                                    backgroundColor: '#ffffff',
+                                    color: '#1f2937'
+                                }}
                                 addonAfter="hours"
                             />
                         </Form.Item>
 
                         {/* Content Section */}
-                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200 mb-4">
-                            <h4 className="text-gray-800 font-medium mb-3 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-xs">📝</span>
+                        <div style={modalStyles.contentSection}>
+                            <h4 style={modalStyles.contentSectionTitle}>
+                                <div style={modalStyles.contentIcon}>
+                                    <span style={{ color: 'white', fontSize: '12px' }}>📝</span>
                                 </div>
                                 Course Content
                             </h4>
 
                             <Form.Item
                                 name="type"
-                                label={<span className="text-gray-700 font-medium">Content Type</span>}
+                                label={<span style={modalStyles.label}>Content Type</span>}
                                 rules={[{ required: true, message: 'Please select content type' }]}
                                 initialValue="text"
                             >
@@ -228,7 +423,17 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                                         resetImage();
                                         courseForm.setFieldsValue({ type: val, content: '' });
                                     }}
-                                    className="rounded-lg"
+                                    style={{
+                                        borderRadius: '8px'
+                                    }}
+                                    styles={{
+                                        popup: {
+                                            root: {
+                                                backgroundColor: '#ffffff',
+                                                color: '#1f2937'
+                                            }
+                                        }
+                                    }}
                                 >
                                     <Option value="text">📝 Text Content</Option>
                                     <Option value="video">🎥 Video</Option>
@@ -238,8 +443,8 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                             </Form.Item>
 
                             {contentType === 'image' ? (
-                                <Form.Item label={<span className="text-gray-700 font-medium">Upload Image</span>} required>
-                                    <div className="space-y-3">
+                                <Form.Item label={<span style={modalStyles.label}>Upload Image</span>} required>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                         <Upload
                                             accept="image/*"
                                             showUploadList={false}
@@ -254,19 +459,27 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                                             <Button
                                                 icon={<UploadOutlined />}
                                                 size="large"
-                                                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0"
+                                                style={{
+                                                    background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '8px'
+                                                }}
                                             >
                                                 Select Image
                                             </Button>
                                         </Upload>
                                         {imagePreview && (
-                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                                <p className="text-sm text-gray-600 mb-2 font-medium">Current Image:</p>
+                                            <div style={modalStyles.imagePreviewWrapper}>
+                                                <p style={modalStyles.imagePreviewText}>Current Image:</p>
                                                 <Image
                                                     src={imagePreview}
                                                     alt="Preview"
                                                     width={150}
-                                                    style={{ borderRadius: 8, border: '2px solid #06b6d4' }}
+                                                    style={{
+                                                        borderRadius: '8px',
+                                                        border: '2px solid #06b6d4'
+                                                    }}
                                                 />
                                             </div>
                                         )}
@@ -275,7 +488,7 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                             ) : (
                                 <Form.Item
                                     name="content"
-                                    label={<span className="text-gray-700 font-medium">Content</span>}
+                                    label={<span style={modalStyles.label}>Content</span>}
                                     rules={[
                                         { required: true, message: 'Content is required' },
                                         { min: 10, message: 'Content must be at least 10 characters' }
@@ -286,18 +499,24 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                                         rows={6}
                                         disabled={contentLoading}
                                         showCount
-                                        className="rounded-lg border-gray-300 focus:border-cyan-500 focus:ring-cyan-500"
+                                        style={{
+                                            borderRadius: '8px',
+                                            borderColor: '#d1d5db',
+                                            backgroundColor: '#ffffff',
+                                            color: '#1f2937'
+                                        }}
                                     />
                                 </Form.Item>
                             )}
                         </div>
 
                         {/* Footer Buttons */}
-                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                        <div style={modalStyles.footer}>
                             <Button
                                 onClick={handleCancel}
                                 disabled={loading}
                                 size="large"
+                                style={{ borderRadius: '8px' }}
                             >
                                 Cancel
                             </Button>
@@ -307,7 +526,11 @@ function CourseUpdateModal({ visible, course, onSuccess, onCancel }) {
                                 htmlType="submit"
                                 loading={loading}
                                 size="large"
-                                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 border-0"
+                                style={{
+                                    background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                                    border: 'none',
+                                    borderRadius: '8px'
+                                }}
                             >
                                 Update Course
                             </Button>

@@ -43,8 +43,10 @@ export const userApi = {
     },
     changePassword: (data) => api.post('/users/change-password', data),
 
+
     // Password Reset
-    resetPassword: (data) => api.post('/password/reset', data),
+    forgotPassword: (data) => api.post('/forgot-password', data),
+    resetPassword: (data) => api.post('/reset-password', data),
 
     // Email Verification
     verifyEmail: (data) => api.post('/email/verify', data),

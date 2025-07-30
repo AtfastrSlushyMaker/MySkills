@@ -45,6 +45,48 @@ class RegistrationController extends Controller
             'status' => 'required|in:'.implode(',', RegistrationStatus::values()),
         ]);
         $registration = Registration::create($validated);
+        // Notify user of registration submission
+        $user = $registration->user;
+        $session = $registration->trainingSession;
+        $course = ($session && ($session->trainingCourses()->first() ?: null));
+        if ($user && $course instanceof \App\Models\TrainingCourse) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_submitted',
+                'Registration Submitted',
+                "Your registration for {$course->title} has been submitted and is pending approval.\nSession: {$session->skill_name} on {$session->date} at {$session->location}.",
+                'normal',
+                "/courses/{$course->id}",
+                '📝',
+                null,
+                [
+                    'course_id' => $course->id,
+                    'registration_id' => $registration->id,
+                    'session_id' => $session->id,
+                    'session_date' => $session->date,
+                    'session_location' => $session->location,
+                    'session_skill' => $session->skill_name,
+                ]
+            );
+        } elseif ($user && $session) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_submitted',
+                'Registration Submitted',
+                "Your registration for session on {$session->date} at {$session->location} has been submitted and is pending approval.\nSession: {$session->skill_name}.",
+                'normal',
+                null,
+                '📝',
+                null,
+                [
+                    'session_id' => $session->id,
+                    'registration_id' => $registration->id,
+                    'session_date' => $session->date,
+                    'session_location' => $session->location,
+                    'session_skill' => $session->skill_name,
+                ]
+            );
+        }
         return response()->json($registration, 201);
     }
 
@@ -76,6 +118,25 @@ class RegistrationController extends Controller
      */
     public function destroy(Registration $registration)
     {
+        $user = $registration->user;
+        $session = $registration->trainingSession;
+        $course = ($session && ($session->trainingCourses()->first() ?: null));
+        if ($user && $course instanceof \App\Models\TrainingCourse) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_cancelled',
+                'Registration Cancelled',
+                "Your registration for {$course->title} has been cancelled.",
+                'high',
+                "/courses/{$course->id}",
+                '❌',
+                null,
+                [
+                    'course_id' => $course->id,
+                    'registration_id' => $registration->id,
+                ]
+            );
+        }
         $registration->delete();
         return response()->json(null, 204);
     }
@@ -92,6 +153,32 @@ class RegistrationController extends Controller
         }
         $registration->status = RegistrationStatus::CONFIRMED;
         $registration->save();
+
+        // Notify user of registration approval
+        $user = $registration->user;
+        $session = $registration->trainingSession;
+        $course = ($session && ($session->trainingCourses()->first() ?: null));
+        if ($user && $course instanceof \App\Models\TrainingCourse) {
+            app(\App\Services\NotificationService::class)->sendRegistrationConfirmation($user, $course);
+        } elseif ($user && $session) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_approved',
+                'Registration Approved',
+                "Your registration for session on {$session->date} at {$session->location} has been approved.\nSession: {$session->skill_name}.",
+                'normal',
+                null,
+                '✅',
+                null,
+                [
+                    'session_id' => $session->id,
+                    'registration_id' => $registration->id,
+                    'session_date' => $session->date,
+                    'session_location' => $session->location,
+                    'session_skill' => $session->skill_name,
+                ]
+            );
+        }
 
         return response()->json([
             'message' => 'Registration approved successfully',
@@ -114,6 +201,47 @@ class RegistrationController extends Controller
         $registration->status = RegistrationStatus::CANCELLED;
         $registration->save();
 
+        $user = $registration->user;
+        $session = $registration->trainingSession;
+        $course = ($session && ($session->trainingCourses()->first() ?: null));
+        if ($user && $course instanceof \App\Models\TrainingCourse) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_cancelled',
+                'Registration Cancelled',
+                "Your registration for {$course->title} has been cancelled.\nSession: {$session->skill_name} on {$session->date} at {$session->location}.",
+                'high',
+                "/courses/{$course->id}",
+                '❌',
+                null,
+                [
+                    'course_id' => $course->id,
+                    'registration_id' => $registration->id,
+                    'session_id' => $session->id,
+                    'session_date' => $session->date,
+                    'session_location' => $session->location,
+                    'session_skill' => $session->skill_name,
+                ]
+            );
+        } elseif ($user && $session) {
+            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                $user,
+                'registration_cancelled',
+                'Registration Cancelled',
+                "Your registration for session on {$session->date} at {$session->location} has been cancelled.\nSession: {$session->skill_name}.",
+                'high',
+                null,
+                '❌',
+                null,
+                [
+                    'session_id' => $session->id,
+                    'registration_id' => $registration->id,
+                    'session_date' => $session->date,
+                    'session_location' => $session->location,
+                    'session_skill' => $session->skill_name,
+                ]
+            );
+        }
         return response()->json([
             'message' => 'Registration rejected',
             'registration' => $registration->load(['user', 'trainingSession'])

@@ -33,6 +33,17 @@ class TrainingCourseController extends Controller
         ]);
 
         $course = TrainingCourse::create($validated);
+
+        // Notify all trainees about the new course
+        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService->sendToRole(
+            \App\Enums\UserRole::TRAINEE->value,
+            'new_course',
+            'New Course Available',
+            "A new course '{$course->title}' is now available for registration",
+            ['course_id' => $course->id]
+        );
+
         return response()->json($course->load(['trainingSession', 'creator']), 201);
     }
 

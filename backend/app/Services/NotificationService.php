@@ -7,9 +7,53 @@ use App\Models\User;
 use App\Models\TrainingCourse;
 use App\Models\TrainingSession;
 use App\Models\Registration;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GenericNotificationMail;
 
 class NotificationService
 {
+    /**
+     * Send a custom notification (for admin/system use).
+     */
+    public function sendCustomNotification(
+        User $user,
+        string $type,
+        string $title,
+        string $message,
+        string $priority = 'normal',
+        ?string $action_url = null,
+        ?string $icon = null,
+        $expires_at = null,
+        array $data = []
+    ): Notification {
+        // Send notification in-app
+        $notification = Notification::create([
+            'user_id' => $user->id,
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'priority' => $priority,
+            'action_url' => $action_url,
+            'icon' => $icon,
+            'expires_at' => $expires_at,
+            'data' => $data,
+        ]);
+
+        // Send email notification if user has email
+        if (!empty($user->email)) {
+            Mail::to($user->email)->send(
+                new GenericNotificationMail(
+                    $title,
+                    $message,
+                    $action_url ? url($action_url) : null,
+                    $action_url ? 'View Details' : null,
+                    (trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: ($user->name ?? null))
+                )
+            );
+        }
+
+        return $notification;
+    }
     /**
      * Send a course reminder notification.
      */

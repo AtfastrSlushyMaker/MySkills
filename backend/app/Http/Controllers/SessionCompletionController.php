@@ -98,6 +98,7 @@ class SessionCompletionController extends Controller
             // Set default values
             $validated['started_at'] = $validated['started_at'] ?? now();
 
+
             // Create the completion record
             $completion = SessionCompletion::create($validated);
 
@@ -113,6 +114,24 @@ class SessionCompletionController extends Controller
                             'certificate_url' => $data['certificate_url'],
                             'certificate_issued' => true
                         ]);
+                        // Notify user of certificate generation
+                        $user = $registration->user ?? null;
+                        if ($user) {
+                            app(\App\Services\NotificationService::class)->sendCustomNotification(
+                                $user,
+                                'certificate_generated',
+                                'Certificate Generated',
+                                'Your certificate is now available for download.',
+                                'normal',
+                                $data['certificate_url'],
+                                '📜',
+                                null,
+                                [
+                                    'certificate_url' => $data['certificate_url'],
+                                    'session_completion_id' => $completion->id,
+                                ]
+                            );
+                        }
                     }
                 } catch (\Exception $certError) {
                     Log::error('Certificate generation failed during session completion creation', [
@@ -121,6 +140,13 @@ class SessionCompletionController extends Controller
                     ]);
                     // Don't fail the entire operation if certificate generation fails
                 }
+            }
+
+            // Notify user of session completion (feedback request)
+            $user = $registration->user;
+            $session = $registration->trainingSession;
+            if ($user && $session) {
+                app(\App\Services\NotificationService::class)->sendFeedbackRequest($user, $session);
             }
 
             // Refresh and return the completion

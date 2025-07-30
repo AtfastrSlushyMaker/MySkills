@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 // Public auth routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [App\Http\Controllers\ForgotPasswordController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [App\Http\Controllers\ResetPasswordController::class, 'reset']);
 
 // Protected auth routes
 Route::middleware(['auth:sanctum'])->group(function () {

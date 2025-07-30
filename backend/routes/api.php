@@ -89,7 +89,7 @@ Route::get('/system-health', function () {
     ]);
 });
 
-// Authentication routes
+// Authentication routes (must be first to avoid shadowing by resource routes)
 require __DIR__.'/auth.php';
 
 // Resource routes for all models

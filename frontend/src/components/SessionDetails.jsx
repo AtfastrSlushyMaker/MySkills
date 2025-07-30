@@ -455,7 +455,9 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
         );
     }
 
-    const completionPercentage = courses.length > 0 ? (completedCourses.length / courses.length) * 100 : 0;
+    // Format completion percentage as a whole number with % sign
+    const rawCompletionPercentage = courses.length > 0 ? (completedCourses.length / courses.length) * 100 : 0;
+    const completionPercentage = Math.round(rawCompletionPercentage);
 
     return (
         <div style={{
@@ -540,6 +542,7 @@ const SessionDetails = ({ sessionId, onBack, canCreateCourse = true }) => {
                                                     '0%': '#06b6d4',
                                                     '100%': '#10b981'
                                                 }}
+                                                format={percent => `${percent}%`}
                                             />
                                         </div>
                                     )}

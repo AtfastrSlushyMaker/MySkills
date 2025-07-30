@@ -14,6 +14,8 @@ import SessionDetailsPage from './pages/SessionDetailsPage'
 import CategoriesPage from './pages/CategoriesPage'
 import CategorySessionsPage from './pages/CategorySessionsPage'
 import CourseContent from './components/CourseContent';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 
 import Navigation from './components/Navigation'
@@ -59,6 +61,8 @@ function ProtectedRoutes() {
           <Route path="/courses/:courseId" element={<CourseContent />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:categoryId" element={<CategorySessionsPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* 404 page for unknown routes */}
           <Route path="*" element={
