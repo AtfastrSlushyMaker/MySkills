@@ -24,7 +24,8 @@ MySkills is a full-stack web application for managing skills, training courses, 
 - User authentication and role-based access (admin, coordinator, trainer, trainee)
 - Category, course, and session management
 - Registration and attendance tracking
-- Feedback and notifications (in-app and email)
+- Feedback and notifications
+- Password reset and forgot password via email
 - Profile management with image upload
 - Responsive dashboards for each user role
 - RESTful API with validation and error handling
@@ -57,8 +58,9 @@ MySkills is a full-stack web application for managing skills, training courses, 
 ## 📊 Project Status & Timeline
 
 - [x] Analysis & Design (1 week)
-- [ ] Backend Development (2 weeks)
-- [ ] Frontend Development (2 weeks)
+- [x] Backend Development (2 weeks)
+- [x] Frontend Development (2 weeks)
+- [x] Notifications and password reset features (done)
 - [ ] Testing & Integration (0.5 week)
 - [ ] Documentation (0.5 week)
 
@@ -131,7 +133,7 @@ See routes for full REST API:
 - `/api/attendances` (CRUD)
 - `/api/feedbacks` (CRUD, by session/user)
 - `/api/session-completions` (CRUD, mark completed, certificates)
-- `/api/notifications` (planned)
+- `/api/notifications` (CRUD, in-app/email notifications)
 - `/api/system-health` (server, DB, storage status)
 
 ---
@@ -181,12 +183,34 @@ See routes for full REST API:
 
 ### Backend (.env)
 
+### Backend (.env)
+
 - `DB_CONNECTION=sqlite` (or `mysql`)
 - `DB_DATABASE=...`
 - `DB_USERNAME=...`
 - `DB_PASSWORD=...`
 - `APP_KEY=...`
 - `APP_URL=http://localhost:8000`
+
+#### Email (SMTP) Configuration
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS=your_email@gmail.com
+MAIL_FROM_NAME="MySkills"
+```
+
+#### Imgbb API Configuration
+
+```
+IMAGEBB_API_KEY=your_imgbb_api_key
+IMAGEBB_URL=https://api.imgbb.com/1/upload
+```
 
 ### Frontend
 
@@ -236,42 +260,27 @@ All components are modular, reusable, and styled for a modern, accessible UI.
 
 ### Backend
 
-- **Laravel Framework**: Core backend
-- **laravel/sanctum**: API authentication
-- **intervention/image**: Image manipulation, certificate generation
-- **fakerphp/faker**: Test data
-- **phpunit/phpunit**: Testing
-- **knuckleswtf/scribe**: API docs
+- [**Laravel Framework**](https://laravel.com/): Core backend
+- [**laravel/sanctum**](https://laravel.com/docs/12.x/sanctum): API authentication
+- [**intervention/image**](https://image.intervention.io/): Image manipulation, certificate generation
+- [**fakerphp/faker**](https://fakerphp.github.io/): Test data
+- [**phpunit/phpunit**](https://phpunit.de/): Testing
+- [**knuckleswtf/scribe**](https://scribe.knuckles.wtf/): API docs
 
 ### Frontend
 
-- **React, Vite**: UI and build
-- **Tailwind CSS, Ant Design, FontAwesome**: Styling and icons
-- **Axios**: HTTP client
-- **date-fns, moment**: Date/time utilities
-- **react-router-dom**: Routing
-- **react-player, react-youtube, yet-another-react-lightbox**: Media
-- **ESLint, PostCSS, autoprefixer**: Linting and CSS tooling
+- [**React**](https://react.dev/), [**Vite**](https://vitejs.dev/): UI and build
+- [**Tailwind CSS**](https://tailwindcss.com/), [**Ant Design**](https://ant.design/), [**FontAwesome**](https://fontawesome.com/): Styling and icons
+- [**Axios**](https://axios-http.com/): HTTP client
+- [**date-fns**](https://date-fns.org/), [**moment**](https://momentjs.com/): Date/time utilities
+- [**react-router-dom**](https://reactrouter.com/): Routing
+- [**react-player**](https://github.com/cookpete/react-player), [**react-youtube**](https://github.com/tjallingt/react-youtube), [**yet-another-react-lightbox**](https://yet-another-react-lightbox.com/): Media
+- [**ESLint**](https://eslint.org/), [**PostCSS**](https://postcss.org/), [**autoprefixer**](https://github.com/postcss/autoprefixer): Linting and CSS tooling
 
 ### External APIs
 
-- **Imgbb API**: Image uploads (CourseContentController, imageService)
-- **Laravel Sanctum**: API tokens
-- **Intervention Image**: Dynamic image/certificate generation
+- [**Imgbb API**](https://api.imgbb.com/): Image uploads (CourseContentController, imageService)
+- [**Laravel Sanctum**](https://laravel.com/docs/12.x/sanctum): API tokens
+- [**Intervention Image**](https://image.intervention.io/): Dynamic image/certificate generation
 
 ---
-
-## 🚧 Limitations & TODO
-
-- Email sending and password reset in progress
-- Notifications in progress
-
----
-
-## 📝 License
-
-MIT
-
----
-
-Copy and paste this content into your tempREADME.md or any README file as needed!

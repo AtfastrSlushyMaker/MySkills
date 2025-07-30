@@ -127,11 +127,7 @@ function SignUpPage() {
         }
     }
 
-    const roleOptions = [
-        { value: 'trainee', label: '🎓 Trainee', description: 'Join courses and learn' },
-        { value: 'trainer', label: '👨‍🏫 Trainer', description: 'Teach and create courses' },
-        { value: 'coordinator', label: '📊 Coordinator', description: 'Manage training programs' }
-    ]
+
 
     return (
         <div className="min-h-screen pt-20 pb-8">
@@ -290,52 +286,8 @@ function SignUpPage() {
                                 </div>
                             </div>
 
-                            {/* Role Selection */}
-                            <div className="space-y-6">
-                                <div className="flex items-center space-x-3 mb-4">
-                                    <div className="h-10 w-10 bg-gradient-to-br from-purple-400/30 to-indigo-400/30 backdrop-blur-sm rounded-2xl border border-purple-400/30 flex items-center justify-center">
-                                        <i className="fas fa-users text-purple-400"></i>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-white">Choose Your Role</h3>
-                                </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {roleOptions.map((role) => (
-                                        <label key={role.value} className={`
-                                            relative flex flex-col p-6 rounded-2xl border cursor-pointer transition-all duration-300 backdrop-blur-sm
-                                            ${formData.role === role.value
-                                                ? 'border-blue-400/50 bg-blue-500/20 shadow-lg shadow-blue-500/20'
-                                                : 'border-white/20 bg-white/10 hover:border-white/30 hover:bg-white/15'
-                                            }
-                                        `}>
-                                            <input
-                                                type="radio"
-                                                name="role"
-                                                value={role.value}
-                                                checked={formData.role === role.value}
-                                                onChange={handleChange}
-                                                className="sr-only"
-                                            />
-                                            <div className="text-center">
-                                                <div className="text-3xl mb-3">
-                                                    {role.value === 'trainee' && <i className="fas fa-user-graduate text-green-400"></i>}
-                                                    {role.value === 'trainer' && <i className="fas fa-chalkboard-teacher text-blue-400"></i>}
-                                                    {role.value === 'coordinator' && <i className="fas fa-user-tie text-purple-400"></i>}
-                                                </div>
-                                                <div className="font-semibold text-white mb-2">
-                                                    {role.label.split(' ').slice(1).join(' ')}
-                                                </div>
-                                                <div className="text-sm text-white/70">{role.description}</div>
-                                            </div>
-                                            {formData.role === role.value && (
-                                                <div className="absolute top-3 right-3 h-6 w-6 bg-blue-400 rounded-full flex items-center justify-center border border-white/20">
-                                                    <i className="fas fa-check text-white text-xs"></i>
-                                                </div>
-                                            )}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
+                            {/* Role is always 'trainee' by default and hidden from user */}
 
                             {/* Security */}
                             <div className="space-y-6">
