@@ -38,7 +38,7 @@ MySkills is a full-stack web application for managing skills, training courses, 
 
 - **Backend**: Laravel 12 (PHP 8.2+)
 - **Frontend**: React.js 18.3, Ant Design, Tailwind CSS
-- **Database**: MySQL 8.0 (default: SQLite for dev)
+- **Database**: MySQL 8.0
 - **Build Tools**: Vite, Composer, npm
 - **Version Control**: Git + GitHub
 
