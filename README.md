@@ -322,9 +322,7 @@ erDiagram
 | **Registrations** | `/api/registrations`<br>`/api/registrations/{id}`<br>`/api/registrations/status/{sessionId}`<br>`/api/registrations/session/{sessionId}`<br>`/api/registrations/status/pending/{coordinatorId}`<br>`/api/registrations/user/{user}` | Session registrations, status, by session/user, pending |
 | **Feedback** | `/api/feedbacks`<br>`/api/feedbacks/{id}` | User feedback CRUD |
 | **Notifications** | `/api/notifications`<br>`/api/notifications/{id}` | System notifications CRUD |
-| **Attendances** | `/api/attendances`<br>`/api/attendances/{id}` | Attendance tracking CRUD |
 | **Session Completion** | `/api/session-completions`<br>`/api/session-completions/{id}`<br>`/api/session-completions/{id}/mark-completed`<br>`/api/session-completions/{id}/generate-certificate`<br>`/api/registrations/{registrationId}/session-completion` | Session completion, mark as completed, generate certificate |
-| **Skills** | `/api/skills`<br>`/api/skills/{id}`<br>`/api/users/skills` | User skills management |
 | **System Health** | `/api/health` | System health check |
 
 ### Example API Usage
@@ -394,41 +392,6 @@ npm run lint
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Development Guidelines
-
-- Follow PSR-12 coding standards for PHP
-- Use ESLint configuration for JavaScript/React
-- Write tests for new features
-- Update documentation as needed
-
----
-
 ## 📝 License
 
 This project is developed as part of an academic internship program. Please contact the development team for licensing information.
-
----
-
-## 📞 Support & Contact
-
-For questions, issues, or contributions:
-
-- **Create an issue** in the GitHub repository
-- **Contact the development team** through the university channels
-- **Check the documentation** in the `/docs` folder
-
----
-
-<p align="center">
-  <strong>Built with ❤️ during Esprit Summer Internship 2025</strong>
-</p>
