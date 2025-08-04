@@ -10,10 +10,34 @@ echo "PORT: ${PORT:-'NOT SET'}"
 echo "APP_KEY: ${APP_KEY:-'NOT SET'}"
 echo "MYSQL_URL: ${MYSQL_URL:-'NOT SET'}"
 echo "RAILWAY_STATIC_URL: ${RAILWAY_STATIC_URL:-'NOT SET'}"
-env | grep -E '^(RAILWAY_|DATABASE_|MYSQL_)' || echo "No Railway/database environment variables found"
+echo "=== Railway Database Variables ==="
+env | grep -E '^(RAILWAY_|DATABASE_|MYSQL_|DB_)' | head -10 || echo "No Railway/database environment variables found"
 
 # Create .env file from environment variables
 echo "Creating .env file..."
+
+# Parse MYSQL_URL if provided
+if [ -n "${MYSQL_URL}" ]; then
+    echo "Parsing MYSQL_URL for database connection..."
+    # Extract database connection details from MYSQL_URL
+    # Format: mysql://username:password@host:port/database
+    DB_CONNECTION="mysql"
+    DB_URL="${MYSQL_URL}"
+    
+    # Also extract individual components as fallback
+    DB_USERNAME=$(echo "${MYSQL_URL}" | sed -n 's|.*://\([^:]*\):.*|\1|p')
+    DB_PASSWORD=$(echo "${MYSQL_URL}" | sed -n 's|.*://[^:]*:\([^@]*\)@.*|\1|p')
+    DB_HOST=$(echo "${MYSQL_URL}" | sed -n 's|.*@\([^:]*\):.*|\1|p')
+    DB_PORT=$(echo "${MYSQL_URL}" | sed -n 's|.*:\([0-9]*\)/.*|\1|p')
+    DB_DATABASE=$(echo "${MYSQL_URL}" | sed -n 's|.*/\([^?]*\).*|\1|p')
+    
+    echo "Parsed DB connection: ${DB_USERNAME}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
+else
+    echo "No MYSQL_URL provided, using SQLite"
+    DB_CONNECTION="sqlite"
+    DB_URL=""
+fi
+
 cat > .env << EOF
 APP_NAME="MySkills Learning Platform"
 APP_ENV=production
@@ -36,8 +60,13 @@ LOG_STACK=single
 LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
-DB_CONNECTION=mysql
-DB_URL=\${MYSQL_URL}
+DB_CONNECTION=${DB_CONNECTION}
+DB_URL=${DB_URL}
+DB_HOST=${DB_HOST:-127.0.0.1}
+DB_PORT=${DB_PORT:-3306}
+DB_DATABASE=${DB_DATABASE:-railway}
+DB_USERNAME=${DB_USERNAME:-root}
+DB_PASSWORD=${DB_PASSWORD}
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
@@ -75,15 +104,65 @@ head -10 .env
 
 # Test database connection before proceeding
 echo "Testing database connection..."
-# Test the database connection now that we have MYSQL_URL
-echo "Testing database connection with MYSQL_URL..."
-timeout 10 bash -c 'until php artisan migrate:status > /dev/null 2>&1; do echo "Waiting for database..."; sleep 1; done' || {
-    echo "Database connection test completed (may not be ready yet)"
+echo "Database configuration:"
+echo "- DB_CONNECTION: ${DB_CONNECTION}"
+echo "- DB_HOST: ${DB_HOST}"
+echo "- DB_PORT: ${DB_PORT}"
+echo "- DB_DATABASE: ${DB_DATABASE}"
+echo "- DB_USERNAME: ${DB_USERNAME}"
+echo "- DB_URL: ${DB_URL}"
+
+# Test database connection with detailed error reporting
+echo "Running database connection test..."
+php artisan tinker --execute="
+try {
+    \$pdo = DB::connection()->getPdo();
+    echo 'Database connection successful!';
+    echo 'Server info: ' . \$pdo->getAttribute(PDO::ATTR_SERVER_INFO);
+} catch (Exception \$e) {
+    echo 'Database connection failed: ' . \$e->getMessage();
+    echo 'Error code: ' . \$e->getCode();
 }
+" 2>&1 || echo "Database connection test failed"
 
 # Create a simple PHP info file for debugging
 echo "Creating debug endpoint..."
 echo '<?php echo json_encode(["status" => "php_working", "timestamp" => date("Y-m-d H:i:s")]); ?>' > /var/www/html/public/debug.php
+
+# Create database connection test endpoint
+echo "Creating database test endpoint..."
+cat > /var/www/html/public/dbtest.php << 'DBTEST_EOF'
+<?php
+try {
+    require_once __DIR__ . '/../vendor/autoload.php';
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
+    
+    $pdo = $app->make('db')->connection()->getPdo();
+    
+    echo json_encode([
+        'status' => 'database_connected',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'server_info' => $pdo->getAttribute(PDO::ATTR_SERVER_INFO),
+        'connection_status' => $pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS)
+    ]);
+} catch (Exception $e) {
+    echo json_encode([
+        'status' => 'database_error',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'error' => $e->getMessage(),
+        'error_code' => $e->getCode(),
+        'env_vars' => [
+            'DB_CONNECTION' => $_ENV['DB_CONNECTION'] ?? 'not_set',
+            'DB_HOST' => $_ENV['DB_HOST'] ?? 'not_set',
+            'DB_PORT' => $_ENV['DB_PORT'] ?? 'not_set',
+            'DB_DATABASE' => $_ENV['DB_DATABASE'] ?? 'not_set',
+            'DB_USERNAME' => $_ENV['DB_USERNAME'] ?? 'not_set',
+            'DB_URL' => isset($_ENV['DB_URL']) ? 'set' : 'not_set'
+        ]
+    ]);
+}
+?>
+DBTEST_EOF
 
 # Run package discovery now that environment is set up
 echo "Running package discovery..."
@@ -94,7 +173,9 @@ echo "Skipping package discovery to avoid Scribe errors..."
 echo "Optimizing autoloader..."
 # Clear any cached autoloader files first
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
-composer dump-autoload --optimize || echo "Autoloader optimization failed, continuing..."
+# Force clear Composer's autoloader cache
+composer clear-cache > /dev/null 2>&1 || echo "Composer cache clear failed"
+composer dump-autoload --optimize --no-interaction || echo "Autoloader optimization failed, continuing..."
 
 # Run Laravel optimizations (skip cache operations for now)
 echo "Running Laravel optimizations..."
@@ -102,7 +183,7 @@ echo "Skipping Laravel cache operations to avoid Scribe errors..."
 
 # Run database migrations
 echo "Running database migrations..."
-php artisan migrate --force || echo "Migration failed, continuing..."
+timeout 30 php artisan migrate --force || echo "Migration failed or timed out, continuing..."
 
 echo "=== Startup completed successfully ==="
 echo "Starting Apache..."
