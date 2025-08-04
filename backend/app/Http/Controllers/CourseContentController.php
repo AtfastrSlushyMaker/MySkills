@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CourseContent;
 use Illuminate\Http\Request;
-use App\Services\imageService;
+use App\Services\ImageService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
