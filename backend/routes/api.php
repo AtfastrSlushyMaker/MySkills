@@ -20,9 +20,13 @@ Route::get('/test', function () {
 
 // Health check
 
-// Store server boot time if not already set
-if (!\Cache::has('server_boot_time')) {
-    \Cache::forever('server_boot_time', now()->toDateTimeString());
+// Store server boot time if not already set (only when database is available)
+try {
+    if (!\Cache::has('server_boot_time')) {
+        \Cache::forever('server_boot_time', now()->toDateTimeString());
+    }
+} catch (\Exception $e) {
+    // Database not available during build - skip cache operations
 }
 
 // System Health endpoint
@@ -37,16 +41,20 @@ Route::get('/system-health', function () {
 
     // Server uptime: calculate from boot time in cache
     $serverUptime = 'Unavailable';
-    $bootTime = \Cache::get('server_boot_time');
-    if ($bootTime) {
-        $bootTimestamp = strtotime($bootTime);
-        $nowTimestamp = strtotime(now()->toDateTimeString());
-        $uptimeSeconds = $nowTimestamp - $bootTimestamp;
-        if ($uptimeSeconds > 0) {
-            $hours = floor($uptimeSeconds / 3600);
-            $minutes = floor(($uptimeSeconds % 3600) / 60);
-            $serverUptime = $hours . 'h ' . $minutes . 'm';
+    try {
+        $bootTime = \Cache::get('server_boot_time');
+        if ($bootTime) {
+            $bootTimestamp = strtotime($bootTime);
+            $nowTimestamp = strtotime(now()->toDateTimeString());
+            $uptimeSeconds = $nowTimestamp - $bootTimestamp;
+            if ($uptimeSeconds > 0) {
+                $hours = floor($uptimeSeconds / 3600);
+                $minutes = floor(($uptimeSeconds % 3600) / 60);
+                $serverUptime = $hours . 'h ' . $minutes . 'm';
+            }
         }
+    } catch (\Exception $e) {
+        // Cache not available during build
     }
 
     // Database status
