@@ -50,13 +50,14 @@ COPY --from=frontend-builder /app/frontend/dist ./public
 # Configure Apache for SPA + API
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Copy startup script
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 # Create necessary directories and set permissions
 RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-
-# Copy production environment file
-COPY backend/.env.production .env
 
 # Create optimized autoloader and prepare for Railway
 RUN composer dump-autoload --optimize
@@ -68,5 +69,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/api/health || exit 1
 
-# Start Apache in foreground
-CMD ["apache2-foreground"]
+# Start with custom script that sets up environment
+CMD ["/usr/local/bin/start.sh"]
