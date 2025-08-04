@@ -48,6 +48,7 @@ PORT=${PORT:-8080}
 
 # Apache ports configuration
 echo "Listen 0.0.0.0:${PORT}" > /etc/apache2/ports.conf
+echo "ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}" >> /etc/apache2/ports.conf
 
 # Apache virtual host configuration
 cat > /etc/apache2/sites-available/000-default.conf << EOF
@@ -94,7 +95,9 @@ a2ensite 000-default
 # Run migrations in background after Apache starts
 (
     sleep 5
-    php artisan migrate --force 2>/dev/null || echo "Migration failed"
+    echo "Running database migrations..."
+    php artisan migrate --force || echo "Migration completed with warnings"
+    echo "Migration process finished"
 ) &
 
 echo "Starting Apache on port ${PORT}..."
