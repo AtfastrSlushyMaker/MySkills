@@ -49,7 +49,8 @@ COPY backend/ ./
 
 # Install PHP dependencies for production
 ENV COMPOSER_MEMORY_LIMIT=-1
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN rm -f composer.lock && \
+    composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy frontend build from builder stage
 COPY --from=frontend-builder /app/frontend/dist ./public
