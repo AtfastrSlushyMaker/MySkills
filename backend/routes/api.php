@@ -32,15 +32,6 @@ Route::get('/test', function () {
 
 // Health check
 
-// Store server boot time if not already set (only when database is available)
-try {
-    if (!\Cache::has('server_boot_time')) {
-        \Cache::forever('server_boot_time', now()->toDateTimeString());
-    }
-} catch (\Exception $e) {
-    // Database not available during build - skip cache operations
-}
-
 // System Health endpoint
 Route::get('/system-health', function () {
     // Server status: check if PHP process is running

@@ -96,25 +96,9 @@ php artisan view:cache || echo "View cache failed, continuing..."
 echo "Running database migrations..."
 php artisan migrate --force || echo "Migration failed, continuing..."
 
+echo "=== Startup completed successfully ==="
 echo "Starting Apache..."
 echo "Application should be available shortly..."
 
-# Start Apache in background
-apache2-foreground &
-APACHE_PID=$!
-
-# Wait a moment for Apache to start
-sleep 5
-
-# Check if Apache is running
-if ps -p $APACHE_PID > /dev/null; then
-    echo "Apache started successfully with PID: $APACHE_PID"
-    # Test the health endpoint
-    echo "Testing health endpoint..."
-    curl -f http://localhost/api/health || echo "Health check failed, but continuing..."
-else
-    echo "Apache failed to start!"
-fi
-
-# Wait for Apache process
-wait $APACHE_PID
+# Start Apache in foreground (this is the proper way for Docker)
+exec apache2-foreground
