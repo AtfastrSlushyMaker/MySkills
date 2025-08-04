@@ -55,10 +55,10 @@ RUN echo "=== Composer Debug Info ===" && \
     php -m | grep -E "(gd|zip|fileinfo|pdo_mysql|mbstring)" && \
     echo "=== Files in directory ===" && \
     ls -la && \
-    echo "=== Composer validate ===" && \
-    composer validate && \
+    echo "=== Updating lock file ===" && \
+    composer update --lock && \
     echo "=== Installing dependencies ===" && \
-    composer install --no-dev --optimize-autoloader --no-interaction --verbose
+    composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy frontend build from builder stage
 COPY --from=frontend-builder /app/frontend/dist ./public
