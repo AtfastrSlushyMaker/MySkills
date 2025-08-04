@@ -350,37 +350,12 @@ Authorization: Bearer {token}
 
 ---
 
-## 🧪 Testing
-
-### Backend Tests
-
-```bash
-cd backend
-php artisan test
-```
-
-### Frontend Linting
-
-```bash
-cd frontend
-npm run lint
-```
-
-### Test Coverage
-
-- **Unit Tests**: Model validation, service logic
-- **Feature Tests**: API endpoints, authentication flows
-- **Integration Tests**: Complete user workflows
-
----
-
 ## 🔧 Development Tools & Packages
 
 ### Backend Dependencies
 
 - **Core**: Laravel Framework, Laravel Sanctum
 - **Image Processing**: Intervention Image
-- **Testing**: PHPUnit, Faker
 - **Documentation**: Scribe API Documentation
 
 ### Frontend Dependencies
