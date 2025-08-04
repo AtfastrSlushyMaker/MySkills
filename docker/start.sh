@@ -112,18 +112,8 @@ echo "- DB_DATABASE: ${DB_DATABASE}"
 echo "- DB_USERNAME: ${DB_USERNAME}"
 echo "- DB_URL: ${DB_URL}"
 
-# Test database connection with detailed error reporting
-echo "Running database connection test..."
-php artisan tinker --execute="
-try {
-    \$pdo = DB::connection()->getPdo();
-    echo 'Database connection successful!';
-    echo 'Server info: ' . \$pdo->getAttribute(PDO::ATTR_SERVER_INFO);
-} catch (Exception \$e) {
-    echo 'Database connection failed: ' . \$e->getMessage();
-    echo 'Error code: ' . \$e->getCode();
-}
-" 2>&1 || echo "Database connection test failed"
+# Skip database connection test during startup to get Apache running
+echo "Skipping database connection test during startup - will test via web endpoint"
 
 # Create a simple PHP info file for debugging
 echo "Creating debug endpoint..."
@@ -171,8 +161,8 @@ echo "Skipping package discovery to avoid Scribe errors..."
 
 # Optimize autoloader
 echo "Optimizing autoloader..."
-# Clear any cached autoloader files first
-rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
+# Clear any cached autoloader files first (including Laravel service cache that references Scribe)
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes.php
 # Force clear Composer's autoloader cache
 composer clear-cache > /dev/null 2>&1 || echo "Composer cache clear failed"
 composer dump-autoload --optimize --no-interaction || echo "Autoloader optimization failed, continuing..."
@@ -183,7 +173,8 @@ echo "Skipping Laravel cache operations to avoid Scribe errors..."
 
 # Run database migrations
 echo "Running database migrations..."
-timeout 30 php artisan migrate --force || echo "Migration failed or timed out, continuing..."
+# Skip migrations during startup to avoid blocking Apache
+echo "Skipping database migrations during startup - will run via web endpoint"
 
 echo "=== Startup completed successfully ==="
 echo "Starting Apache..."
