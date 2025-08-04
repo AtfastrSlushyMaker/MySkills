@@ -223,21 +223,34 @@ echo "=== Startup completed successfully ==="
 echo "✅ All startup steps completed, proceeding to Apache configuration"
 echo "Starting Apache..."
 echo "✅ Apache startup section reached"
+echo "Testing file system permissions..."
+echo "Current user: $(whoami)"
+echo "Current directory: $(pwd)"
+echo "Testing write permissions to /etc/apache2/:"
+ls -la /etc/apache2/ | head -5
+echo "Testing if ports.conf exists:"
+ls -la /etc/apache2/ports.conf || echo "ports.conf does not exist yet"
+echo "✅ File system test completed"
 echo "Configuring Apache for Railway PORT: ${PORT:-8080}"
 
 # Configure Apache to listen on Railway's PORT
 export PORT=${PORT:-8080}
+echo "✅ PORT environment variable set to: ${PORT}"
 echo "Configuring Apache to listen on port: ${PORT}"
 
 # Create proper Apache ports configuration
 echo "Creating Apache ports configuration..."
+echo "✅ About to write Apache ports.conf file"
 echo "Listen ${PORT}" > /etc/apache2/ports.conf
+echo "✅ Successfully wrote Listen directive"
 echo "ServerName localhost:${PORT}" >> /etc/apache2/ports.conf
+echo "✅ Successfully wrote ServerName directive"
 echo "Apache ports.conf created:"
 cat /etc/apache2/ports.conf
 
 # Update the default site configuration to use the PORT variable
 echo "Creating Apache virtual host configuration..."
+echo "✅ About to write virtual host configuration"
 cat > /etc/apache2/sites-available/000-default.conf << EOF
 <VirtualHost *:${PORT}>
     DocumentRoot /var/www/html/public
