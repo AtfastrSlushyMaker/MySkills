@@ -208,6 +208,16 @@ echo "Regenerating Composer autoloader from scratch..."
 composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader optimization failed, continuing..."
 echo "✅ Autoloader optimization completed"
 
+# Fix PSR-4 autoloading issue with ImageService
+echo "Fixing PSR-4 autoloading issue..."
+if [ -f "app/Services/imageService.php" ]; then
+    echo "Found incorrectly named imageService.php, renaming to ImageService.php"
+    mv "app/Services/imageService.php" "app/Services/ImageService.php" || echo "Failed to rename file"
+    echo "Re-running autoloader after file rename..."
+    composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader re-optimization failed"
+fi
+echo "✅ PSR-4 autoloading fix completed"
+
 # Run Laravel optimizations (skip cache operations for now)
 echo "Running Laravel optimizations..."
 echo "Skipping Laravel cache operations to avoid Scribe errors..."
@@ -362,6 +372,14 @@ touch /var/log/apache2/error.log /var/log/apache2/access.log
 chown www-data:www-data /var/log/apache2/error.log /var/log/apache2/access.log
 
 echo "🚀 Executing apache2-foreground..."
+
+# Start database setup in background after a short delay
+(
+    echo "Waiting 10 seconds for Apache to fully start..."
+    sleep 10
+    echo "Setting up database via API endpoint..."
+    curl -s "http://localhost:${PORT}/api/setup-database" || echo "Database setup failed"
+) &
 
 # Start Apache in foreground (this is the proper way for Docker)
 exec apache2-foreground

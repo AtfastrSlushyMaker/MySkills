@@ -20,6 +20,36 @@ Route::get('/health', function () {
     }
 });
 
+// Database setup endpoint for Railway deployment
+Route::get('/setup-database', function () {
+    try {
+        // Test database connection
+        \DB::connection()->getPdo();
+        
+        // Run migrations
+        \Artisan::call('migrate', ['--force' => true]);
+        $migrationOutput = \Artisan::output();
+        
+        // Run seeders if needed
+        \Artisan::call('db:seed', ['--force' => true]);
+        $seedOutput = \Artisan::output();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Database setup completed successfully',
+            'migration_output' => $migrationOutput,
+            'seed_output' => $seedOutput,
+            'timestamp' => date('Y-m-d H:i:s')
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Database setup failed: ' . $e->getMessage(),
+            'timestamp' => date('Y-m-d H:i:s')
+        ], 500);
+    }
+});
+
 // Test endpoint - now in the correct file
 Route::get('/test', function () {
     return response()->json([
