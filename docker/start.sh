@@ -98,4 +98,23 @@ php artisan migrate --force || echo "Migration failed, continuing..."
 
 echo "Starting Apache..."
 echo "Application should be available shortly..."
-exec apache2-foreground
+
+# Start Apache in background
+apache2-foreground &
+APACHE_PID=$!
+
+# Wait a moment for Apache to start
+sleep 5
+
+# Check if Apache is running
+if ps -p $APACHE_PID > /dev/null; then
+    echo "Apache started successfully with PID: $APACHE_PID"
+    # Test the health endpoint
+    echo "Testing health endpoint..."
+    curl -f http://localhost/api/health || echo "Health check failed, but continuing..."
+else
+    echo "Apache failed to start!"
+fi
+
+# Wait for Apache process
+wait $APACHE_PID

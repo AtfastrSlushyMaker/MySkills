@@ -5,7 +5,19 @@ use Illuminate\Support\Facades\Route;
 
 // Simple health check for Railway
 Route::get('/health', function () {
-    return response()->json(['status' => 'ok'], 200);
+    try {
+        // Just return a simple response without any database calls
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'MySkills API is healthy',
+            'timestamp' => date('Y-m-d H:i:s')
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
 });
 
 // Test endpoint - now in the correct file
