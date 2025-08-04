@@ -241,13 +241,6 @@ function AdminDashboard() {
                             color="green"
                             onClick={() => navigate('/admin/users')}
                         />
-                        <QuickAction
-                            title="Analytics"
-                            description="View detailed reports"
-                            icon={LineChartOutlined}
-                            color="purple"
-                            onClick={() => navigate('/admin/analytics')}
-                        />
                     </div>
                 </div>
 
@@ -278,13 +271,6 @@ function AdminDashboard() {
                                     onClick={() => navigate('/admin/courses')}
                                 >
                                     View Courses
-                                </Button>
-                                <Button
-                                    className="bg-white/30 backdrop-blur-md border border-white/30 hover:bg-white/40 text-gray-700"
-                                    icon={<LineChartOutlined />}
-                                    onClick={() => navigate('/admin/analytics')}
-                                >
-                                    View Reports
                                 </Button>
                             </Space>
                         </div>

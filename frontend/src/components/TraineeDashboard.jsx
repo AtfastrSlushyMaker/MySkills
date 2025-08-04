@@ -308,24 +308,6 @@ function TraineeDashboard() {
 
                             {/* Sidebar */}
                             <div className="space-y-8">
-                                {/* Quick Actions */}
-                                <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
-                                    <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                                        <i className="fas fa-bolt text-yellow-400 mr-2"></i>
-                                        Quick Actions
-                                    </h3>
-                                    <div className="space-y-3">
-                                        <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center">
-                                            <i className="fas fa-plus mr-2"></i>
-                                            Register for Session
-                                        </button>
-                                        <button className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-white font-semibold transition-all duration-300 flex items-center justify-center">
-                                            <i className="fas fa-history mr-2"></i>
-                                            View History
-                                        </button>
-                                    </div>
-                                </div>
-
                                 {/* Recent Activity */}
                                 <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-xl">
                                     <h3 className="text-xl font-bold text-white mb-4 flex items-center">
