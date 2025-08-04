@@ -49,6 +49,7 @@ APP_ENV=production
 APP_KEY=${APP_KEY}
 APP_DEBUG=false
 APP_URL=https://${RAILWAY_STATIC_URL}
+APP_FORCE_HTTPS=false
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
@@ -101,6 +102,9 @@ AWS_BUCKET=
 AWS_USE_PATH_STYLE_ENDPOINT=false
 
 VITE_APP_NAME="${APP_NAME}"
+
+# Railway proxy headers for SSL termination
+TRUSTED_PROXIES="*"
 EOF
 
 echo "Environment file created successfully!"
@@ -210,12 +214,35 @@ echo "✅ Autoloader optimization completed"
 
 # Fix PSR-4 autoloading issue with ImageService
 echo "Fixing PSR-4 autoloading issue..."
-if [ -f "app/Services/imageService.php" ]; then
-    echo "Found incorrectly named imageService.php, renaming to ImageService.php"
-    mv "app/Services/imageService.php" "app/Services/ImageService.php" || echo "Failed to rename file"
-    echo "Re-running autoloader after file rename..."
-    composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader re-optimization failed"
-fi
+echo "Current Services directory contents:"
+ls -la app/Services/ || echo "Services directory not found"
+
+# Check for any incorrectly named image service files
+for file in app/Services/*image* app/Services/*Image*; do
+    if [ -f "$file" ]; then
+        echo "Found image service file: $file"
+        basename_file=$(basename "$file")
+        if [ "$basename_file" != "ImageService.php" ]; then
+            echo "Incorrect naming detected: $basename_file, should be ImageService.php"
+            if [ -f "app/Services/ImageService.php" ]; then
+                echo "Correct ImageService.php exists, removing incorrect file: $file"
+                rm "$file" || echo "Failed to remove $file"
+            else
+                echo "Renaming $file to ImageService.php"
+                mv "$file" "app/Services/ImageService.php" || echo "Failed to rename $file"
+            fi
+        fi
+    fi
+done
+
+echo "After cleanup - Services directory contents:"
+ls -la app/Services/ || echo "Services directory not found"
+
+echo "Force clearing all autoloader and cache files..."
+rm -rf bootstrap/cache/* vendor/composer/autoload_* storage/framework/cache/* 2>/dev/null || true
+composer clear-cache > /dev/null 2>&1 || echo "Composer cache clear failed"
+echo "Re-running autoloader after fixing file naming..."
+composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader re-optimization failed"
 echo "✅ PSR-4 autoloading fix completed"
 
 # Run Laravel optimizations (skip cache operations for now)
