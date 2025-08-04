@@ -55,8 +55,8 @@ RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views sto
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Copy production environment template
-COPY backend/.env.production .env.example
+# Copy production environment file
+COPY backend/.env.production .env
 
 # Create optimized autoloader and prepare for Railway
 RUN composer dump-autoload --optimize
