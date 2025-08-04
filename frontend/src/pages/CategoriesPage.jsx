@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import GlassmorphismBackground from '../components/GlassmorphismBackground';
 import { Link } from 'react-router-dom';
 
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 function CategoriesPage() {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,7 +18,7 @@ function CategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:8000/api/categories');
+            const response = await fetch(`${API_BASE_URL}/categories`);
             if (!response.ok) {
                 throw new Error('Failed to fetch categories');
             }

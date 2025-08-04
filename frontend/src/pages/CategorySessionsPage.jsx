@@ -15,6 +15,9 @@ import {
 } from 'date-fns';
 import GlassmorphismBackground from '../components/GlassmorphismBackground';
 
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 function CategorySessionsPage() {
     const { categoryId } = useParams();
     const { user } = useAuth();
@@ -33,12 +36,12 @@ function CategorySessionsPage() {
         try {
             setLoading(true);
             // Fetch category details
-            const catRes = await fetch(`http://localhost:8000/api/categories/${categoryId}`);
+            const catRes = await fetch(`${API_BASE_URL}/categories/${categoryId}`);
             if (!catRes.ok) throw new Error('Failed to fetch category');
             const catData = await catRes.json();
             setCategory(catData);
             // Fetch sessions for this category
-            const sessRes = await fetch(`http://localhost:8000/api/training-sessions/category/${categoryId}`);
+            const sessRes = await fetch(`${API_BASE_URL}/training-sessions/category/${categoryId}`);
             if (!sessRes.ok) throw new Error('Failed to fetch sessions');
             const sessData = await sessRes.json();
             setSessions(sessData);

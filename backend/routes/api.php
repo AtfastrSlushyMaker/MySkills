@@ -3,6 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Simple health check for Railway
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 // Test endpoint - now in the correct file
 Route::get('/test', function () {
     return response()->json([

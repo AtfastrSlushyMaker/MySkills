@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { setAuthToken } from '../services/api'
 
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
@@ -39,7 +42,7 @@ export function AuthProvider({ children }) {
 
     const verifyToken = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/me', {
+            const response = await fetch(`${API_BASE_URL}/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
@@ -63,7 +66,7 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password, rememberMe = false) => {
         try {
-            const response = await fetch('http://localhost:8000/api/login', {
+            const response = await fetch(`${API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -95,7 +98,7 @@ export function AuthProvider({ children }) {
 
     const register = async (userData) => {
         try {
-            const response = await fetch('http://localhost:8000/api/register', {
+            const response = await fetch(`${API_BASE_URL}/register`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -123,7 +126,7 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         try {
             if (token) {
-                await fetch('http://localhost:8000/api/logout', {
+                await fetch(`${API_BASE_URL}/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
