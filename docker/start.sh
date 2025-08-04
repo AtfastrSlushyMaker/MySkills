@@ -220,17 +220,44 @@ EOF
 
 echo "Apache configuration created for port ${PORT}"
 
+# Verify public directory and files
+echo "=== Verifying public directory setup ==="
+echo "Public directory contents:"
+ls -la /var/www/html/public/ | head -10
+echo "Index file check:"
+if [ -f "/var/www/html/public/index.php" ]; then
+    echo "✅ Laravel index.php found"
+else
+    echo "❌ Laravel index.php missing!"
+fi
+if [ -f "/var/www/html/public/index.html" ]; then
+    echo "✅ Frontend index.html found"
+else
+    echo "❌ Frontend index.html missing!"
+fi
+
 # Test Apache configuration before starting
-echo "Testing Apache configuration..."
-apache2ctl configtest 2>&1 || {
-    echo "Apache configuration test failed, but continuing..."
-}
+echo "=== Testing Apache configuration ==="
+if apache2ctl configtest 2>&1; then
+    echo "✅ Apache configuration test passed"
+else
+    echo "❌ Apache configuration test failed, but continuing..."
+    echo "Showing Apache error log:"
+    tail -10 /var/log/apache2/error.log 2>/dev/null || echo "No Apache error log found"
+fi
 
 # Enable rewrite module
-echo "Enabling Apache rewrite module..."
-a2enmod rewrite 2>&1 || echo "Rewrite module enable failed"
+echo "=== Enabling Apache rewrite module ==="
+if a2enmod rewrite 2>&1; then
+    echo "✅ Apache rewrite module enabled"
+else
+    echo "❌ Rewrite module enable failed, but continuing..."
+fi
 
+echo "=== Final Apache startup ==="
 echo "Starting Apache in foreground mode on port ${PORT}..."
 echo "Apache should now be accessible on https://myskills-production.up.railway.app"
+echo "🚀 Executing apache2-foreground..."
+
 # Start Apache in foreground (this is the proper way for Docker)
 exec apache2-foreground
