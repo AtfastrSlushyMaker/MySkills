@@ -26,9 +26,15 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libzip-dev \
+    libwebp-dev \
+    libxpm-dev \
     unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
+    zip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip fileinfo \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
@@ -42,6 +48,7 @@ WORKDIR /var/www/html
 COPY backend/ ./
 
 # Install PHP dependencies for production
+ENV COMPOSER_MEMORY_LIMIT=-1
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy frontend build from builder stage
