@@ -1,0 +1,22 @@
+{
+    "name": "myskills",
+    "version": "1.0.0",
+    "description": "MySkills Learning Platform",
+    "scripts": {
+        "build": "npm run build:frontend && npm run build:backend",
+        "build:frontend": "cd frontend && npm ci && npm run build",
+        "build:backend": "cd backend && composer install --no-dev --optimize-autoloader && php artisan config:cache && php artisan route:cache && php artisan view:cache",
+        "start": "cd backend && php artisan serve --host=0.0.0.0 --port=$PORT",
+        "postinstall": "npm run build"
+    },
+    "engines": {
+        "node": ">=18.0.0",
+        "npm": ">=8.0.0"
+    },
+    "keywords": [
+        "laravel",
+        "react",
+        "learning-platform"
+    ],
+    "license": "MIT"
+}
