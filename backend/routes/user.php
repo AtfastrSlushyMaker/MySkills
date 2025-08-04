@@ -20,5 +20,3 @@ Route::post('users/{user}/deactivate', [App\Http\Controllers\UserController::cla
 
 Route::apiResource('users', App\Http\Controllers\UserController::class);
 
-
-
