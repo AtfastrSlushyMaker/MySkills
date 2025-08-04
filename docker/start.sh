@@ -295,9 +295,9 @@ echo "Configuring Apache to listen on port: ${PORT}"
 # Create proper Apache ports configuration
 echo "Creating Apache ports configuration..."
 echo "✅ About to write Apache ports.conf file"
-echo "Listen ${PORT}" > /etc/apache2/ports.conf
-echo "✅ Successfully wrote Listen directive"
-echo "ServerName localhost:${PORT}" >> /etc/apache2/ports.conf
+echo "Listen 0.0.0.0:${PORT}" > /etc/apache2/ports.conf
+echo "✅ Successfully wrote Listen directive for 0.0.0.0:${PORT}"
+echo "ServerName myskills-production.up.railway.app:${PORT}" >> /etc/apache2/ports.conf
 echo "✅ Successfully wrote ServerName directive"
 echo "Apache ports.conf created:"
 cat /etc/apache2/ports.conf
@@ -308,6 +308,9 @@ echo "✅ About to write virtual host configuration"
 cat > /etc/apache2/sites-available/000-default.conf << EOF
 <VirtualHost *:${PORT}>
     DocumentRoot /var/www/html/public
+    ServerName myskills-production.up.railway.app
+    ServerAlias *.up.railway.app
+    ServerAlias localhost
     
     <Directory /var/www/html/public>
         AllowOverride All
@@ -323,7 +326,17 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule ^(.*)$ index.php [QSA,L]
         
-        # Handle React routes (everything else)
+        # Handle direct PHP files (test.php, debug.php, etc.)
+        RewriteCond %{REQUEST_FILENAME} -f
+        RewriteCond %{REQUEST_FILENAME} \.php$
+        RewriteRule ^(.*)$ - [L]
+        
+        # Handle favicon and static assets
+        RewriteCond %{REQUEST_URI} ^/favicon\.ico$ [OR]
+        RewriteCond %{REQUEST_FILENAME} -f
+        RewriteRule ^(.*)$ - [L]
+        
+        # Handle React routes (everything else that doesn't exist as a file)
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteCond %{REQUEST_URI} !^/api
@@ -417,12 +430,24 @@ chown www-data:www-data /var/log/apache2/error.log /var/log/apache2/access.log
 
 echo "🚀 Executing apache2-foreground..."
 
+# Add debugging for 502 errors
+echo "Adding debug logging to monitor 502 errors..."
+
 # Start database setup in background after a short delay
 (
     echo "Waiting 10 seconds for Apache to fully start..."
     sleep 10
     echo "Setting up database via API endpoint..."
-    curl -s "http://localhost:${PORT}/api/setup-database" || echo "Database setup failed"
+    curl -s "http://localhost:${PORT}/api/setup-database" || echo "Database setup failed - will continue anyway"
+    
+    # Test internal endpoints to verify Apache is working
+    echo "Testing internal Apache endpoints..."
+    echo "Testing debug.php:"
+    curl -s "http://localhost:${PORT}/debug.php" || echo "debug.php failed"
+    echo "Testing test.php:"
+    curl -s "http://localhost:${PORT}/test.php" || echo "test.php failed"
+    
+    echo "Internal tests completed"
 ) &
 
 # Start Apache in foreground (this is the proper way for Docker)

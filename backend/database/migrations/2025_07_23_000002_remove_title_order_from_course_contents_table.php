@@ -12,7 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('course_contents', function (Blueprint $table) {
-            $table->dropColumn(['title', 'order']);
+            // Check if columns exist before dropping them
+            if (Schema::hasColumn('course_contents', 'title')) {
+                $table->dropColumn('title');
+            }
+            if (Schema::hasColumn('course_contents', 'order')) {
+                $table->dropColumn('order');
+            }
         });
     }
 
