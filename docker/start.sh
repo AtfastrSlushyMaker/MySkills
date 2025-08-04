@@ -75,8 +75,11 @@ echo "Testing database connection..."
 timeout 30 bash -c 'until php artisan migrate --dry-run > /dev/null 2>&1; do echo "Waiting for database..."; sleep 2; done' || {
     echo "Database connection failed after 30 seconds"
     echo "Starting Apache anyway..."
-    exec apache2-foreground
 }
+
+# Create a simple PHP info file for debugging
+echo "Creating debug endpoint..."
+echo '<?php echo json_encode(["status" => "php_working", "timestamp" => date("Y-m-d H:i:s")]); ?>' > /var/www/html/public/debug.php
 
 # Run package discovery now that environment is set up
 echo "Running package discovery..."
@@ -98,7 +101,16 @@ php artisan migrate --force || echo "Migration failed, continuing..."
 
 echo "=== Startup completed successfully ==="
 echo "Starting Apache..."
-echo "Application should be available shortly..."
+echo "Configuring Apache for Railway PORT: ${PORT:-8080}"
+
+# Configure Apache to listen on Railway's PORT
+export PORT=${PORT:-8080}
+# Update Apache ports configuration
+echo "Listen ${PORT}" > /etc/apache2/ports.conf
+# Update the site configuration to use the PORT variable
+sed -i "s/\${PORT}/${PORT}/g" /etc/apache2/sites-available/000-default.conf
+
+echo "Application should be available on port ${PORT}..."
 
 # Start Apache in foreground (this is the proper way for Docker)
 exec apache2-foreground
