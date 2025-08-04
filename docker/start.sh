@@ -222,15 +222,15 @@ echo "Apache configuration created for port ${PORT}"
 
 # Test Apache configuration before starting
 echo "Testing Apache configuration..."
-apache2ctl configtest || {
-    echo "Apache configuration test failed!"
-    cat /etc/apache2/sites-available/000-default.conf
-    echo "Starting anyway..."
+apache2ctl configtest 2>&1 || {
+    echo "Apache configuration test failed, but continuing..."
 }
 
 # Enable rewrite module
-a2enmod rewrite
+echo "Enabling Apache rewrite module..."
+a2enmod rewrite 2>&1 || echo "Rewrite module enable failed"
 
 echo "Starting Apache in foreground mode on port ${PORT}..."
+echo "Apache should now be accessible on https://myskills-production.up.railway.app"
 # Start Apache in foreground (this is the proper way for Docker)
 exec apache2-foreground
