@@ -1,16 +1,42 @@
+# Dependencies
 node_modules
 npm-debug.log
-.git
+frontend/node_modules
+backend/vendor
+
+# Build artifacts
+frontend/dist
+frontend/build
+
+# Environment files
 .env
 .env.local
 .env.production
 backend/.env
+backend/.env.local
+
+# Logs
+*.log
 backend/storage/logs/*
+
+# Cache directories
 backend/storage/framework/cache/*
 backend/storage/framework/sessions/*
 backend/storage/framework/views/*
-backend/vendor
-frontend/node_modules
-frontend/dist
+
+# Git and IDE
+.git
+.gitignore
+.vscode
+.idea
 .DS_Store
-*.log
+
+# Documentation
+README.md
+RAILWAY_*.md
+docs/
+
+# Development files
+.editorconfig
+.eslintrc*
+.prettierrc*

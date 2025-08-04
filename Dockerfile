@@ -1,4 +1,4 @@
-# Multi-stage build for production
+# Multi-stage build for Railway deployment
 FROM node:18-alpine AS frontend-builder
 
 # Set working directory for frontend
@@ -13,13 +13,13 @@ RUN npm ci --only=production
 # Copy frontend source
 COPY frontend/ ./
 
-# Build frontend for production
+# Build frontend for production with Railway environment
 RUN npm run build
 
 # PHP/Laravel stage
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -41,32 +41,32 @@ WORKDIR /var/www/html
 # Copy backend files
 COPY backend/ ./
 
-# Install PHP dependencies
+# Install PHP dependencies for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy frontend build from builder stage
 COPY --from=frontend-builder /app/frontend/dist ./public
 
-# Copy Apache configuration
+# Configure Apache for SPA + API
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
+# Create necessary directories and set permissions
+RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Create production env file
-RUN cp .env.production .env
+# Copy production environment template
+COPY backend/.env.production .env.example
 
-# Generate application key (will be overridden by Railway env var)
-RUN php artisan key:generate --no-interaction
+# Create optimized autoloader and prepare for Railway
+RUN composer dump-autoload --optimize
 
-# Cache Laravel configuration (will be rebuilt on Railway with proper env)
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-
-# Expose port
+# Expose port for Railway
 EXPOSE 80
 
-# Start Apache
+# Health check for Railway
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/api/health || exit 1
+
+# Start Apache in foreground
 CMD ["apache2-foreground"]
