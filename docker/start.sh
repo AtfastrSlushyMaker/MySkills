@@ -1,9 +1,16 @@
 #!/bin/bash
 
 # Railway environment variable startup script
+echo "=== Starting MySkills Application ==="
 echo "Setting up environment for Railway deployment..."
 
+# Check if required environment variables are set
+echo "Checking environment variables..."
+echo "MYSQL_URL: ${MYSQL_URL:-'NOT SET'}"
+echo "RAILWAY_STATIC_URL: ${RAILWAY_STATIC_URL:-'NOT SET'}"
+
 # Create .env file from environment variables
+echo "Creating .env file..."
 cat > .env << EOF
 APP_NAME="MySkills Learning Platform"
 APP_ENV=production
@@ -27,11 +34,7 @@ LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
 DB_CONNECTION=mysql
-DB_HOST=\${MYSQLHOST}
-DB_PORT=\${MYSQLPORT}
-DB_DATABASE=\${MYSQLDATABASE}
-DB_USERNAME=\${MYSQLUSER}
-DB_PASSWORD=\${MYSQLPASSWORD}
+DB_URL=\${MYSQL_URL}
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
@@ -64,24 +67,35 @@ VITE_APP_NAME="\${APP_NAME}"
 EOF
 
 echo "Environment file created successfully!"
+echo "Contents of .env file:"
+head -10 .env
+
+# Test database connection before proceeding
+echo "Testing database connection..."
+timeout 30 bash -c 'until php artisan migrate --dry-run > /dev/null 2>&1; do echo "Waiting for database..."; sleep 2; done' || {
+    echo "Database connection failed after 30 seconds"
+    echo "Starting Apache anyway..."
+    exec apache2-foreground
+}
 
 # Run package discovery now that environment is set up
 echo "Running package discovery..."
-php artisan package:discover --ansi
+php artisan package:discover --ansi || echo "Package discovery failed, continuing..."
 
 # Optimize autoloader
 echo "Optimizing autoloader..."
-composer dump-autoload --optimize
+composer dump-autoload --optimize || echo "Autoloader optimization failed, continuing..."
 
 # Run Laravel optimizations
 echo "Running Laravel optimizations..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache || echo "Config cache failed, continuing..."
+php artisan route:cache || echo "Route cache failed, continuing..."
+php artisan view:cache || echo "View cache failed, continuing..."
 
 # Run database migrations
 echo "Running database migrations..."
-php artisan migrate --force
+php artisan migrate --force || echo "Migration failed, continuing..."
 
 echo "Starting Apache..."
+echo "Application should be available shortly..."
 exec apache2-foreground
