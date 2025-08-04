@@ -75,8 +75,11 @@ head -10 .env
 
 # Test database connection before proceeding
 echo "Testing database connection..."
-# Skip database connection test for now to avoid blocking startup
-echo "Skipping database connection test to avoid startup delays..."
+# Test the database connection now that we have MYSQL_URL
+echo "Testing database connection with MYSQL_URL..."
+timeout 10 bash -c 'until php artisan migrate:status > /dev/null 2>&1; do echo "Waiting for database..."; sleep 1; done' || {
+    echo "Database connection test completed (may not be ready yet)"
+}
 
 # Create a simple PHP info file for debugging
 echo "Creating debug endpoint..."
@@ -89,6 +92,8 @@ echo "Skipping package discovery to avoid Scribe errors..."
 
 # Optimize autoloader
 echo "Optimizing autoloader..."
+# Clear any cached autoloader files first
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 composer dump-autoload --optimize || echo "Autoloader optimization failed, continuing..."
 
 # Run Laravel optimizations (skip cache operations for now)
@@ -97,8 +102,7 @@ echo "Skipping Laravel cache operations to avoid Scribe errors..."
 
 # Run database migrations
 echo "Running database migrations..."
-# Skip migrations for now to avoid database connection issues
-echo "Skipping database migrations to avoid connection issues..."
+php artisan migrate --force || echo "Migration failed, continuing..."
 
 echo "=== Startup completed successfully ==="
 echo "Starting Apache..."
@@ -106,24 +110,55 @@ echo "Configuring Apache for Railway PORT: ${PORT:-8080}"
 
 # Configure Apache to listen on Railway's PORT
 export PORT=${PORT:-8080}
-# Update Apache ports configuration
-echo "Listen ${PORT}" > /etc/apache2/ports.conf
-# Update the site configuration to use the PORT variable
-sed -i "s/\${PORT}/${PORT}/g" /etc/apache2/sites-available/000-default.conf
-# Also update any custom sites
-if [ -f /etc/apache2/sites-available/myskills.conf ]; then
-    sed -i "s/\${PORT}/${PORT}/g" /etc/apache2/sites-available/myskills.conf
-fi
 
-echo "Application should be available on port ${PORT}..."
+# Create proper Apache ports configuration
+echo "Listen ${PORT}" > /etc/apache2/ports.conf
+echo "ServerName localhost:${PORT}" >> /etc/apache2/ports.conf
+
+# Update the default site configuration to use the PORT variable
+cat > /etc/apache2/sites-available/000-default.conf << EOF
+<VirtualHost *:${PORT}>
+    DocumentRoot /var/www/html/public
+    
+    <Directory /var/www/html/public>
+        AllowOverride All
+        Require all granted
+        
+        # Handle React Router (SPA)
+        RewriteEngine On
+        RewriteBase /
+        
+        # Handle Laravel API routes
+        RewriteCond %{REQUEST_URI} ^/api
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ index.php [QSA,L]
+        
+        # Handle React routes (everything else)
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !^/api
+        RewriteRule . /index.html [L]
+    </Directory>
+    
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+
+echo "Apache configuration created for port ${PORT}"
 
 # Test Apache configuration before starting
 echo "Testing Apache configuration..."
-apache2ctl -t || {
+apache2ctl configtest || {
     echo "Apache configuration test failed!"
+    cat /etc/apache2/sites-available/000-default.conf
     echo "Starting anyway..."
 }
 
-echo "Starting Apache in foreground mode..."
+# Enable rewrite module
+a2enmod rewrite
+
+echo "Starting Apache in foreground mode on port ${PORT}..."
 # Start Apache in foreground (this is the proper way for Docker)
 exec apache2-foreground
