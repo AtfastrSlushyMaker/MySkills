@@ -1,32 +1,25 @@
 #!/bin/bash
 
-# Railway deployment script
-echo "Starting Railway deployment..."
+# Local development deployment script
+echo "Building and deploying MySkills..."
 
 # Build frontend
 echo "Building frontend..."
-cd frontend
-npm ci
-npm run build
-cd ..
+cd frontend && npm ci && npm run build && cd ..
 
 # Install backend dependencies
 echo "Installing backend dependencies..."
+cd backend && composer install --optimize-autoloader && cd ..
+
+# Copy frontend build to backend public
+echo "Merging frontend with backend..."
+cp -r frontend/dist/* backend/public/
+
+# Run Laravel setup
+echo "Running Laravel setup..."
 cd backend
-composer install --no-dev --optimize-autoloader
-
-# Copy frontend build to backend public directory
-echo "Copying frontend build to backend..."
-cp -r ../frontend/dist/* public/
-
-# Run Laravel optimizations
-echo "Running Laravel optimizations..."
+php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 
-# Run database migrations
-echo "Running database migrations..."
-php artisan migrate --force
-
-echo "Deployment completed successfully!"
+echo "✅ Deployment completed!"

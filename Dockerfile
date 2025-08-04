@@ -1,100 +1,51 @@
 # Multi-stage build for Railway deployment
 FROM node:18-alpine AS frontend-builder
 
-# Set working directory for frontend
 WORKDIR /app/frontend
-
-# Copy frontend package files
 COPY frontend/package*.json ./
-
-# Install frontend dependencies (including devDependencies for build)
 RUN npm ci
-
-# Copy frontend source
 COPY frontend/ ./
-
-# Build frontend for production with Railway environment
 RUN npm run build
 
-# PHP/Laravel stage
+# Production stage
 FROM php:8.2-apache
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libzip-dev \
-    libwebp-dev \
-    libxpm-dev \
-    unzip \
-    zip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip fileinfo \
+    git curl unzip zip \
+    libpng-dev libonig-dev libxml2-dev \
+    libfreetype6-dev libjpeg62-turbo-dev libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
-# Get Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy backend files
+# Copy backend files and install dependencies
 COPY backend/ ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install PHP dependencies for production
-ENV COMPOSER_MEMORY_LIMIT=-1
-RUN echo "=== Composer Debug Info ===" && \
-    composer --version && \
-    php --version && \
-    php -m | grep -E "(gd|zip|fileinfo|pdo_mysql|mbstring)" && \
-    echo "=== Files in directory ===" && \
-    ls -la && \
-    echo "=== Updating lock file ===" && \
-    composer update --lock && \
-    echo "=== Installing dependencies ===" && \
-    composer install --no-dev --no-interaction --no-scripts
+# Copy frontend build to Laravel public directory
+COPY --from=frontend-builder /app/frontend/dist ./public
 
-# Copy frontend build from builder stage safely
-# First copy to a temporary location
-COPY --from=frontend-builder /app/frontend/dist /tmp/frontend-dist
-# Then merge with existing public directory without overwriting Laravel files
-RUN echo "=== Merging frontend build with Laravel public directory ===" && \
-    ls -la ./public/ && \
-    echo "Frontend build contents:" && \
-    ls -la /tmp/frontend-dist/ && \
-    cp -r /tmp/frontend-dist/* ./public/ && \
-    echo "Final public directory:" && \
-    ls -la ./public/ && \
-    if [ ! -f "./public/index.php" ]; then \
-    echo "ERROR: Laravel index.php missing after frontend merge!"; \
-    exit 1; \
-    fi && \
-    rm -rf /tmp/frontend-dist
+# Ensure Laravel index.php exists
+RUN if [ ! -f "./public/index.php" ]; then \
+    echo "ERROR: Laravel index.php missing!"; exit 1; \
+    fi
 
-# Configure Apache for SPA + API
-COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+# Set permissions
+RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Copy startup script
 COPY docker/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Create necessary directories and set permissions
-RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
-
-# Expose port for Railway
 EXPOSE 8080
-
-# Health check for Railway (disable for now since port is dynamic)
-# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-#     CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
-
-# Start with custom script that sets up environment
 CMD ["/usr/local/bin/start.sh"]
