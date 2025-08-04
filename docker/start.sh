@@ -1,8 +1,13 @@
 #!/bin/bash
 
+# Add error handling and debugging
+trap 'echo "ERROR: Script exited at line $LINENO with exit code $?" >&2' ERR
+
 # Railway environment variable startup script
 echo "=== Starting MySkills Application ==="
 echo "Setting up environment for Railway deployment..."
+echo "Current working directory: $(pwd)"
+echo "User: $(whoami)"
 
 # Debug environment variables
 echo "=== Environment Debug ==="
@@ -41,9 +46,9 @@ fi
 cat > .env << EOF
 APP_NAME="MySkills Learning Platform"
 APP_ENV=production
-APP_KEY=\${APP_KEY}
+APP_KEY=${APP_KEY}
 APP_DEBUG=false
-APP_URL=\${RAILWAY_STATIC_URL}
+APP_URL=https://${RAILWAY_STATIC_URL}
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
@@ -87,7 +92,7 @@ MAIL_USERNAME=null
 MAIL_PASSWORD=null
 MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS="hello@example.com"
-MAIL_FROM_NAME="\${APP_NAME}"
+MAIL_FROM_NAME="${APP_NAME}"
 
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
@@ -95,12 +100,12 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=
 AWS_USE_PATH_STYLE_ENDPOINT=false
 
-VITE_APP_NAME="\${APP_NAME}"
+VITE_APP_NAME="${APP_NAME}"
 EOF
 
 echo "Environment file created successfully!"
-echo "Contents of .env file:"
-head -10 .env
+echo "Contents of .env file (showing first 15 lines):"
+head -15 .env
 
 # Test database connection before proceeding
 echo "Testing database connection..."
@@ -186,40 +191,53 @@ DBTEST_EOF
 echo "Running package discovery..."
 # Skip package discovery to avoid Scribe errors
 echo "Skipping package discovery to avoid Scribe errors..."
+echo "✅ Package discovery step completed"
 
 # Optimize autoloader
 echo "Optimizing autoloader..."
 # Clear any cached autoloader files first (including Laravel service cache that references Scribe)
+echo "Clearing Laravel cache files..."
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes.php
 # Clear Composer's autoloader cache files that might reference old class names
+echo "Clearing Composer autoloader cache..."
 rm -f vendor/composer/autoload_classmap.php vendor/composer/autoload_files.php vendor/composer/autoload_psr4.php vendor/composer/autoload_static.php
 # Force clear Composer's autoloader cache
 composer clear-cache > /dev/null 2>&1 || echo "Composer cache clear failed"
 # Regenerate the autoloader completely
 echo "Regenerating Composer autoloader from scratch..."
 composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader optimization failed, continuing..."
+echo "✅ Autoloader optimization completed"
 
 # Run Laravel optimizations (skip cache operations for now)
 echo "Running Laravel optimizations..."
 echo "Skipping Laravel cache operations to avoid Scribe errors..."
+echo "✅ Laravel optimizations completed"
 
 # Run database migrations
 echo "Running database migrations..."
 # Skip migrations during startup to avoid blocking Apache
 echo "Skipping database migrations during startup - will run via web endpoint"
+echo "✅ Database migrations step completed"
 
 echo "=== Startup completed successfully ==="
+echo "✅ All startup steps completed, proceeding to Apache configuration"
 echo "Starting Apache..."
+echo "✅ Apache startup section reached"
 echo "Configuring Apache for Railway PORT: ${PORT:-8080}"
 
 # Configure Apache to listen on Railway's PORT
 export PORT=${PORT:-8080}
+echo "Configuring Apache to listen on port: ${PORT}"
 
 # Create proper Apache ports configuration
+echo "Creating Apache ports configuration..."
 echo "Listen ${PORT}" > /etc/apache2/ports.conf
 echo "ServerName localhost:${PORT}" >> /etc/apache2/ports.conf
+echo "Apache ports.conf created:"
+cat /etc/apache2/ports.conf
 
 # Update the default site configuration to use the PORT variable
+echo "Creating Apache virtual host configuration..."
 cat > /etc/apache2/sites-available/000-default.conf << EOF
 <VirtualHost *:${PORT}>
     DocumentRoot /var/www/html/public
@@ -251,6 +269,8 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
 EOF
 
 echo "Apache configuration created for port ${PORT}"
+echo "Virtual host configuration:"
+cat /etc/apache2/sites-available/000-default.conf
 
 # Verify public directory and files
 echo "=== Verifying public directory setup ==="
@@ -270,25 +290,64 @@ fi
 
 # Test Apache configuration before starting
 echo "=== Testing Apache configuration ==="
-if apache2ctl configtest 2>&1; then
+apache2ctl configtest 2>&1
+if [ $? -eq 0 ]; then
     echo "✅ Apache configuration test passed"
 else
-    echo "❌ Apache configuration test failed, but continuing..."
+    echo "❌ Apache configuration test failed, showing errors:"
+    apache2ctl configtest
     echo "Showing Apache error log:"
-    tail -10 /var/log/apache2/error.log 2>/dev/null || echo "No Apache error log found"
+    tail -10 /var/log/apache2/error.log 2>/dev/null || echo "No Apache error log found yet"
+    echo "Continuing anyway..."
 fi
 
 # Enable rewrite module
 echo "=== Enabling Apache rewrite module ==="
-if a2enmod rewrite 2>&1; then
+a2enmod rewrite 2>&1
+if [ $? -eq 0 ]; then
     echo "✅ Apache rewrite module enabled"
 else
-    echo "❌ Rewrite module enable failed, but continuing..."
+    echo "❌ Rewrite module enable failed:"
+    a2enmod rewrite
+    echo "Continuing anyway..."
+fi
+
+# Enable the default site
+echo "=== Enabling Apache default site ==="
+a2ensite 000-default 2>&1
+if [ $? -eq 0 ]; then
+    echo "✅ Apache default site enabled"
+else
+    echo "❌ Default site enable failed:"
+    a2ensite 000-default
+    echo "Continuing anyway..."
 fi
 
 echo "=== Final Apache startup ==="
 echo "Starting Apache in foreground mode on port ${PORT}..."
 echo "Apache should now be accessible on https://myskills-production.up.railway.app"
+
+# Show final status before starting Apache
+echo "=== Pre-flight checks ==="
+echo "Working directory: $(pwd)"
+echo "Current user: $(whoami)"
+echo "Apache version:"
+apache2 -v || echo "Apache version check failed"
+echo "Apache modules loaded:"
+apache2ctl -M | grep rewrite || echo "Rewrite module not found"
+echo "Listening ports configuration:"
+cat /etc/apache2/ports.conf
+echo "Sites enabled:"
+ls -la /etc/apache2/sites-enabled/
+echo "Apache process status:"
+ps aux | grep apache2 || echo "No Apache processes found"
+
+# Initialize Apache error and access logs
+echo "=== Initializing Apache logs ==="
+mkdir -p /var/log/apache2
+touch /var/log/apache2/error.log /var/log/apache2/access.log
+chown www-data:www-data /var/log/apache2/error.log /var/log/apache2/access.log
+
 echo "🚀 Executing apache2-foreground..."
 
 # Start Apache in foreground (this is the proper way for Docker)
