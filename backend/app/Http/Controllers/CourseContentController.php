@@ -39,7 +39,7 @@ class CourseContentController extends Controller
 
         try {
             $validated = $request->validate($rules);
-            $imageService = new imageService();
+            $imageService = new ImageService();
 
             if ($type === 'image') {
                 $validated['content'] = $imageService->uploadToImgbb($request->file('content')->getPathname());
@@ -110,7 +110,7 @@ class CourseContentController extends Controller
             $validated['type'] = $type;
 
             // Handle file upload for images
-            $imageService = new imageService();
+            $imageService = new ImageService();
             if ($type === 'image' && $request->hasFile('content')) {
                 $file = $request->file('content');
 

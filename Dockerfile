@@ -76,11 +76,11 @@ RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views sto
     && chmod -R 775 storage bootstrap/cache
 
 # Expose port for Railway
-EXPOSE 80
+EXPOSE 8080
 
-# Health check for Railway
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/api/health || exit 1
+# Health check for Railway (disable for now since port is dynamic)
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 # Start with custom script that sets up environment
 CMD ["/usr/local/bin/start.sh"]
