@@ -128,6 +128,23 @@ echo "Skipping database connection test during startup - will test via web endpo
 echo "Creating debug endpoint..."
 echo '<?php echo json_encode(["status" => "php_working", "timestamp" => date("Y-m-d H:i:s")]); ?>' > /var/www/html/public/debug.php
 
+# Create a simple test endpoint that bypasses Laravel completely
+echo "Creating simple test endpoint..."
+echo '<?php
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+echo json_encode([
+    "status" => "direct_php_working", 
+    "timestamp" => date("Y-m-d H:i:s"),
+    "server_name" => $_SERVER["SERVER_NAME"] ?? "not_set",
+    "http_host" => $_SERVER["HTTP_HOST"] ?? "not_set",
+    "request_uri" => $_SERVER["REQUEST_URI"] ?? "not_set",
+    "remote_addr" => $_SERVER["REMOTE_ADDR"] ?? "not_set",
+    "forwarded_for" => $_SERVER["HTTP_X_FORWARDED_FOR"] ?? "not_set",
+    "forwarded_proto" => $_SERVER["HTTP_X_FORWARDED_PROTO"] ?? "not_set"
+]);
+?>' > /var/www/html/public/test.php
+
 # Create Laravel application test endpoint
 echo "Creating Laravel test endpoint..."
 cat > /var/www/html/public/laravel-test.php << 'LARAVEL_TEST_EOF'

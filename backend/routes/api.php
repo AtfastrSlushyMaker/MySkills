@@ -10,7 +10,13 @@ Route::get('/health', function () {
         return response()->json([
             'status' => 'ok',
             'message' => 'MySkills API is healthy',
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
+            'request_ip' => request()->ip(),
+            'forwarded_for' => request()->header('X-Forwarded-For'),
+            'forwarded_proto' => request()->header('X-Forwarded-Proto'),
+            'host' => request()->header('Host'),
+            'server_name' => $_SERVER['SERVER_NAME'] ?? 'not_set',
+            'request_uri' => request()->getRequestUri()
         ], 200);
     } catch (\Exception $e) {
         return response()->json([
