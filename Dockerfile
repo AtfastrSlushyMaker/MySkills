@@ -60,8 +60,22 @@ RUN echo "=== Composer Debug Info ===" && \
     echo "=== Installing dependencies ===" && \
     composer install --no-dev --no-interaction --no-scripts
 
-# Copy frontend build from builder stage
-COPY --from=frontend-builder /app/frontend/dist ./public
+# Copy frontend build from builder stage safely
+# First copy to a temporary location
+COPY --from=frontend-builder /app/frontend/dist /tmp/frontend-dist
+# Then merge with existing public directory without overwriting Laravel files
+RUN echo "=== Merging frontend build with Laravel public directory ===" && \
+    ls -la ./public/ && \
+    echo "Frontend build contents:" && \
+    ls -la /tmp/frontend-dist/ && \
+    cp -r /tmp/frontend-dist/* ./public/ && \
+    echo "Final public directory:" && \
+    ls -la ./public/ && \
+    if [ ! -f "./public/index.php" ]; then \
+    echo "ERROR: Laravel index.php missing after frontend merge!"; \
+    exit 1; \
+    fi && \
+    rm -rf /tmp/frontend-dist
 
 # Configure Apache for SPA + API
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf

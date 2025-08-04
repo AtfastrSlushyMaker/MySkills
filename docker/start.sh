@@ -119,6 +119,34 @@ echo "Skipping database connection test during startup - will test via web endpo
 echo "Creating debug endpoint..."
 echo '<?php echo json_encode(["status" => "php_working", "timestamp" => date("Y-m-d H:i:s")]); ?>' > /var/www/html/public/debug.php
 
+# Create Laravel application test endpoint
+echo "Creating Laravel test endpoint..."
+cat > /var/www/html/public/laravel-test.php << 'LARAVEL_TEST_EOF'
+<?php
+try {
+    require_once __DIR__ . '/../vendor/autoload.php';
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
+    
+    echo json_encode([
+        'status' => 'laravel_working',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'app_name' => config('app.name'),
+        'app_env' => config('app.env'),
+        'laravel_version' => app()->version()
+    ]);
+} catch (Exception $e) {
+    echo json_encode([
+        'status' => 'laravel_error',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'error' => $e->getMessage(),
+        'error_code' => $e->getCode(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
+    ]);
+}
+?>
+LARAVEL_TEST_EOF
+
 # Create database connection test endpoint
 echo "Creating database test endpoint..."
 cat > /var/www/html/public/dbtest.php << 'DBTEST_EOF'
@@ -163,9 +191,13 @@ echo "Skipping package discovery to avoid Scribe errors..."
 echo "Optimizing autoloader..."
 # Clear any cached autoloader files first (including Laravel service cache that references Scribe)
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes.php
+# Clear Composer's autoloader cache files that might reference old class names
+rm -f vendor/composer/autoload_classmap.php vendor/composer/autoload_files.php vendor/composer/autoload_psr4.php vendor/composer/autoload_static.php
 # Force clear Composer's autoloader cache
 composer clear-cache > /dev/null 2>&1 || echo "Composer cache clear failed"
-composer dump-autoload --optimize --no-interaction || echo "Autoloader optimization failed, continuing..."
+# Regenerate the autoloader completely
+echo "Regenerating Composer autoloader from scratch..."
+composer dump-autoload --optimize --no-interaction --classmap-authoritative || echo "Autoloader optimization failed, continuing..."
 
 # Run Laravel optimizations (skip cache operations for now)
 echo "Running Laravel optimizations..."
