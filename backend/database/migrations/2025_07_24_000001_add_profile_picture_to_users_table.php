@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'profile_picture')) {
+        // Check if column already exists to prevent duplicate column error
+        if (!Schema::hasColumn('users', 'profile_picture')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->string('profile_picture')->nullable();
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -23,10 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'profile_picture')) {
+        if (Schema::hasColumn('users', 'profile_picture')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('profile_picture');
-            }
-        });
+            });
+        }
     }
 };

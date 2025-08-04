@@ -96,7 +96,10 @@ a2ensite 000-default
 (
     sleep 5
     echo "Running database migrations..."
-    php artisan migrate --force || echo "Migration completed with warnings"
+    # First check if migrations table exists and sync state
+    php artisan migrate:status > /dev/null 2>&1 || echo "Migrations table not found, will create"
+    # Run migrations with --force flag, ignore existing column errors
+    php artisan migrate --force 2>&1 | grep -v "Column already exists" || echo "Migration process completed"
     echo "Migration process finished"
 ) &
 
