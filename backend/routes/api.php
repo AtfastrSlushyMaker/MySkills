@@ -25,15 +25,15 @@ Route::get('/setup-database', function () {
     try {
         // Test database connection
         \DB::connection()->getPdo();
-        
+
         // Run migrations
         \Artisan::call('migrate', ['--force' => true]);
         $migrationOutput = \Artisan::output();
-        
+
         // Run seeders if needed
         \Artisan::call('db:seed', ['--force' => true]);
         $seedOutput = \Artisan::output();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Database setup completed successfully',
