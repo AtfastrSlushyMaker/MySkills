@@ -217,19 +217,6 @@ MAIL_FROM_NAME="MySkills"
 IMAGEBB_API_KEY=your_imgbb_api_key
 IMAGEBB_URL=https://api.imgbb.com/1/upload
 ```
-
----
-
-## 📊 Project Status & Roadmap
-
-- [x] **Analysis & Design** (Week 1)
-- [x] **Backend Development** (Weeks 2-3)
-- [x] **Frontend Development** (Weeks 4-5)
-- [x] **Authentication & Notifications** (Complete)
-- [x] **Password Reset System** (Complete)
-- [ ] **Testing & Quality Assurance** (Week 6)
-- [ ] **Documentation Finalization** (Week 6)
-
 ---
 
 ## 🏗️ Architecture Overview
