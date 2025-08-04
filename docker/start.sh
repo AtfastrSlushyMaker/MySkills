@@ -65,6 +65,14 @@ EOF
 
 echo "Environment file created successfully!"
 
+# Run package discovery now that environment is set up
+echo "Running package discovery..."
+php artisan package:discover --ansi
+
+# Optimize autoloader
+echo "Optimizing autoloader..."
+composer dump-autoload --optimize
+
 # Run Laravel optimizations
 echo "Running Laravel optimizations..."
 php artisan config:cache

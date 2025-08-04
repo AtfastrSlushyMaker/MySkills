@@ -58,7 +58,7 @@ RUN echo "=== Composer Debug Info ===" && \
     echo "=== Updating lock file ===" && \
     composer update --lock && \
     echo "=== Installing dependencies ===" && \
-    composer install --no-dev --optimize-autoloader --no-interaction
+    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy frontend build from builder stage
 COPY --from=frontend-builder /app/frontend/dist ./public
@@ -74,9 +74,6 @@ RUN chmod +x /usr/local/bin/start.sh
 RUN mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-
-# Create optimized autoloader and prepare for Railway
-RUN composer dump-autoload --optimize
 
 # Expose port for Railway
 EXPOSE 80
