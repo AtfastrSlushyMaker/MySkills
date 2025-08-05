@@ -86,7 +86,12 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
     # Logging
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined
-    LogLevel warn
+    LogLevel info
+    
+    # Custom error pages for debugging
+    ErrorDocument 500 "Internal Server Error - Check Apache logs"
+    ErrorDocument 502 "Bad Gateway - PHP processing failed"
+    ErrorDocument 503 "Service Unavailable - Apache misconfiguration"
 </VirtualHost>
 EOF
 
@@ -102,13 +107,82 @@ a2ensite 000-default
 # Create simple test file
 echo "<?php echo json_encode(['status' => 'php_works', 'time' => date('Y-m-d H:i:s')]); ?>" > /var/www/html/public/test.php
 
+# Create a simple static test file
+echo "<h1>Apache is Working!</h1><p>Static HTML file served successfully</p>" > /var/www/html/public/static-test.html
+
+# Create a comprehensive health check
+cat > /var/www/html/public/health.php << 'HEALTH_EOF'
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+
+try {
+    $response = [
+        'status' => 'ok',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'php_version' => PHP_VERSION,
+        'server' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
+        'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+        'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
+        'server_port' => $_SERVER['SERVER_PORT'] ?? 'unknown',
+        'environment' => 'production'
+    ];
+    
+    echo json_encode($response, JSON_PRETTY_PRINT);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+}
+?>
+HEALTH_EOF
+
+# Verify Apache can reach PHP
+echo "=== Testing Apache-PHP Integration ==="
+echo "Testing if Apache can find files..."
+ls -la /var/www/html/public/index.* /var/www/html/public/test.php || echo "Files missing!"
+echo "Testing PHP CLI..."
+php -v
+
 # Run migrations in background after Apache starts
 (
-    sleep 10
+    sleep 5
+    echo "=== Internal Connection Test ==="
+    echo "Testing localhost connection..."
+    curl -s "http://localhost:${PORT}/test.php" || echo "❌ Internal PHP test failed"
+    curl -s "http://localhost:${PORT}/api/health" || echo "❌ Internal API test failed"
+    
+    sleep 5
     echo "Running database migrations..."
     php artisan migrate --force || echo "Migration completed with warnings"
     echo "Migration process finished"
 ) &
 
 echo "Starting Apache on port ${PORT}..."
+
+# Start Apache briefly to test
+echo "=== Testing Apache Startup ==="
+apache2ctl start
+sleep 2
+
+# Test endpoints
+echo "Testing static file..."
+curl -I "http://localhost:${PORT}/static-test.html" && echo "✅ Static file works" || echo "❌ Static file failed"
+
+echo "Testing PHP health..."
+curl -s "http://localhost:${PORT}/health.php" && echo "✅ PHP health works" || echo "❌ PHP health failed"
+
+echo "Testing Laravel API..."
+curl -s "http://localhost:${PORT}/api/health" && echo "✅ Laravel API works" || echo "❌ Laravel API failed"
+
+# Stop Apache to restart in foreground mode
+apache2ctl stop
+sleep 1
+
+# Monitor Apache logs in background
+(
+    sleep 3
+    echo "=== Monitoring Apache Error Logs ==="
+    tail -f /var/log/apache2/error.log &
+) &
+
 exec apache2-foreground
