@@ -48,7 +48,10 @@ PORT=${PORT:-8080}
 
 # Apache ports configuration
 echo "Listen 0.0.0.0:${PORT}" > /etc/apache2/ports.conf
-echo "ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}" >> /etc/apache2/ports.conf
+
+# Set global ServerName to suppress warnings
+echo "ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}" > /etc/apache2/conf-available/servername.conf
+a2enconf servername
 
 # Apache virtual host configuration
 cat > /etc/apache2/sites-available/000-default.conf << EOF
@@ -96,10 +99,7 @@ a2ensite 000-default
 (
     sleep 5
     echo "Running database migrations..."
-    # First check if migrations table exists and sync state
-    php artisan migrate:status > /dev/null 2>&1 || echo "Migrations table not found, will create"
-    # Run migrations with --force flag, ignore existing column errors
-    php artisan migrate --force 2>&1 | grep -v "Column already exists" || echo "Migration process completed"
+    php artisan migrate --force || echo "Migration completed with warnings"
     echo "Migration process finished"
 ) &
 

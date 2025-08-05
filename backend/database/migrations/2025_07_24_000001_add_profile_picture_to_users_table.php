@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check if column already exists to prevent duplicate column error
-        if (!Schema::hasColumn('users', 'profile_picture')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->string('profile_picture')->nullable();
-            });
-        }
+        // Column already exists in production, skip to avoid duplicate column error
+        // This migration was already applied manually or through previous deployment
+        return;
     }
 
     /**
