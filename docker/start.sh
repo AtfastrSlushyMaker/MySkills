@@ -53,11 +53,13 @@ echo "Listen 0.0.0.0:${PORT}" > /etc/apache2/ports.conf
 echo "ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}" > /etc/apache2/conf-available/servername.conf
 a2enconf servername
 
-# Apache virtual host configuration
+# Apache virtual host configuration with Railway proxy support
 cat > /etc/apache2/sites-available/000-default.conf << EOF
 <VirtualHost *:${PORT}>
     DocumentRoot /var/www/html/public
-    ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}
+    ServerName myskills-production.up.railway.app
+    ServerAlias *.railway.app
+    ServerAlias localhost
     
     <Directory /var/www/html/public>
         AllowOverride All
@@ -83,15 +85,26 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
         RewriteRule . /index.html [L]
     </Directory>
     
-    # Logging
+    # Railway proxy headers
+    RemoteIPHeader X-Forwarded-For
+    RemoteIPInternalProxy 10.0.0.0/8
+    RemoteIPInternalProxy 172.16.0.0/12
+    RemoteIPInternalProxy 192.168.0.0/16
+    RemoteIPInternalProxy 100.64.0.0/10
+    
+    # Trust Railway's proxy
+    SetEnvIf X-Forwarded-Proto "https" HTTPS=on
+    SetEnvIf X-Forwarded-Port "443" SERVER_PORT=443
+    
+    # Logging with more detail
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined
-    LogLevel info
+    LogLevel debug
     
-    # Custom error pages for debugging
-    ErrorDocument 500 "Internal Server Error - Check Apache logs"
-    ErrorDocument 502 "Bad Gateway - PHP processing failed"
-    ErrorDocument 503 "Service Unavailable - Apache misconfiguration"
+    # Remove custom error pages that might interfere
+    # ErrorDocument 500 "Internal Server Error - Check Apache logs"
+    # ErrorDocument 502 "Bad Gateway - PHP processing failed"
+    # ErrorDocument 503 "Service Unavailable - Apache misconfiguration"
 </VirtualHost>
 EOF
 
@@ -103,6 +116,13 @@ chown www-data:www-data /var/log/apache2/{error,access}.log
 # Test configuration and start Apache
 apache2ctl configtest
 a2ensite 000-default
+
+# Enable Apache modules for Railway proxy support
+echo "=== Enabling Apache Modules ==="
+a2enmod rewrite
+a2enmod headers
+a2enmod remoteip
+a2enmod php8.2
 
 # Create simple test file
 echo "<?php echo json_encode(['status' => 'php_works', 'time' => date('Y-m-d H:i:s')]); ?>" > /var/www/html/public/test.php
@@ -158,31 +178,8 @@ php -v
 ) &
 
 echo "Starting Apache on port ${PORT}..."
+echo "Railway URL: https://myskills-production.up.railway.app"
+echo "Local binding: 0.0.0.0:${PORT}"
 
-# Start Apache briefly to test
-echo "=== Testing Apache Startup ==="
-apache2ctl start
-sleep 2
-
-# Test endpoints
-echo "Testing static file..."
-curl -I "http://localhost:${PORT}/static-test.html" && echo "✅ Static file works" || echo "❌ Static file failed"
-
-echo "Testing PHP health..."
-curl -s "http://localhost:${PORT}/health.php" && echo "✅ PHP health works" || echo "❌ PHP health failed"
-
-echo "Testing Laravel API..."
-curl -s "http://localhost:${PORT}/api/health" && echo "✅ Laravel API works" || echo "❌ Laravel API failed"
-
-# Stop Apache to restart in foreground mode
-apache2ctl stop
-sleep 1
-
-# Monitor Apache logs in background
-(
-    sleep 3
-    echo "=== Monitoring Apache Error Logs ==="
-    tail -f /var/log/apache2/error.log &
-) &
-
+# Skip the testing that was causing issues and go straight to production mode
 exec apache2-foreground
