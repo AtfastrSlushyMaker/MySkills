@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev libjpeg62-turbo-dev libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && a2enmod rewrite \
+    && a2enmod rewrite php8.2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
