@@ -59,17 +59,10 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
     DocumentRoot /var/www/html/public
     ServerName ${RAILWAY_STATIC_URL:-myskills-production.up.railway.app}
     
-    # Enable PHP processing
-    <FilesMatch \.php$>
-        SetHandler application/x-httpd-php
-    </FilesMatch>
-    
     <Directory /var/www/html/public>
         AllowOverride All
         Require all granted
         Options -Indexes +FollowSymLinks
-        
-        # Enable PHP
         DirectoryIndex index.php index.html
         
         RewriteEngine On
@@ -79,12 +72,7 @@ cat > /etc/apache2/sites-available/000-default.conf << EOF
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteRule ^(.*)$ index.php [QSA,L]
         
-        # Handle direct PHP files
-        RewriteCond %{REQUEST_FILENAME} -f
-        RewriteCond %{REQUEST_FILENAME} \.php$
-        RewriteRule ^(.*)$ - [L]
-        
-        # Handle static files (CSS, JS, images, etc.)
+        # Handle existing files (assets, static files)
         RewriteCond %{REQUEST_FILENAME} -f
         RewriteRule ^(.*)$ - [L]
         
