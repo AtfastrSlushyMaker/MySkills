@@ -53,7 +53,6 @@ Empower organizations to efficiently manage their training ecosystem with role-b
 - **Category-based organization** of training sessions
 - **Course and session creation** with rich content support
 - **Registration workflow** with approval/rejection system
-- **Attendance tracking** and progress monitoring
 - **Certificate generation** upon completion
 
 ### 🎨 Modern User Experience
